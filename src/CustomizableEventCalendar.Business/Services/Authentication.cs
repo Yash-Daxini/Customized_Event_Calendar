@@ -3,15 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 
-namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
+namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
 {
     internal class Authentication
     {
         public void SignUp()
         {
+            Console.WriteLine("\nEnter Sign Up Details");
             Console.Write("Enter Name: ");
             string? name = Console.ReadLine();
             Console.Write("Enter Email: ");
@@ -21,16 +23,19 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             GenericRepository genericRepository = new GenericRepository();
             User user = new User(name, email, password);
             genericRepository.Create<User>(new UserQuerySupplier(), user.generateDictionary());
+            Console.WriteLine("Sign up successfull !");
+            LogIn();
         }
         public void LogIn()
         {
+            Console.WriteLine("\nEnter Login Details");
             Console.Write("Enter Name: ");
             string? name = Console.ReadLine();
             Console.Write("Enter Password: ");
             string? password = Console.ReadLine();
 
             GenericRepository genericRepository = new GenericRepository();
-            List<User> users = genericRepository.Read<User>(new UserQuerySupplier(), data => new User(data));
+            List<User> users = genericRepository.Read(new UserQuerySupplier(), data => new User(data));
 
             foreach (User user in users)
             {
@@ -38,7 +43,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                 {
                     Console.WriteLine("Login Succesfully");
                     GlobalData.user = user;
-                    EventHandling.askForChoice();
+                    EventHandling.AskForChoice();
                     return;
                 }
             }

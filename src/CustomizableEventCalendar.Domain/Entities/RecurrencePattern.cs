@@ -10,6 +10,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
 {
     internal class RecurrencePattern : BaseData
     {
+        public RecurrencePattern() { }
         public RecurrencePattern(int Id, DateTime DTSTART, DateTime UNTILL, string FREQ, string COUNT, string INTERVAL, string BYDAY, string BYWEEK, string BYMONTH, string BYYEAR, string BYMONTHDAY)
         {
             this.Id = Id;
@@ -55,13 +56,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
         public DateTime DTSTART { get; set; }
         public DateTime UNTILL { get; set; }
         public string FREQ { get; set; }
-        public string COUNT { get; set; }
-        public string INTERVAL { get; set; }
-        public string BYDAY { get; set; }
-        public string BYWEEK { get; set; }
-        public string BYMONTH { get; set; }
-        public string BYYEAR { get; set; }
-        public string BYMONTHDAY { get; set; }
+        public string? COUNT { get; set; }
+        public string? INTERVAL { get; set; }
+        public string? BYDAY { get; set; }
+        public string? BYWEEK { get; set; }
+        public string? BYMONTH { get; set; }
+        public string? BYYEAR { get; set; }
+        public string? BYMONTHDAY { get; set; }
 
         public Dictionary<string, object> generateDictionary()
         {
@@ -69,13 +70,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
             keyValuePairs.Add("@DTSTART", DTSTART);
             keyValuePairs.Add("@FREQ", FREQ);
             keyValuePairs.Add("@UNTILL", UNTILL);
-            keyValuePairs.Add("@COUNT", COUNT);
-            keyValuePairs.Add("@INTERVAL", INTERVAL);
-            keyValuePairs.Add("@BYDAY", BYDAY);
-            keyValuePairs.Add("@BYWEEK", BYWEEK);
-            keyValuePairs.Add("@BYMONTH", BYMONTH);
-            keyValuePairs.Add("@BYYEAR", BYYEAR);
-            keyValuePairs.Add("@BYMONTHDAY", BYMONTHDAY);
+            keyValuePairs.Add("@COUNT", COUNT == null ? DBNull.Value : COUNT);
+            keyValuePairs.Add("@INTERVAL", INTERVAL == null ? DBNull.Value : INTERVAL);
+            keyValuePairs.Add("@BYDAY", BYDAY == null ? DBNull.Value : BYDAY);
+            keyValuePairs.Add("@BYWEEK", BYWEEK == null ? DBNull.Value : BYWEEK);
+            keyValuePairs.Add("@BYMONTH", BYMONTH == null ? DBNull.Value : BYMONTH);
+            keyValuePairs.Add("@BYYEAR", BYYEAR == null ? DBNull.Value : BYYEAR);
+            keyValuePairs.Add("@BYMONTHDAY", BYMONTHDAY == null ? DBNull.Value : BYMONTHDAY);
 
             return keyValuePairs;
         }
