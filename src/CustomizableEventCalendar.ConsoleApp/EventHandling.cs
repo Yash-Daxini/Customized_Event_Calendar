@@ -17,8 +17,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         public static EventService eventService = new EventService();
         public static void AskForChoice()
         {
-            Console.WriteLine("1. Add Event 2. See all events 3. Delete Event 4. Update Event 0. Back");
-            Console.WriteLine("Select Any Option :- ");
+            Console.WriteLine("\n1. Add Event 2. See all events 3. Delete Event 4. Update Event 5. See calendar view  0. Back");
+            Console.Write("Select Any Option :- ");
             string? choice = Console.ReadLine();
             switch (choice)
             {
@@ -36,6 +36,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                     break;
                 case "4":
                     Update();
+                    AskForChoice();
+                    break;
+                case "5":
+                    CalendarView.ViewSelection();
                     AskForChoice();
                     break;
                 case "0":
