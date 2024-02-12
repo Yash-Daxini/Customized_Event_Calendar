@@ -42,13 +42,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
         {
             this.sqlCommand = connection.CreateCommand();
             sqlCommand.CommandText = query;
-            if (sqlParameters != null)
-            {
-                if (sqlParameters.Count > 0)
-                {
-                    sqlCommand.Parameters.AddRange(sqlParameters.ToArray());
-                }
-            }
             sqlDataReader = sqlCommand.ExecuteReader();
         }
         public int ExecuteNonQuery(string query)
@@ -66,7 +59,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
             try
             {
                 sqlCommand.ExecuteNonQuery();
-                if (sqlCommand.Parameters["@Id"].Value != DBNull.Value) Id = (int)sqlCommand.Parameters["@Id"].Value;
+                if (sqlCommand.Parameters.Count > 0 && sqlCommand.Parameters["@Id"].Value != DBNull.Value) Id = (int)sqlCommand.Parameters["@Id"].Value;
+                Console.WriteLine("Operation completed successfully !");
             }
             catch (SqlException ex)
             {
@@ -76,14 +70,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
                 }
                 else
                 {
-                    Console.WriteLine("Some error occured!");
+                    Console.WriteLine("Some error occured!" + " " + ex.Message);
                 }
-                Console.WriteLine(ex.Message);
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Some error occured!");
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("Some error occured!" + " " + ex.Message);
             }
             return Id;
         }

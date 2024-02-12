@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
@@ -25,18 +26,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
             this.UserId = Convert.ToInt32(sqlDataReader["UserId"]);
             this.EventId = Convert.ToInt32(sqlDataReader["EventId"]);
         }
+        [NotMapped]
         public int Id { get; set; }
         public int UserId { get; set; }
         public int EventId { get; set; }
-
-        public Dictionary<string, object> generateDictionary()
-        {
-            Dictionary<string, object> keyValuePairs = new Dictionary<string, object>();
-            keyValuePairs.Add("@EventId", EventId);
-            keyValuePairs.Add("@UserId", UserId);
-
-            return keyValuePairs;
-        }
         public override string ToString()
         {
             return string.Format("{0}\t{1}\t", UserId, EventId);

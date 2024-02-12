@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
@@ -51,7 +52,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
             BYYEAR = sqlDataReader["BYYEAR"].ToString();
             BYMONTHDAY = sqlDataReader["BYMONTHDAY"].ToString();
         }
-
+        [NotMapped]
         public int Id { get; set; }
         public DateTime DTSTART { get; set; }
         public DateTime UNTILL { get; set; }
@@ -63,23 +64,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
         public string? BYMONTH { get; set; }
         public string? BYYEAR { get; set; }
         public string? BYMONTHDAY { get; set; }
-
-        public Dictionary<string, object> generateDictionary()
-        {
-            Dictionary<string, object> keyValuePairs = new Dictionary<string, object>();
-            keyValuePairs.Add("@DTSTART", DTSTART);
-            keyValuePairs.Add("@FREQ", FREQ);
-            keyValuePairs.Add("@UNTILL", UNTILL);
-            keyValuePairs.Add("@COUNT", COUNT == null ? DBNull.Value : COUNT);
-            keyValuePairs.Add("@INTERVAL", INTERVAL == null ? DBNull.Value : INTERVAL);
-            keyValuePairs.Add("@BYDAY", BYDAY == null ? DBNull.Value : BYDAY);
-            keyValuePairs.Add("@BYWEEK", BYWEEK == null ? DBNull.Value : BYWEEK);
-            keyValuePairs.Add("@BYMONTH", BYMONTH == null ? DBNull.Value : BYMONTH);
-            keyValuePairs.Add("@BYYEAR", BYYEAR == null ? DBNull.Value : BYYEAR);
-            keyValuePairs.Add("@BYMONTHDAY", BYMONTHDAY == null ? DBNull.Value : BYMONTHDAY);
-
-            return keyValuePairs;
-        }
         public override string ToString()
         {
             return string.Format("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}", DTSTART, FREQ, UNTILL, COUNT, INTERVAL, BYDAY, BYWEEK, BYMONTH, BYYEAR, BYMONTHDAY);

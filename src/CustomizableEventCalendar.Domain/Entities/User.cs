@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
@@ -9,6 +10,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
 {
     internal class User : BaseData
     {
+        public User() { }
         public User(int Id, string Name, string Email, string Password)
         {
             this.Id = Id;
@@ -29,20 +31,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
             this.Email = sqlDataReader["Email"].ToString();
             this.Password = sqlDataReader["Password"].ToString();
         }
+        [NotMapped]
         public int Id { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }
         public string Password { get; set; }
-
-        public Dictionary<string, object> generateDictionary()
-        {
-            Dictionary<string, object> keyValuePairs = new Dictionary<string, object>();
-            keyValuePairs.Add("@Name", Name);
-            keyValuePairs.Add("@Email", Email);
-            keyValuePairs.Add("@Password", Password);
-
-            return keyValuePairs;
-        }
         public override string ToString()
         {
             return string.Format("Name:{0}\tEmail:{1}\tPassword:{2}", Name, Email, Password);

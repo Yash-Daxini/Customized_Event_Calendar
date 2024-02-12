@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
@@ -9,7 +10,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
 {
     internal class Event : BaseData
     {
-        public Event(int Id, string Title, string Description, string Location, int UserId, int RecurrenceId)
+        public Event() { }
+        public Event(int Id, string Title, string Description, string Location, int UserId, int? RecurrenceId)
         {
             this.Id = Id;
             this.Title = Title;
@@ -18,7 +20,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
             this.UserId = UserId;
             this.RecurrenceId = RecurrenceId;
         }
-        public Event(string Title, string Description, string Location, int UserId, int RecurrenceId)
+        public Event(string Title, string Description, string Location, int UserId, int? RecurrenceId)
         {
             this.Title = Title;
             this.Description = Description;
@@ -34,28 +36,16 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
             this.UserId = Convert.ToInt32(sqlDataReader["UserId"]);
             this.RecurrenceId = Convert.ToInt32(sqlDataReader["RecurrenceId"]);
         }
-
+        [NotMapped]
         public int Id { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
         public string Location { get; set; }
         public int UserId { get; set; }
-        public int RecurrenceId { get; set; }
-
-        public Dictionary<string, object> generateDictionary()
-        {
-            Dictionary<string, object> keyValuePairs = new Dictionary<string, object>();
-            keyValuePairs.Add("@Title", Title);
-            keyValuePairs.Add("@Location", Location);
-            keyValuePairs.Add("@Description", Description);
-            keyValuePairs.Add("@UserId", UserId);
-            keyValuePairs.Add("@RecurrenceId", RecurrenceId);
-
-            return keyValuePairs;
-        }
+        public int? RecurrenceId { get; set; }
         public override string ToString()
         {
-            return string.Format("{0}\t{1}\t{2}\t{3}\t{4}", Title, Description, Location, UserId, RecurrenceId);
+            return string.Format("{0}\t{1}\t{2}\t", Title, Description, Location);
         }
 
     }

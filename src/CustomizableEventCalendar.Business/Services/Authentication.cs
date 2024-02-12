@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp;
@@ -14,15 +16,17 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         public void SignUp()
         {
             Console.WriteLine("\nEnter Sign Up Details");
-            Console.Write("Enter Name: ");
-            string? name = Console.ReadLine();
-            Console.Write("Enter Email: ");
-            string? email = Console.ReadLine();
-            Console.Write("Enter Password: ");
-            string? password = Console.ReadLine();
+            User user = new User();
+            PropertyInfo[] properties = user.GetType().GetProperties().Where(property => !Attribute.IsDefined(property, typeof(NotMappedAttribute))).ToArray();
+            foreach (PropertyInfo property in properties)
+            {
+                Console.Write($"Enter value for {property.Name}: ");
+                string value = Console.ReadLine();
+                object typedValue = Convert.ChangeType(value, property.PropertyType);
+                property.SetValue(user, typedValue);
+            }
             GenericRepository genericRepository = new GenericRepository();
-            User user = new User(name, email, password);
-            genericRepository.Create<User>(new UserQuerySupplier(), user.generateDictionary());
+            genericRepository.Create<User>(user);
             Console.WriteLine("Sign up successfull !");
             LogIn();
         }
@@ -35,7 +39,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             string? password = Console.ReadLine();
 
             GenericRepository genericRepository = new GenericRepository();
-            List<User> users = genericRepository.Read(new UserQuerySupplier(), data => new User(data));
+            List<User> users = genericRepository.Read(data => new User(data));
 
             foreach (User user in users)
             {

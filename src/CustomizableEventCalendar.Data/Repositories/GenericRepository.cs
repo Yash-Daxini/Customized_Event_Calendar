@@ -3,20 +3,22 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Interfaces;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories
 {
     internal class GenericRepository : BaseRepository
     {
-        public List<T> Read<T>(IQuerySupplier queries, Func<SqlDataReader, T> createObject)
+        public List<T> Read<T>(Func<SqlDataReader, T> createObject)
         {
             List<T> list = new List<T>();
+            string tableName = typeof(T).GetTypeInfo().Name;
+            string query = QueryBuilder.Read<T>(tableName);
             Connect();
-            ExecuteQuery(queries.Read());
+            ExecuteQuery(query);
             while (sqlDataReader.Read())
             {
                 T data = createObject(sqlDataReader);
@@ -25,12 +27,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
             Disconnect();
             return list;
         }
-        public T? Read<T>(IQuerySupplier queries, Func<SqlDataReader, T> createObject, int Id)
+        public T? Read<T>(Func<SqlDataReader, T> createObject, int Id)
         {
+            string tableName = typeof(T).GetTypeInfo().Name;
+            string query = QueryBuilder.Read<T>(tableName, Id);
             Connect();
-            sqlParameters = new List<SqlParameter>();
-            sqlParameters.Add(new SqlParameter { ParameterName = "@Id", SqlDbType = System.Data.SqlDbType.Int, Value = Id });
-            ExecuteQuery(queries.ReadById());
+            ExecuteQuery(query);
             T? data = default(T);
             if (sqlDataReader.Read())
             {
@@ -40,32 +42,35 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
             Disconnect();
             return data;
         }
-        public int Create<T>(IQuerySupplier queries, Dictionary<string, object> parameters)
+        public int Create<T>(T data)
         {
+            string tableName = typeof(T).GetTypeInfo().Name;
+            string query = QueryBuilder.Create<T>(tableName, data);
+            sqlParameters = new List<SqlParameter>();
+            sqlParameters.Add(new SqlParameter { ParameterName = "@Id", SqlDbType = System.Data.SqlDbType.Int, Direction = System.Data.ParameterDirection.Output });
             Connect();
-
-            sqlParameters = queries.GenerateParameterList(parameters);
-            int Id = ExecuteNonQuery(queries.Create());
-
+            int Id = ExecuteNonQuery(query);
             Disconnect();
             return Id;
         }
-        public void Update<T>(IQuerySupplier queries, Dictionary<string, object> parameters, int Id)
+        public void Update<T>(T data, int Id)
         {
-            Connect();
-            sqlParameters = queries.GenerateParameterList(parameters);
-            sqlParameters.Add(new SqlParameter { ParameterName = "@UpdateId", SqlDbType = System.Data.SqlDbType.Int, Value = Id });
 
-            ExecuteNonQuery(queries.Update());
+            string tableName = typeof(T).GetTypeInfo().Name;
+            string query = QueryBuilder.Update<T>(tableName, data, Id);
+
+            Connect();
+            ExecuteNonQuery(query);
             Disconnect();
         }
-        public void Delete<T>(IQuerySupplier queries, int Id)
+        public void Delete<T>(int Id)
         {
-            Connect();
-            sqlParameters = new List<SqlParameter>();
-            sqlParameters.Add(new SqlParameter { ParameterName = "@Id", SqlDbType = System.Data.SqlDbType.Int, Value = Id });
-            ExecuteNonQuery(queries.Delete());
 
+            string tableName = typeof(T).GetTypeInfo().Name;
+            string query = QueryBuilder.Read<T>(tableName, Id);
+
+            Connect();
+            ExecuteNonQuery(query);
             Disconnect();
         }
     }
