@@ -67,7 +67,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
         {
 
             string tableName = typeof(T).GetTypeInfo().Name;
-            string query = QueryBuilder.Read<T>(tableName, Id);
+            string query = QueryBuilder.Delete<T>(tableName, Id);
 
             Connect();
             ExecuteNonQuery(query);

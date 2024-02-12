@@ -10,17 +10,9 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        Authentication authentication = new Authentication();
-        authentication.LoginOrSignUp();
-        //Console.WriteLine(QueryBuilder.Read<User>("User"));
-        //Console.WriteLine(QueryBuilder.Read<User>("User", 1));
-        //Console.WriteLine(QueryBuilder.Insert<User>("User", new User("abc", "def", "gjhi")));
-        //Console.WriteLine(QueryBuilder.Insert<Scheduler>("Scheduler", new Scheduler(1, "2PM - 4PM", DateTime.Now)));
-        //Console.WriteLine(QueryBuilder.Update<User>("User", new User("abc", "def", "gjhi"), 1));
-        //Console.WriteLine(QueryBuilder.Delete<User>("User", 1));
-        //GenericRepository genericRepository = new GenericRepository();
-        //List<User> users = genericRepository.Read<User>(data=>new User(data));
-        //users.ForEach(u => Console.WriteLine(u));
-        //User user = genericRepository.Read<User>(data=>new User(data),1);
+        Authentication.LoginOrSignUp();
+        //RecurrenceEngine recurrenceEngine = new RecurrenceEngine();
+        //GenericRepository repository = new GenericRepository(); 
+        //recurrenceEngine.AddScheduler(new Event("abc","def","ghi",27,"1-2",3),repository.Read<RecurrencePattern>(data=>new RecurrencePattern(data),3));
     }
 }
