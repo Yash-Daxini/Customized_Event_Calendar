@@ -9,7 +9,7 @@ using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {
-    internal class RecurrenceHandling
+    internal class RecurrenceHandling // WIP
     {
         public static int? AskForRecurrenceChoice()
         {
@@ -37,14 +37,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             RecurrencePattern recurrencePattern;
             if (Id == null) recurrencePattern = new RecurrencePattern();
             else recurrencePattern = recurrenceService.Read(Convert.ToInt32(Id));
-            Console.WriteLine("Fill details to make event repetive :- ");
+            Console.WriteLine("Fill details to make event repetitive :- ");
             Console.Write("Enter Start Date :-  (Please enter date in dd-mm-yyyy hh:mm:ss) :- ");
             string DTSTAR = Console.ReadLine();
             recurrencePattern.DTSTART = Convert.ToDateTime(DTSTAR);
             Console.Write("Enter End Date :-  (Please enter date in dd-mm-yyyy hh:mm:ss) :- ");
             string UNTILL = Console.ReadLine();
             recurrencePattern.UNTILL = Convert.ToDateTime(UNTILL);
-            Console.Write("How frequent you want to repet event :- \n 1. Daily\t2. Weekly\t3. Monthly\t4. Yearly :-  ");
+            Console.Write("How frequent you want to repeat event :- \n 1. Daily\t2. Weekly\t3. Monthly\t4. Yearly :-  ");
             string choiceForFreq = Console.ReadLine();
             switch (choiceForFreq)
             {
@@ -70,7 +70,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                     AddRecurrence(null);
                     break;
             }
-            Console.Write("Enter Interval : (how much gap you need between two repetive event Ex:- 1 or 2 or 3) :-  ");
+            Console.Write("Enter Interval : (how much gap you need between two repetitive event Ex:- 1 or 2 or 3) :-  ");
             string INTERVAL = Console.ReadLine();
             recurrencePattern.INTERVAL = INTERVAL;
             int id = 0;
@@ -86,13 +86,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         }
         public static string DailyRecurrence()
         {
-            Console.Write("Please Enter Week days you want to repeat :- (Enter days number from 1 to 7 , Sunday = 1 like this. Add all day number comma separated like 1,4,5 )  :-  ");
+            Console.Write("Please Enter Week days you want to repeat :- (Enter days number from 1 to 7 , Monday = 1 like this. Add all day number comma separated like 1,4,5 )  :-  ");
             string days = Console.ReadLine();
             return days;
         }
         public static string WeeklyRecurrence()
         {
-            Console.Write("Please Enter Week days you want to repeat :- (Enter days number from 1 to 7 , Sunday = 1 like this. Add all day number comma separated like 1,4,5 )  :-  ");
+            Console.Write("Please Enter Week days you want to repeat :- (Enter days number from 1 to 7 , Monday = 1 like this. Add all day number comma separated like 1,4,5 )  :-  ");
             string days = Console.ReadLine();
             return days;
         }

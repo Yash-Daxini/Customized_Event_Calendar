@@ -9,7 +9,7 @@ using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
 {
-    internal class RecurrenceEngine
+    internal class RecurrenceEngine // WIP
     {
         public void AddEventToScheduler(Event eventObj)
         {
@@ -30,8 +30,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             GenericRepository repository = new GenericRepository();
             List<Scheduler> lastScheduledEvents = repository.Read(data => new Scheduler(data));
-            Scheduler? lastScheduledEvent = lastScheduledEvents.FirstOrDefault(data => data.Date == (lastScheduledEvents.Max(data => data.Date)));
-            DateTime startDate = lastScheduledEvent == null ? recurrencePattern.DTSTART : lastScheduledEvent.Date;
+            Scheduler? lastScheduledEvent = lastScheduledEvents.FirstOrDefault(data => data.ScheduledDate == (lastScheduledEvents.Max(data => data.ScheduledDate)));
+            DateTime startDate = lastScheduledEvent == null ? recurrencePattern.DTSTART : lastScheduledEvent.ScheduledDate;
             switch (recurrencePattern.FREQ)
             {
                 case "daily":

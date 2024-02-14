@@ -53,7 +53,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
             BYMONTHDAY = sqlDataReader["BYMONTHDAY"].ToString();
         }
         [NotMapped]
-        public int Id { get; set; }
+        public int Id { get; }
         public DateTime DTSTART { get; set; }
         public DateTime UNTILL { get; set; }
         public string FREQ { get; set; }

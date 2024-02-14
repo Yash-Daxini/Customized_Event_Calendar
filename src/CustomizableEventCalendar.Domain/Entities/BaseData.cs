@@ -10,8 +10,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
     internal class BaseData
     {
         [NotMapped]
-        public DateTime CreationDate { get; set; }
+        public DateTime CreationDate { get; }
         [NotMapped]
-        public DateTime ModificationDate { get; set; }
+        public DateTime ModificationDate { get; }
     }
 }

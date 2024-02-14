@@ -27,7 +27,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
             this.EventId = Convert.ToInt32(sqlDataReader["EventId"]);
         }
         [NotMapped]
-        public int Id { get; set; }
+        public int Id { get; }
         public int UserId { get; set; }
         public int EventId { get; set; }
         public override string ToString()

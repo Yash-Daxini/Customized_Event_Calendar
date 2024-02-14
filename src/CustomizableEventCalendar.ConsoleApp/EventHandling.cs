@@ -40,7 +40,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                     break;
                 case "0":
                     Console.WriteLine("Going Back ...");
-                    Authentication.LoginOrSignUp();
+                    Authentication.AskForChoice();
                     break;
                 default:
                     Console.WriteLine("Oops! Wrong choice"); AskForChoice();
@@ -67,7 +67,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             List<Event> events = eventService.Read().Where(eventObj => eventObj.UserId == GlobalData.user.Id).ToList();
             StringBuilder eventDetails = new StringBuilder();
-            eventDetails.AppendLine("Evnet No. ,\tTitle,\tDescription,\tLocation,\tTimeBlock");
+            eventDetails.AppendLine("Event No. ,\tTitle,\tDescription,\tLocation,\tTimeBlock");
             foreach (var eventObj in events)
             {
                 eventDetails.AppendLine(eventObj.ToString());

@@ -11,29 +11,29 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
 {
     internal class Scheduler : BaseData
     {
-        public Scheduler(int Id, int EventId, DateTime Date)
+        public Scheduler(int Id, int EventId, DateTime ScheduledDate)
         {
             this.Id = Id;
             this.EventId = EventId;
-            this.Date = Date;
+            this.ScheduledDate = ScheduledDate;
         }
-        public Scheduler(int EventId, DateTime Date)
+        public Scheduler(int EventId, DateTime ScheduledDate)
         {
             this.EventId = EventId;
-            this.Date = Date;
+            this.ScheduledDate = ScheduledDate;
         }
         public Scheduler(SqlDataReader sqlDataReader)
         {
             this.EventId = Convert.ToInt32(sqlDataReader["EventId"]);
-            this.Date = Convert.ToDateTime(sqlDataReader["Date"]);
+            this.ScheduledDate = Convert.ToDateTime(sqlDataReader["ScheduledDate"]);
         }
         [NotMapped]
         public int Id { get; }
         public int EventId { get; set; }
-        public DateTime Date { get; set; }
+        public DateTime ScheduledDate { get; set; }
         public override string ToString()
         {
-            return string.Format("{0}\t{1}\t", EventId, Date);
+            return string.Format("{0}\t{1}\t", EventId, ScheduledDate);
         }
     }
 }

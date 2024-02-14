@@ -15,8 +15,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
         public List<T> Read<T>(Func<SqlDataReader, T> createObject)
         {
             List<T> list = new List<T>();
-            string tableName = typeof(T).GetTypeInfo().Name;
-            string query = QueryBuilder.Read<T>(tableName);
+            string query = QueryBuilder.Read<T>();
             Connect();
             ExecuteQuery(query);
             while (sqlDataReader.Read())
@@ -29,8 +28,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
         }
         public T? Read<T>(Func<SqlDataReader, T> createObject, int Id)
         {
-            string tableName = typeof(T).GetTypeInfo().Name;
-            string query = QueryBuilder.Read<T>(tableName, Id);
+            string query = QueryBuilder.Read<T>(Id);
             Connect();
             ExecuteQuery(query);
             T? data = default(T);
@@ -44,8 +42,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
         }
         public int Create<T>(T data)
         {
-            string tableName = typeof(T).GetTypeInfo().Name;
-            string query = QueryBuilder.Create<T>(tableName, data);
+            string query = QueryBuilder.Create<T>(data);
             sqlParameters = new List<SqlParameter>();
             sqlParameters.Add(new SqlParameter { ParameterName = "@Id", SqlDbType = System.Data.SqlDbType.Int, Direction = System.Data.ParameterDirection.Output });
             Connect();
@@ -55,9 +52,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
         }
         public void Update<T>(T data, int Id)
         {
-
-            string tableName = typeof(T).GetTypeInfo().Name;
-            string query = QueryBuilder.Update<T>(tableName, data, Id);
+            string query = QueryBuilder.Update<T>(data, Id);
 
             Connect();
             ExecuteNonQuery(query);
@@ -65,9 +60,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
         }
         public void Delete<T>(int Id)
         {
-
-            string tableName = typeof(T).GetTypeInfo().Name;
-            string query = QueryBuilder.Delete<T>(tableName, Id);
+            string query = QueryBuilder.Delete<T>(Id);
 
             Connect();
             ExecuteNonQuery(query);

@@ -32,7 +32,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
             this.Password = sqlDataReader["Password"].ToString();
         }
         [NotMapped]
-        public int Id { get; set; }
+        public int Id { get; }
         public string Name { get; set; }
         public string Email { get; set; }
         public string Password { get; set; }

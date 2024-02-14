@@ -12,7 +12,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 {
     internal class UserAuthenticationService
     {
-        public bool Authenticate(string username, string password)
+        public bool AuthenticateUser(string username, string password)
         {
             GenericRepository genericRepository = new GenericRepository();
             List<User> users = genericRepository.Read(data => new User(data));
@@ -21,7 +21,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             {
                 if (user.Name.Equals(username) && user.Password.Equals(password))
                 {
-                    Console.WriteLine("Login Succesfully");
+                    Console.WriteLine("Login Successfully");
                     GlobalData.user = user;
                     return true;
                 }
