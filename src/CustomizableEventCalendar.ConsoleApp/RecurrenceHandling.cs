@@ -62,8 +62,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                     break;
                 case "4":
                     recurrencePattern.FREQ = "yearly";
-                    recurrencePattern.BYMONTH = YearlyRecurrence().Split("-")[0];
-                    recurrencePattern.BYMONTHDAY = YearlyRecurrence().Split("-")[1];
+                    string yearlyRecurrenceDetails = YearlyRecurrence();
+                    recurrencePattern.BYMONTH = yearlyRecurrenceDetails.Split("-")[0];
+                    recurrencePattern.BYMONTHDAY = yearlyRecurrenceDetails.Split("-")[1];
                     break;
                 default:
                     Console.WriteLine("Please Enter correct option !");

@@ -38,10 +38,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                     ScheduleDailyEvents(eventObj, recurrencePattern, startDate);
                     break;
                 case "weekly":
+                    ScheduleWeeklyEvents(eventObj, recurrencePattern, startDate);
                     break;
                 case "monthly":
+                    ScheduleMonthlyEvents(eventObj, recurrencePattern, startDate);
                     break;
                 case "yearly":
+                    ScheduleYearlyEvents(eventObj, recurrencePattern, startDate);
                     break;
             }
 
@@ -84,8 +87,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             {
                 foreach (var day in monthDays)
                 {
-                    Console.WriteLine("COME");
-                    Console.WriteLine(day.Length);
                     DateTime scheduleDate = new DateTime(startDate.Year, startDate.Month, Convert.ToInt32(day));
                     Scheduler scheduler = new Scheduler(eventObj.Id, scheduleDate);
                     Console.WriteLine(scheduler);
@@ -93,17 +94,31 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 startDate = startDate.AddMonths(Convert.ToInt32(recurrencePattern.INTERVAL + 1));
             }
         }
+        public HashSet<string> GetYearsToProcess(DateTime startDate, DateTime endDate, string interval)
+        {
+            HashSet<string> years = new HashSet<string>();
+            DateTime curDate = startDate;
+            while (curDate <= endDate)
+            {
+                years.Add(curDate.Year.ToString());
+                curDate = curDate.AddYears(Convert.ToInt32(interval) + 1);
+            }
+            return years;
+        }
         public void ScheduleYearlyEvents(Event eventObj, RecurrencePattern recurrencePattern, DateTime startDate)
         {
+            HashSet<string> years = GetYearsToProcess(recurrencePattern.DTSTART, recurrencePattern.UNTILL, recurrencePattern.INTERVAL);
             HashSet<string> month = recurrencePattern.BYMONTH.Split(",").Where(data => data.Length > 0).ToHashSet();
             HashSet<string> monthDays = recurrencePattern.BYMONTHDAY.Split(",").Where(data => data.Length > 0).ToHashSet();
+            foreach (var item in years)
+            {
+                Console.WriteLine(item);
+            }
             if (startDate != recurrencePattern.DTSTART) startDate.AddMonths(Convert.ToInt32(recurrencePattern.INTERVAL + 1));
             if (startDate.Year == Math.Min(DateTime.Now.Year, recurrencePattern.UNTILL.Year))
             {
                 foreach (var day in monthDays)
                 {
-                    Console.WriteLine("COME");
-                    Console.WriteLine(day.Length);
                     DateTime scheduleDate = new DateTime(startDate.Year, startDate.Month, Convert.ToInt32(day));
                     Scheduler scheduler = new Scheduler(eventObj.Id, scheduleDate);
                     Console.WriteLine(scheduler);
