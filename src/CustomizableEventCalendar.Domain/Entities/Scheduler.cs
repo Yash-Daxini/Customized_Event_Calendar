@@ -28,7 +28,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
             this.Date = Convert.ToDateTime(sqlDataReader["Date"]);
         }
         [NotMapped]
-        public int Id { get; set; }
+        public int Id { get; }
         public int EventId { get; set; }
         public DateTime Date { get; set; }
         public override string ToString()

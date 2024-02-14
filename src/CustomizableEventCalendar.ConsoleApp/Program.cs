@@ -10,9 +10,12 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        Authentication.LoginOrSignUp();
-        //RecurrenceEngine recurrenceEngine = new RecurrenceEngine();
-        //GenericRepository repository = new GenericRepository(); 
-        //recurrenceEngine.AddScheduler(new Event("abc","def","ghi",27,"1-2",3),repository.Read<RecurrencePattern>(data=>new RecurrencePattern(data),3));
+        //Authentication.LoginOrSignUp();
+        RecurrenceEngine recurrenceEngine = new RecurrenceEngine();
+        GenericRepository repository = new GenericRepository();
+        GenericRepository repository2 = new GenericRepository();
+        //recurrenceEngine.ScheduleEvents(repository2.Read<Event>(data=>new Event(data),5), repository.Read<RecurrencePattern>(data => new RecurrencePattern(data), 3));
+        recurrenceEngine.ScheduleMonthlyEvents(repository2.Read<Event>(data => new Event(data), 5), repository.Read<RecurrencePattern>(data => new RecurrencePattern(data), 3), new DateTime(2024,2,1));
+
     }
 }
