@@ -13,7 +13,17 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 {
     internal class Authentication
     {
-        public void SignUp()
+        public static UserAuthenticationService userAuthenticationService = new UserAuthenticationService();
+        public static void showUserInfo()
+        {
+            Console.Clear();
+            Console.WriteLine($"\t\t\t\t\t\t\tWelcome {GlobalData.user.Name}");
+            Thread.Sleep(2000);
+            Console.Clear();
+            Console.WriteLine($"\t\t\t\t\t\t\tUser Name : {GlobalData.user.Name}");
+            Console.WriteLine();
+        }
+        public static void SignUp()
         {
             Console.WriteLine("\nEnter Sign Up Details");
             User user = new User();
@@ -25,12 +35,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 object typedValue = Convert.ChangeType(value, property.PropertyType);
                 property.SetValue(user, typedValue);
             }
-            GenericRepository genericRepository = new GenericRepository();
-            genericRepository.Create<User>(user);
-            Console.WriteLine("Sign up successfull !");
+            userAuthenticationService.AddUser(user);
+            Console.WriteLine("Sign up successfully !");
             LogIn();
         }
-        public void LogIn()
+        public static void LogIn()
         {
             Console.WriteLine("\nEnter Login Details");
             Console.Write("Enter Name: ");
@@ -38,32 +47,29 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             Console.Write("Enter Password: ");
             string? password = Console.ReadLine();
 
-            GenericRepository genericRepository = new GenericRepository();
-            List<User> users = genericRepository.Read(data => new User(data));
+            bool isAuthencticate = userAuthenticationService.Authenticate(name, password);
 
-            foreach (User user in users)
+            if (isAuthencticate)
             {
-                if (user.Name.Equals(name) && user.Password.Equals(password))
-                {
-                    Console.WriteLine("Login Succesfully");
-                    GlobalData.user = user;
-                    EventHandling.AskForChoice();
-                    return;
-                }
+                showUserInfo();
+                EventHandling.AskForChoice();
             }
-            Console.WriteLine("Invalid user name or password! Please try again.");
-            LogIn();
-
+            else
+            {
+                Console.WriteLine("Invalid user name or password! Please try again.");
+                LogIn();
+            }
         }
-        public void Logout()
+        public static void Logout()
         {
-            Console.WriteLine("Successfully Logout!");
             GlobalData.user = null;
+            Console.WriteLine("Successfully Logout!");
             LoginOrSignUp();
         }
-        public void LoginOrSignUp()
+        public static void LoginOrSignUp()
         {
-            Console.WriteLine("Choose the option: \n1. Login\t2. SignUp ");
+            Console.WriteLine();
+            Console.Write("Choose the option: \n1. Login\t2. SignUp \t3. Logout \t0. Exit :-");
             string option = Console.ReadLine();
             switch (option)
             {
@@ -72,6 +78,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                     break;
                 case "2":
                     SignUp();
+                    break;
+                case "3":
+                    Logout();
                     break;
                 case "0": break;
                 default:

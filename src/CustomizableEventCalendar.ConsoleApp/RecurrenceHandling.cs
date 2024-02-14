@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 
@@ -18,7 +19,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             switch (isRepeative)
             {
                 case "1":
-                    id = AddRecurrence();
+                    id = AddRecurrence(null);
                     break;
                 case "2":
                     break;
@@ -30,9 +31,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             }
             return id;
         }
-        public static int AddRecurrence()
+        public static int AddRecurrence(int? Id)
         {
-            RecurrencePattern recurrencePattern = new RecurrencePattern();
+            RecurrenceService recurrenceService = new RecurrenceService();
+            RecurrencePattern recurrencePattern;
+            if (Id == null) recurrencePattern = new RecurrencePattern();
+            else recurrencePattern = recurrenceService.Read(Convert.ToInt32(Id));
             Console.WriteLine("Fill details to make event repetive :- ");
             Console.Write("Enter Start Date :-  (Please enter date in dd-mm-yyyy hh:mm:ss) :- ");
             string DTSTAR = Console.ReadLine();
@@ -63,14 +67,21 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                     break;
                 default:
                     Console.WriteLine("Please Enter correct option !");
-                    AddRecurrence();
+                    AddRecurrence(null);
                     break;
             }
             Console.Write("Enter Interval : (how much gap you need between two repetive event Ex:- 1 or 2 or 3) :-  ");
             string INTERVAL = Console.ReadLine();
             recurrencePattern.INTERVAL = INTERVAL;
-            GenericRepository genericRepository = new GenericRepository();
-            int id = genericRepository.Create<RecurrencePattern>(recurrencePattern);
+            int id = 0;
+            if (Id == null)
+            {
+                id = recurrenceService.Create(recurrencePattern);
+            }
+            else
+            {
+                recurrenceService.Update(recurrencePattern, Convert.ToInt32(Id));
+            }
             return id;
         }
         public static string DailyRecurrence()

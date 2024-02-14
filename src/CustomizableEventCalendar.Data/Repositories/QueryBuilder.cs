@@ -27,13 +27,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
         }
         public static string Read<T>(string tableName)
         {
-            PropertyInfo[] properties = typeof(T).GetProperties().ToArray();
+            PropertyInfo[] properties = [.. typeof(T).GetProperties()];
             string keys = string.Join(", ", properties.Select(property => property.Name));
             return $"SELECT {keys} FROM [dbo].[{tableName}]";
         }
         public static string Read<T>(string tableName, int id)
         {
-            PropertyInfo[] properties = typeof(T).GetProperties().ToArray();
+            PropertyInfo[] properties = [.. typeof(T).GetProperties()];
             string keys = string.Join(", ", properties.Select(property => property.Name));
             return $"SELECT {keys} FROM [dbo].[{tableName}] WHERE id={id}";
         }
