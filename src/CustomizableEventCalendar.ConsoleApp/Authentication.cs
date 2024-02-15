@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
@@ -14,7 +8,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
     internal class Authentication
     {
         public static UserAuthenticationService userAuthenticationService = new UserAuthenticationService();
-        public static void showUserInfo()
+        public static void ShowUserInfo()
         {
             Console.Clear();
             Console.WriteLine($"\t\t\t\t\t\t\tWelcome {GlobalData.user.Name}");
@@ -51,7 +45,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             if (isAuthencticate)
             {
-                showUserInfo();
+                ShowUserInfo();
                 EventHandling.AskForChoice();
             }
             else

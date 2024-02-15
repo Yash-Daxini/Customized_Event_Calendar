@@ -1,31 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
-using static System.Net.Mime.MediaTypeNames;
+﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
 {
     internal class RecurrenceEngine
     {
         SchedulerService schedulerService = new SchedulerService();
+        RecurrenceService recurrenceService = new RecurrenceService();
         public void AddEventToScheduler(Event eventObj)
         {
-            GenericRepository genericRepository = new GenericRepository();
             int recurrenceId = eventObj.RecurrenceId == null ? 0 : eventObj.RecurrenceId.Value;
-            RecurrencePattern recurrencePattern = genericRepository.Read<RecurrencePattern>(data => new RecurrencePattern(data), recurrenceId);
+            RecurrencePattern recurrencePattern = recurrenceService.Read(recurrenceId);
+
             ScheduleEvents(eventObj, recurrencePattern);
         }
         public void ScheduleEvents(Event eventObj, RecurrencePattern recurrencePattern) // Event that have recurrence
         {
-            GenericRepository repository = new GenericRepository();
-            List<Scheduler> lastScheduledEvents = repository.Read(data => new Scheduler(data)).Where(data => data.EventId == eventObj.Id).ToList();
+            List<Scheduler> lastScheduledEvents = schedulerService.Read().Where(data => data.EventId == eventObj.Id).ToList();
             Scheduler? lastScheduledEvent = lastScheduledEvents.FirstOrDefault(data => data.Date == (lastScheduledEvents.Max(data => data.Date)));
             DateTime startDate = lastScheduledEvent == null ? recurrencePattern.DTSTART : lastScheduledEvent.Date;
+
             switch (recurrencePattern.FREQ)
             {
                 case null:
@@ -50,93 +43,107 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         public void ScheduleNonRecurrenceEvents(Event eventObj, DateTime startDate, DateTime endDate)
         {
             Scheduler scheduler = new Scheduler(eventObj.Id, startDate);
-            Console.WriteLine(scheduler);
-            Console.WriteLine();
+            schedulerService.Create(scheduler);
         }
         public void ScheduleDailyEvents(Event eventObj, RecurrencePattern recurrencePattern, DateTime startDate)
         {
             HashSet<string> days = recurrencePattern.BYDAY.Split(",").ToHashSet<string>();
+
             if (startDate != recurrencePattern.DTSTART) startDate = startDate.AddDays(Convert.ToInt32(recurrencePattern.INTERVAL + 1));
+
             while (startDate.Month == Math.Min(DateTime.Now.Month, recurrencePattern.UNTILL.Month))
             {
                 string day = startDate.DayOfWeek.ToString("d");
+
                 if (days.Contains(day))
                 {
                     Scheduler scheduler = new Scheduler(eventObj.Id, startDate);
-                    Console.WriteLine(scheduler);
+                    schedulerService.Create(scheduler);
                 }
                 startDate = startDate.AddDays(Convert.ToInt32(recurrencePattern.INTERVAL) + 1);
             }
-            Console.WriteLine();
         }
         public void ScheduleWeeklyEvents(Event eventObj, RecurrencePattern recurrencePattern, DateTime startDate)
         {
             HashSet<string> weekDays = recurrencePattern.BYDAY.Split(",").ToHashSet();
+
             if (startDate != recurrencePattern.DTSTART) startDate = startDate.AddDays(7 * Convert.ToInt32(recurrencePattern.INTERVAL + 1));
+
             while (startDate.Month == Math.Min(DateTime.Now.Month, recurrencePattern.UNTILL.Month))
             {
                 string day = startDate.DayOfWeek.ToString("d");
+
                 if (weekDays.Contains(day))
                 {
                     Scheduler scheduler = new Scheduler(eventObj.Id, startDate);
-                    Console.WriteLine(scheduler);
+                    schedulerService.Create(scheduler);
                 }
                 startDate = startDate.AddDays(7 * Convert.ToInt32(recurrencePattern.INTERVAL) + 1);
             }
-            Console.WriteLine();
         }
         public HashSet<string> CalculateProcessingMonth(DateTime startDate, DateTime endDate, string interval)
         {
             HashSet<string> months = new HashSet<string>();
             DateTime curDate = startDate;
+
             while (curDate <= endDate)
             {
                 months.Add(curDate.Month.ToString());
                 curDate = curDate.AddMonths(Convert.ToInt32(interval) + 1);
             }
+
             return months;
         }
         public void ScheduleMonthlyEvents(Event eventObj, RecurrencePattern recurrencePattern, DateTime startDate)
         {
             HashSet<string> monthDays = recurrencePattern.BYMONTHDAY.Split(",").Where(data => data.Length > 0).ToHashSet();
+
             HashSet<string> months = CalculateProcessingMonth(recurrencePattern.DTSTART, recurrencePattern.UNTILL, recurrencePattern.INTERVAL);
+
             if (startDate != recurrencePattern.DTSTART)
             {
                 DateTime newDate = startDate.AddMonths(1);
                 startDate = new DateTime(newDate.Year, newDate.Month, 1, newDate.Hour, newDate.Minute, newDate.Second);
             }
+
             if (months.Contains(startDate.Month.ToString()))
             {
                 foreach (var day in monthDays)
                 {
                     DateTime scheduleDate = new DateTime(startDate.Year, startDate.Month, Convert.ToInt32(day), startDate.Hour, startDate.Minute, startDate.Second);
                     Scheduler scheduler = new Scheduler(eventObj.Id, scheduleDate);
-                    Console.WriteLine(scheduler);
+
+                    schedulerService.Create(scheduler);
                 }
             }
-            Console.WriteLine();
         }
         public HashSet<string> CalculateProcessingYear(DateTime startDate, DateTime endDate, string interval)
         {
             HashSet<string> years = new HashSet<string>();
             DateTime curDate = startDate;
+
             while (curDate <= endDate)
             {
                 years.Add(curDate.Year.ToString());
                 curDate = curDate.AddYears(Convert.ToInt32(interval) + 1);
             }
+
             return years;
         }
         public void ScheduleYearlyEvents(Event eventObj, RecurrencePattern recurrencePattern, DateTime startDate)
         {
             HashSet<string> years = CalculateProcessingYear(recurrencePattern.DTSTART, recurrencePattern.UNTILL, recurrencePattern.INTERVAL);
+
             HashSet<string> months = recurrencePattern.BYMONTH.Split(",").Where(data => data.Length > 0).ToHashSet();
+
             HashSet<string> monthDays = recurrencePattern.BYMONTHDAY.Split(",").Where(data => data.Length > 0).ToHashSet();
+
             if (startDate != recurrencePattern.DTSTART)
             {
                 DateTime newDate = startDate.AddMonths(1);
                 startDate = new DateTime(newDate.Year, newDate.Month, 1, newDate.Hour, newDate.Minute, newDate.Second);
             }
+
             if (years.Contains(startDate.Year.ToString()) && months.Contains(startDate.Month.ToString()))
             {
                 foreach (var day in monthDays)
@@ -144,10 +151,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                     try
                     {
                         DateTime scheduleDate = new DateTime(startDate.Year, startDate.Month, Convert.ToInt32(day), startDate.Hour, startDate.Minute, startDate.Second);
+
                         if (scheduleDate >= recurrencePattern.DTSTART && scheduleDate <= recurrencePattern.UNTILL)
                         {
                             Scheduler scheduler = new Scheduler(eventObj.Id, scheduleDate);
-                            Console.WriteLine(scheduler);
+
+                            schedulerService.Create(scheduler);
                         }
                     }
                     catch (Exception e)
@@ -156,7 +165,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                     }
                 }
             }
-            Console.WriteLine();
         }
     }
 }

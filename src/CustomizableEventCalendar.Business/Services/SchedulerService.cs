@@ -10,10 +10,20 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 {
     internal class SchedulerService
     {
+        ScheduleRepository scheduleRepository = new ScheduleRepository();
+        public List<Scheduler> Read()
+        {
+            List<Scheduler> schedulers = scheduleRepository.Read(data => new Scheduler(data));
+            return schedulers;
+        }
+        public Scheduler? Read(int Id)
+        {
+            Scheduler? schedulers = scheduleRepository.Read(data => new Scheduler(data), Id);
+            return schedulers;
+        }
         public void Create(Scheduler scheduler)
         {
-            GenericRepository genericRepository = new GenericRepository();
-            genericRepository.Create(scheduler);
+            scheduleRepository.Create(scheduler);
         }
     }
 }
