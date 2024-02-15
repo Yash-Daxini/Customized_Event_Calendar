@@ -9,40 +9,41 @@ using System.Threading.Tasks;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {
-    internal class EventHandling //WIP
+    internal class EventHandling
     {
         public static EventService eventService = new EventService();
         public static void AskForChoice()
         {
             Console.WriteLine("\n1. Add Event 2. See all events 3. Delete Event 4. Update Event 5. See calendar view  0. Back");
             Console.Write("Select Any Option :- ");
-            string? choice = Console.ReadLine();
-            switch (choice)
+            int choice = Convert.ToInt32(Console.ReadLine());
+            switch ((EventOperationsEnum)choice)
             {
-                case "1":
+                case EventOperationsEnum.Add:
                     AddEvent();
                     AskForChoice();
                     break;
-                case "2":
+                case EventOperationsEnum.Display:
                     Display();
                     AskForChoice();
                     break;
-                case "3":
+                case EventOperationsEnum.Delete:
                     Delete();
                     AskForChoice();
                     break;
-                case "4":
+                case EventOperationsEnum.Update:
                     Update();
                     AskForChoice();
                     break;
-                case "5":
+                case EventOperationsEnum.View:
                     CalendarView.ViewSelection();
                     AskForChoice();
                     break;
-                case "0":
+                case EventOperationsEnum.Back:
                     Console.WriteLine("Going Back ...");
                     Authentication.AskForChoice();
                     break;

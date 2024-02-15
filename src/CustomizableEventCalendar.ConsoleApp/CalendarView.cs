@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {
@@ -12,22 +13,22 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             Console.WriteLine();
             Console.Write("Choose the view you want to see : 1. Daily View 2. Weekly View 3. Monthly View 0. Back :- ");
-            string choice = Console.ReadLine();
-            switch (choice)
+            int choice = Convert.ToInt32(Console.ReadLine());
+            switch ((CalendarViewEnum)choice)
             {
-                case "1":
+                case CalendarViewEnum.Daily:
                     DailyView();
                     ViewSelection();
                     break;
-                case "2":
+                case CalendarViewEnum.Weekly:
                     WeeklyView();
                     ViewSelection();
                     break;
-                case "3":
+                case CalendarViewEnum.Monthly:
                     MonthlyView();
                     ViewSelection();
                     break;
-                case "0":
+                case CalendarViewEnum.Back:
                     Console.WriteLine("Going back");
                     break;
                 default:

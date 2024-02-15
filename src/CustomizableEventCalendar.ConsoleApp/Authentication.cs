@@ -2,32 +2,34 @@
 using System.Reflection;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
 {
     internal class Authentication
     {
+        public static UserAuthenticationService userAuthenticationService = new UserAuthenticationService();
         public static void AskForChoice()
         {
-            Console.WriteLine();
-            Console.Write("Choose the option: \n1. Login\t2. SignUp \t3. Logout \t0. Exit :-");
-            string option = Console.ReadLine();
-            switch (option)
+            Console.Write("\nChoose the option: \n1. Login\t2. SignUp \t3. Logout \t0. Exit :-");
+            int option = Convert.ToInt32(Console.ReadLine());
+            switch ((UserActionEnum)option)
             {
-                case "1":
+                case UserActionEnum.Login:
                     Login();
                     break;
-                case "2":
+                case UserActionEnum.Signup:
                     SignUp();
                     Login();
                     break;
-                case "3":
+                case UserActionEnum.Logout:
                     Logout();
                     AskForChoice();
                     break;
-                case "0": break;
+                case UserActionEnum.Exit: break;
                 default:
-                    Console.WriteLine("Please choose correct option"); AskForChoice();
+                    Console.WriteLine("Please choose correct option");
+                    AskForChoice();
                     break;
             }
         }
@@ -43,7 +45,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 object typedValue = Convert.ChangeType(value, property.PropertyType);
                 property.SetValue(user, typedValue);
             }
-            UserAuthenticationService userAuthenticationService = new UserAuthenticationService();
+
             userAuthenticationService.AddUser(user);
             Console.WriteLine("Sign up successfully !");
         }
@@ -54,8 +56,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             string? name = Console.ReadLine();
             Console.Write("Enter Password: ");
             string? password = Console.ReadLine();
-            UserAuthenticationService userAuthenticationService = new UserAuthenticationService();
-            bool isAuthencticate = userAuthenticationService.AuthenticateUser(name, password);
+            bool isAuthencticate = userAuthenticationService.Authenticate(name, password);
 
             if (isAuthencticate)
             {

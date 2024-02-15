@@ -16,8 +16,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         public void ScheduleEvents(Event eventObj, RecurrencePattern recurrencePattern) // Event that have recurrence
         {
             List<Scheduler> lastScheduledEvents = schedulerService.Read().Where(data => data.EventId == eventObj.Id).ToList();
-            Scheduler? lastScheduledEvent = lastScheduledEvents.FirstOrDefault(data => data.Date == (lastScheduledEvents.Max(data => data.Date)));
-            DateTime startDate = lastScheduledEvent == null ? recurrencePattern.DTSTART : lastScheduledEvent.Date;
+            Scheduler? lastScheduledEvent = lastScheduledEvents.FirstOrDefault(data => data.ScheduledDate == (lastScheduledEvents.Max(data => data.ScheduledDate)));
+            DateTime startDate = lastScheduledEvent == null ? recurrencePattern.DTSTART : lastScheduledEvent.ScheduledDate;
 
             switch (recurrencePattern.FREQ)
             {
