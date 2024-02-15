@@ -41,7 +41,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
             this.RecurrenceId = sqlDataReader["RecurrenceId"] == DBNull.Value ? null : Convert.ToInt32(sqlDataReader["RecurrenceId"]);
         }
         [NotMapped]
-        public int Id { get; set; }
+        public int Id { get; }
         public string Title { get; set; }
         public string Description { get; set; }
         public string Location { get; set; }

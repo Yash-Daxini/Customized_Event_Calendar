@@ -64,7 +64,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
             }
             catch (SqlException ex)
             {
-                if (ex.Number == 2627 || ex.Number == 2601)
+                if (ex.Number == 2627 || ex.Number == 2601) //Check the unique key constraint
                 {
                     Console.WriteLine("User name is not available. Please Enter another name");
                 }

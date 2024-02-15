@@ -9,7 +9,7 @@ using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {
-    internal class RecurrenceHandling
+    internal class RecurrenceHandling // WIP
     {
         public static RecurrenceService recurrenceService = new RecurrenceService();
         public static int? AskForRecurrenceChoice(int? Id)
@@ -113,13 +113,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         }
         public static string DailyRecurrence()
         {
-            Console.Write("Please Enter Week days you want to repeat :- (Enter days number from 1 to 7 , Sunday = 1 like this. Add all day number comma separated like 1,4,5 )  :-  ");
+            Console.Write("Please Enter Week days you want to repeat :- (Enter days number from 1 to 7 , Monday = 1 like this. Add all day number comma separated like 1,4,5 )  :-  ");
             string days = Console.ReadLine();
             return days;
         }
         public static string WeeklyRecurrence()
         {
-            Console.Write("Please Enter Week days you want to repeat :- (Enter days number from 1 to 7 , Sunday = 1 like this. Add all day number comma separated like 1,4,5 )  :-  ");
+            Console.Write("Please Enter Week days you want to repeat :- (Enter days number from 1 to 7 , Monday = 1 like this. Add all day number comma separated like 1,4,5 )  :-  ");
             string days = Console.ReadLine();
             return days;
         }

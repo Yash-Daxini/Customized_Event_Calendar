@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories
 {
-    internal class QueryBuilder
+    internal static class QueryBuilder
     {
         public static string FormatPropertyValue(object? value)
         {
@@ -29,37 +29,51 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
                 return value.ToString();
             }
         }
-        public static string Read<T>(string tableName)
+        public static string GetTableName<T>()
+        {
+            return typeof(T).GetTypeInfo().Name;
+        }
+        public static PropertyInfo[] GetProperties<T>()
         {
             PropertyInfo[] properties = [.. typeof(T).GetProperties()];
+            return properties;
+        }
+        public static string Read<T>()
+        {
+            PropertyInfo[] properties = GetProperties<T>();
+            string tableName = GetTableName<T>();
             string keys = string.Join(", ", properties.Select(property => property.Name));
             return $"SELECT {keys} FROM [dbo].[{tableName}]";
         }
-        public static string Read<T>(string tableName, int id)
+        public static string Read<T>(int id)
         {
-            PropertyInfo[] properties = [.. typeof(T).GetProperties()];
+            PropertyInfo[] properties = GetProperties<T>();
+            string tableName = GetTableName<T>();
             string keys = string.Join(", ", properties.Select(property => property.Name));
             return $"SELECT {keys} FROM [dbo].[{tableName}] WHERE id={id}";
         }
-        public static string Create<T>(string tableName, T data)
+        public static string Create<T>(T data)
         {
-            PropertyInfo[] properties = typeof(T).GetProperties().Where(property => !Attribute.IsDefined(property, typeof(NotMappedAttribute)))
+            PropertyInfo[] properties = GetProperties<T>().Where(property => !Attribute.IsDefined(property, typeof(NotMappedAttribute)))
                                           .ToArray();
+            string tableName = GetTableName<T>();
             string keys = string.Join(", ", properties.Select(property => property.Name));
             string values = string.Join(", ", properties.Select(property => FormatPropertyValue(property.GetValue(data))));
 
             return $"INSERT INTO [dbo].[{tableName}] ({keys}) VALUES ({values}) SET @Id = SCOPE_IDENTITY()";
         }
-        public static string Update<T>(string tableName, T data, int id)
+        public static string Update<T>(T data, int id)
         {
-            PropertyInfo[] properties = typeof(T).GetProperties().Where(property => !Attribute.IsDefined(property, typeof(NotMappedAttribute)))
+            PropertyInfo[] properties = GetProperties<T>().Where(property => !Attribute.IsDefined(property, typeof(NotMappedAttribute)))
                                           .ToArray();
+            string tableName = GetTableName<T>();
             string keysValues = string.Join(", ", properties.Select(property => property.Name + "=" + FormatPropertyValue(property.GetValue(data))));
 
             return $"UPDATE [dbo].[{tableName}] SET {keysValues} WHERE id={id}";
         }
-        public static string Delete<T>(string tableName, int id)
+        public static string Delete<T>(int id)
         {
+            string tableName = GetTableName<T>();
             return $"DELETE FROM [dbo].[{tableName}] WHERE id={id}";
         }
     }

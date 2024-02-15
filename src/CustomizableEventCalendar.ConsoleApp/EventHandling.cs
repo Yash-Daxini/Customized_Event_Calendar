@@ -44,7 +44,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                     break;
                 case "0":
                     Console.WriteLine("Going Back ...");
-                    Authentication.LoginOrSignUp();
+                    Authentication.AskForChoice();
                     break;
                 default:
                     Console.WriteLine("Oops! Wrong choice"); AskForChoice();

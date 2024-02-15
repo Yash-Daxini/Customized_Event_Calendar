@@ -13,7 +13,7 @@ public class Program
     {
         try
         {
-            Authentication.LoginOrSignUp();
+            Authentication.AskForChoice();
         }
         catch (Exception ex)
         {
