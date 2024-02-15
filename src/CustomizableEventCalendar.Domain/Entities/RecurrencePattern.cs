@@ -43,20 +43,20 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
         {
             DTSTART = Convert.ToDateTime(sqlDataReader["DTSTART"]);
             UNTILL = Convert.ToDateTime(sqlDataReader["UNTILL"]);
-            FREQ = sqlDataReader["FREQ"].ToString();
-            COUNT = sqlDataReader["COUNT"].ToString();
-            INTERVAL = sqlDataReader["INTERVAL"].ToString();
-            BYDAY = sqlDataReader["BYDAY"].ToString();
-            BYWEEK = sqlDataReader["BYWEEK"].ToString();
-            BYMONTH = sqlDataReader["BYMONTH"].ToString();
-            BYYEAR = sqlDataReader["BYYEAR"].ToString();
-            BYMONTHDAY = sqlDataReader["BYMONTHDAY"].ToString();
+            FREQ = sqlDataReader["FREQ"] == DBNull.Value ? null : sqlDataReader["FREQ"].ToString();
+            COUNT = sqlDataReader["COUNT"] == DBNull.Value ? null : sqlDataReader["COUNT"].ToString();
+            INTERVAL = sqlDataReader["INTERVAL"] == DBNull.Value ? null : sqlDataReader["INTERVAL"].ToString();
+            BYDAY = sqlDataReader["BYDAY"] == DBNull.Value ? null : sqlDataReader["BYDAY"].ToString();
+            BYWEEK = sqlDataReader["BYWEEK"] == DBNull.Value ? null : sqlDataReader["BYWEEK"].ToString();
+            BYMONTH = sqlDataReader["BYMONTH"] == DBNull.Value ? null : sqlDataReader["BYMONTH"].ToString();
+            BYYEAR = sqlDataReader["BYYEAR"] == DBNull.Value ? null : sqlDataReader["BYYEAR"].ToString();
+            BYMONTHDAY = sqlDataReader["BYMONTHDAY"] == DBNull.Value ? null : sqlDataReader["BYMONTHDAY"].ToString();
         }
         [NotMapped]
         public int Id { get; set; }
         public DateTime DTSTART { get; set; }
         public DateTime UNTILL { get; set; }
-        public string FREQ { get; set; }
+        public string? FREQ { get; set; }
         public string? COUNT { get; set; }
         public string? INTERVAL { get; set; }
         public string? BYDAY { get; set; }

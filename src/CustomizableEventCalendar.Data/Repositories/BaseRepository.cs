@@ -66,16 +66,16 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
             {
                 if (ex.Number == 2627 || ex.Number == 2601)
                 {
-                    Console.WriteLine("User name is not availbale. Please Enter another name");
+                    Console.WriteLine("User name is not available. Please Enter another name");
                 }
                 else
                 {
-                    Console.WriteLine("Some error occured!" + " " + ex.Message);
+                    Console.WriteLine("Some error occurred!" + " " + ex.Message);
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Some error occured!" + " " + ex.Message);
+                Console.WriteLine("Some error occurred!" + " " + ex.Message);
             }
             return Id;
         }
