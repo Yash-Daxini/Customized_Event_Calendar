@@ -1,4 +1,5 @@
 ﻿using System.Data.SqlClient;
+using System.Linq.Expressions;
 using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services;
@@ -10,6 +11,13 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        Authentication.LoginOrSignUp();
+        try
+        {
+            Authentication.LoginOrSignUp();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
     }
 }

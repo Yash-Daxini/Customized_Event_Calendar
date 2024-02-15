@@ -12,7 +12,7 @@ using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {
-    internal class EventHandling
+    internal class EventHandling //WIP
     {
         public static EventService eventService = new EventService();
         public static void AskForChoice()
@@ -64,14 +64,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                 property.SetValue(eventObj, typedValue);
             }
             eventObj.UserId = GlobalData.user.Id;
-            eventObj.RecurrenceId = RecurrenceHandling.AskForRecurrenceChoice();
+            eventObj.RecurrenceId = RecurrenceHandling.AskForRecurrenceChoice(eventObj.RecurrenceId);
             eventService.Create(eventObj);
         }
         public static void Display()
         {
             List<Event> events = eventService.Read().Where(eventObj => eventObj.UserId == GlobalData.user.Id).ToList();
             StringBuilder eventDetails = new StringBuilder();
-            eventDetails.AppendLine("Evnet No. ,\tTitle,\tDescription,\tLocation,\tTimeBlock");
+            eventDetails.AppendLine("Event No. ,\tTitle,\tDescription,\tLocation,\tTimeBlock");
             foreach (var eventObj in events)
             {
                 eventDetails.AppendLine(eventObj.ToString());
@@ -94,7 +94,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             Display();
             Console.Write("From Above events give event no. that you want to update :- ");
             int Id = Convert.ToInt32(Console.ReadLine());
-            Event eventObj = new Event();
+            Event eventObj = eventService.Read(Id);
             PropertyInfo[] properties = eventObj.GetType().GetProperties().Where(property => !Attribute.IsDefined(property, typeof(NotMappedAttribute)) && !property.Name.EndsWith("Id")).ToArray();
             foreach (PropertyInfo property in properties)
             {
@@ -104,7 +104,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                 property.SetValue(eventObj, typedValue);
             }
             eventObj.UserId = GlobalData.user.Id;
-            eventObj.RecurrenceId = RecurrenceHandling.AskForRecurrenceChoice();
+            eventObj.RecurrenceId = RecurrenceHandling.AskForRecurrenceChoice(eventObj.RecurrenceId);
             eventService.Update(eventObj, Id);
         }
     }

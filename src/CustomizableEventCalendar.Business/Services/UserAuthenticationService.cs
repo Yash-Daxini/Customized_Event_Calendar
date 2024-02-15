@@ -21,7 +21,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             {
                 if (user.Name.Equals(username) && user.Password.Equals(password))
                 {
-                    Console.WriteLine("Login Succesfully");
+                    Console.WriteLine("Login Successfully");
                     GlobalData.user = user;
                     return true;
                 }

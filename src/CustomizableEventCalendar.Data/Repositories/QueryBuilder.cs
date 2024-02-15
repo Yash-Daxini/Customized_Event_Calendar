@@ -16,9 +16,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
             {
                 return "NULL";
             }
-            else if (value is string || value is DateTime)
+            else if (value is string)
             {
                 return $"'{value}'";
+            }
+            else if (value is DateTime)
+            {
+                return $"'{Convert.ToDateTime(value).ToString("yyyy-MM-ddThh:mm:ss")}'";
             }
             else
             {

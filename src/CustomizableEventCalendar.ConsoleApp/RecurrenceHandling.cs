@@ -11,7 +11,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {
     internal class RecurrenceHandling
     {
-        public static int? AskForRecurrenceChoice()
+        public static RecurrenceService recurrenceService = new RecurrenceService();
+        public static int? AskForRecurrenceChoice(int? Id)
         {
             Console.WriteLine("Are you want repeat this event ? \n 1. Yes 2. No ");
             string isRepeative = Console.ReadLine();
@@ -19,32 +20,56 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             switch (isRepeative)
             {
                 case "1":
-                    id = AddRecurrence(null);
+                    id = AddRecurrence(Id);
                     break;
                 case "2":
+                    id = AddRecurrenceForSingleEvent(Id);
                     break;
                 default:
                     Console.WriteLine("Please enter correct value : ");
-                    AskForRecurrenceChoice();
+                    AskForRecurrenceChoice(Id);
                     break;
 
             }
             return id;
         }
-        public static int AddRecurrence(int? Id)
+        public static int AddRecurrenceForSingleEvent(int? Id)
         {
-            RecurrenceService recurrenceService = new RecurrenceService();
             RecurrencePattern recurrencePattern;
             if (Id == null) recurrencePattern = new RecurrencePattern();
             else recurrencePattern = recurrenceService.Read(Convert.ToInt32(Id));
-            Console.WriteLine("Fill details to make event repetive :- ");
+            Console.WriteLine("Enter dates for the event :- ");
             Console.Write("Enter Start Date :-  (Please enter date in dd-mm-yyyy hh:mm:ss) :- ");
             string DTSTAR = Console.ReadLine();
             recurrencePattern.DTSTART = Convert.ToDateTime(DTSTAR);
             Console.Write("Enter End Date :-  (Please enter date in dd-mm-yyyy hh:mm:ss) :- ");
             string UNTILL = Console.ReadLine();
             recurrencePattern.UNTILL = Convert.ToDateTime(UNTILL);
-            Console.Write("How frequent you want to repet event :- \n 1. Daily\t2. Weekly\t3. Monthly\t4. Yearly :-  ");
+            int id = 0;
+            if (Id == null)
+            {
+                id = recurrenceService.Create(recurrencePattern);
+            }
+            else
+            {
+                recurrenceService.Update(recurrencePattern, Convert.ToInt32(Id));
+                id = Convert.ToInt32(Id);
+            }
+            return id;
+        }
+        public static int AddRecurrence(int? Id)
+        {
+            RecurrencePattern recurrencePattern;
+            if (Id == null) recurrencePattern = new RecurrencePattern();
+            else recurrencePattern = recurrenceService.Read(Convert.ToInt32(Id));
+            Console.WriteLine("Fill details to make event repetitive :- ");
+            Console.Write("Enter Start Date :-  (Please enter date in dd-mm-yyyy hh:mm:ss) :- ");
+            string DTSTAR = Console.ReadLine();
+            recurrencePattern.DTSTART = Convert.ToDateTime(DTSTAR);
+            Console.Write("Enter End Date :-  (Please enter date in dd-mm-yyyy hh:mm:ss) :- ");
+            string UNTILL = Console.ReadLine();
+            recurrencePattern.UNTILL = Convert.ToDateTime(UNTILL);
+            Console.Write("How frequent you want to repeat event :- \n 1. Daily\t2. Weekly\t3. Monthly\t4. Yearly :-  ");
             string choiceForFreq = Console.ReadLine();
             switch (choiceForFreq)
             {
@@ -58,19 +83,20 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                     break;
                 case "3":
                     recurrencePattern.FREQ = "monthly";
-                    recurrencePattern.BYWEEK = MonthlyRecurrence();
+                    recurrencePattern.BYMONTHDAY = MonthlyRecurrence();
                     break;
                 case "4":
                     recurrencePattern.FREQ = "yearly";
-                    recurrencePattern.BYMONTH = YearlyRecurrence().Split("-")[0];
-                    recurrencePattern.BYMONTHDAY = YearlyRecurrence().Split("-")[1];
+                    string yearlyRecurrenceDetails = YearlyRecurrence();
+                    recurrencePattern.BYMONTH = yearlyRecurrenceDetails.Split("-")[0];
+                    recurrencePattern.BYMONTHDAY = yearlyRecurrenceDetails.Split("-")[1];
                     break;
                 default:
                     Console.WriteLine("Please Enter correct option !");
                     AddRecurrence(null);
                     break;
             }
-            Console.Write("Enter Interval : (how much gap you need between two repetive event Ex:- 1 or 2 or 3) :-  ");
+            Console.Write("Enter Interval : (how much gap you need between two repetitive event Ex:- 1 or 2 or 3) :-  ");
             string INTERVAL = Console.ReadLine();
             recurrencePattern.INTERVAL = INTERVAL;
             int id = 0;
@@ -81,6 +107,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             else
             {
                 recurrenceService.Update(recurrencePattern, Convert.ToInt32(Id));
+                id = Convert.ToInt32(Id);
             }
             return id;
         }
