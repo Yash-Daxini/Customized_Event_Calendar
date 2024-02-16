@@ -13,17 +13,44 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         ScheduleRepository scheduleRepository = new ScheduleRepository();
         public List<Scheduler> Read()
         {
-            List<Scheduler> schedulers = scheduleRepository.Read(data => new Scheduler(data));
+            List<Scheduler> schedulers = new List<Scheduler>();
+
+            try
+            {
+                schedulers = scheduleRepository.Read(data => new Scheduler(data));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Some error occurred!");
+            }
+
             return schedulers;
         }
         public Scheduler? Read(int Id)
         {
-            Scheduler? schedulers = scheduleRepository.Read(data => new Scheduler(data), Id);
+            Scheduler? schedulers = null;
+
+            try
+            {
+                schedulers = scheduleRepository.Read(data => new Scheduler(data), Id);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Some error occurred!");
+            }
+
             return schedulers;
         }
         public void Create(Scheduler scheduler)
         {
-            scheduleRepository.Create(scheduler);
+            try
+            {
+                scheduleRepository.Create(scheduler);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Some error occurred!");
+            }
         }
     }
 }

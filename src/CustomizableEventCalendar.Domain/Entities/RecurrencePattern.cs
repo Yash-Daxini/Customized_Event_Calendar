@@ -66,7 +66,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
         public string? BYMONTHDAY { get; set; }
         public override string ToString()
         {
-            return string.Format("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}", DTSTART, FREQ, UNTILL, COUNT, INTERVAL, BYDAY, BYWEEK, BYMONTH, BYYEAR, BYMONTHDAY);
+            return $"{DTSTART}\t{UNTILL}\t{FREQ}\t{COUNT}\t{INTERVAL}\t{BYDAY}\t{BYWEEK}\t{BYMONTH}\t{BYYEAR}\t{BYMONTHDAY}";
         }
     }
 }

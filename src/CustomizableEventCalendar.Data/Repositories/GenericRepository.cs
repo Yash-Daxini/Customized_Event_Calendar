@@ -16,38 +16,55 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
         {
             List<T> list = new List<T>();
             string query = QueryBuilder.Read<T>();
+
             Connect();
+
             ExecuteQuery(query);
+
             while (sqlDataReader.Read())
             {
                 T data = createObject(sqlDataReader);
                 list.Add(data);
             }
+
             Disconnect();
+
             return list;
         }
         public T? Read<T>(Func<SqlDataReader, T> createObject, int Id)
         {
             string query = QueryBuilder.Read<T>(Id);
+
             Connect();
+
             ExecuteQuery(query);
+
             T? data = default(T);
+
             if (sqlDataReader.Read())
             {
                 data = createObject(sqlDataReader);
+                Disconnect();
                 return data;
             }
+
             Disconnect();
+
             return data;
         }
         public int Create<T>(T data)
         {
             string query = QueryBuilder.Create<T>(data);
+
             sqlParameters = new List<SqlParameter>();
             sqlParameters.Add(new SqlParameter { ParameterName = "@Id", SqlDbType = System.Data.SqlDbType.Int, Direction = System.Data.ParameterDirection.Output });
+
             Connect();
+
             int Id = ExecuteNonQuery(query);
+
             Disconnect();
+
             return Id;
         }
         public void Update<T>(T data, int Id)
@@ -55,7 +72,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
             string query = QueryBuilder.Update<T>(data, Id);
 
             Connect();
+
             ExecuteNonQuery(query);
+
             Disconnect();
         }
         public void Delete<T>(int Id)
@@ -63,7 +82,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
             string query = QueryBuilder.Delete<T>(Id);
 
             Connect();
+
             ExecuteNonQuery(query);
+
             Disconnect();
         }
     }

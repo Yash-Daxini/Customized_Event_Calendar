@@ -41,22 +41,31 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
         public static string Read<T>()
         {
             PropertyInfo[] properties = GetProperties<T>();
+
             string tableName = GetTableName<T>();
+
             string keys = string.Join(", ", properties.Select(property => property.Name));
+
             return $"SELECT {keys} FROM [dbo].[{tableName}]";
         }
         public static string Read<T>(int id)
         {
             PropertyInfo[] properties = GetProperties<T>();
+
             string tableName = GetTableName<T>();
+
             string keys = string.Join(", ", properties.Select(property => property.Name));
+
             return $"SELECT {keys} FROM [dbo].[{tableName}] WHERE id={id}";
         }
         public static string Create<T>(T data)
         {
-            PropertyInfo[] properties = GetProperties<T>().Where(property => !Attribute.IsDefined(property, typeof(NotMappedAttribute)))
-                                          .ToArray();
+            PropertyInfo[] properties = GetProperties<T>()
+                                        .Where(property => !Attribute.IsDefined(property, typeof(NotMappedAttribute)))
+                                        .ToArray();
+
             string tableName = GetTableName<T>();
+
             string keys = string.Join(", ", properties.Select(property => property.Name));
             string values = string.Join(", ", properties.Select(property => FormatPropertyValue(property.GetValue(data))));
 
@@ -64,9 +73,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
         }
         public static string Update<T>(T data, int id)
         {
-            PropertyInfo[] properties = GetProperties<T>().Where(property => !Attribute.IsDefined(property, typeof(NotMappedAttribute)))
-                                          .ToArray();
+            PropertyInfo[] properties = GetProperties<T>()
+                                        .Where(property => !Attribute.IsDefined(property, typeof(NotMappedAttribute)))
+                                        .ToArray();
+
             string tableName = GetTableName<T>();
+
             string keysValues = string.Join(", ", properties.Select(property => property.Name + "=" + FormatPropertyValue(property.GetValue(data))));
 
             return $"UPDATE [dbo].[{tableName}] SET {keysValues} WHERE id={id}";
@@ -74,6 +86,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
         public static string Delete<T>(int id)
         {
             string tableName = GetTableName<T>();
+
             return $"DELETE FROM [dbo].[{tableName}] WHERE id={id}";
         }
     }

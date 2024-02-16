@@ -8,5 +8,15 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
 {
     internal class ScheduleRepository : GenericRepository
     {
+        public void DeleteByEventId(int EventId)
+        {
+            string query = @$"DELETE FROM [dbo].[Scheduler]
+                              WHERE [dbo].[Scheduler].[EventId] = {EventId}";
+            Connect();
+
+            ExecuteNonQuery(query);
+
+            Disconnect();
+        }
     }
 }

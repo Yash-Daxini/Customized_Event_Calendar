@@ -50,9 +50,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
         public int? RecurrenceId { get; set; }
         public override string ToString()
         {
-            StringBuilder events = new StringBuilder();
-            events.AppendLine($"{Id},\t{Title},\t{Description},\t{Location},\t{TimeBlock}");
-            return events.ToString();
+            return $"{Id},\t{Title},\t{Description},\t{Location},\t{TimeBlock}";
         }
 
     }

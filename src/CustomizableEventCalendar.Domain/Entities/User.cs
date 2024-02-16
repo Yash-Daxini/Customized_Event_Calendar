@@ -38,7 +38,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
         public string Password { get; set; }
         public override string ToString()
         {
-            return string.Format("Name:{0}\tEmail:{1}\tPassword:{2}", Name, Email, Password);
+            return $"Name:{Name}\tEmail:{Email}\tPassword:{Password}";
         }
     }
 }

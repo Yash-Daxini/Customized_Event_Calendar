@@ -33,7 +33,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
         public DateTime ScheduledDate { get; set; }
         public override string ToString()
         {
-            return string.Format("{0}\t{1}\t", EventId, ScheduledDate);
+            return $"{EventId}\t{ScheduledDate}\t";
         }
     }
 }

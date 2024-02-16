@@ -8,26 +8,68 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         RecurrencePatternRepository recurrencePatternRepository = new RecurrencePatternRepository();
         public List<RecurrencePattern> Read()
         {
-            List<RecurrencePattern> recurrencePatterns = recurrencePatternRepository.Read<RecurrencePattern>(data => new RecurrencePattern(data));
+            List<RecurrencePattern> recurrencePatterns = new List<RecurrencePattern>();
+
+            try
+            {
+                recurrencePatterns = recurrencePatternRepository.Read<RecurrencePattern>(data => new RecurrencePattern(data));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Some error occurred!");
+            }
+
             return recurrencePatterns;
         }
         public RecurrencePattern Read(int Id)
         {
-            RecurrencePattern recurrencePatterns = recurrencePatternRepository.Read<RecurrencePattern>(data => new RecurrencePattern(data), Id);
+            RecurrencePattern recurrencePatterns = new RecurrencePattern();
+
+            try
+            {
+                recurrencePatterns = recurrencePatternRepository.Read<RecurrencePattern>(data => new RecurrencePattern(data), Id);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Some error occurred!");
+            }
+
             return recurrencePatterns;
         }
         public int Create(RecurrencePattern recurrencePattern)
         {
-            int Id = recurrencePatternRepository.Create(recurrencePattern);
+            int Id = 0;
+            try
+            {
+                Id = recurrencePatternRepository.Create(recurrencePattern);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Some error occurred!");
+            }
             return Id;
         }
         public void Delete(int Id)
         {
-            recurrencePatternRepository.Delete<RecurrencePattern>(Id);
+            try
+            {
+                recurrencePatternRepository.Delete<RecurrencePattern>(Id);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Some error occurred!");
+            }
         }
         public void Update(RecurrencePattern recurrencePattern, int Id)
         {
-            recurrencePatternRepository.Update(recurrencePattern, Id);
+            try
+            {
+                recurrencePatternRepository.Update(recurrencePattern, Id);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Some error occurred!");
+            }
         }
     }
 }

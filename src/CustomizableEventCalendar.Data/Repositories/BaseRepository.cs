@@ -21,18 +21,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
 
         public void Connect()
         {
-            try
-            {
-                connection.Open();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
+            connection.Open();
         }
         public void Disconnect()
         {
             if (connection == null) return;
+
             if (connection.State == System.Data.ConnectionState.Open)
             {
                 connection.Close();
@@ -48,6 +42,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
         {
             this.sqlCommand = connection.CreateCommand();
             sqlCommand.CommandText = query;
+
             if (sqlParameters != null)
             {
                 if (sqlParameters.Count > 0)
@@ -55,28 +50,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
                     sqlCommand.Parameters.AddRange(sqlParameters.ToArray());
                 }
             }
+
             int Id = -1;
-            try
-            {
-                sqlCommand.ExecuteNonQuery();
-                if (sqlCommand.Parameters.Count > 0 && sqlCommand.Parameters["@Id"].Value != DBNull.Value) Id = (int)sqlCommand.Parameters["@Id"].Value;
-                Console.WriteLine("Operation completed successfully !");
-            }
-            catch (SqlException ex)
-            {
-                if (ex.Number == 2627 || ex.Number == 2601) //Check the unique key constraint
-                {
-                    Console.WriteLine("User name is not available. Please Enter another name");
-                }
-                else
-                {
-                    Console.WriteLine("Some error occurred!" + " " + ex.Message);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Some error occurred!" + " " + ex.Message);
-            }
+
+            sqlCommand.ExecuteNonQuery();
+
+            if (sqlCommand.Parameters.Count > 0 && sqlCommand.Parameters["@Id"].Value != DBNull.Value)
+                Id = (int)sqlCommand.Parameters["@Id"].Value;
+
             return Id;
         }
 

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories
 {
@@ -17,8 +11,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
                                     ,[dbo].[User].Email
                                     ,[dbo].[User].Password
                                     FROM [dbo].[User]
-                                    WHERE [dbo].[User].Name = {userName}
-                                    and [dbo].[User].Password = {password}";
+                                    WHERE [dbo].[User].Name = '{userName}'
+                                    and [dbo].[User].Password = '{password}' ";
 
             Connect();
 
@@ -29,6 +23,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
             if (sqlDataReader.Read())
             {
                 user = new User(sqlDataReader);
+                Disconnect();
                 return user;
             }
 
