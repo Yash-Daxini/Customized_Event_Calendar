@@ -97,6 +97,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             Console.WriteLine($"\t\t\t\t\t\t\tUser Name : {GlobalData.user.Name}");
             Console.WriteLine();
+
+            ShowNotification();
+
+        }
+        public static void ShowNotification()
+        {
+            NotificationService notificationService = new NotificationService();
+            Console.WriteLine(notificationService.GenerateNotification());
         }
         public static void Logout()
         {

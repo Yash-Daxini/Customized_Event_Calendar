@@ -19,7 +19,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             {
                 Console.WriteLine("Some error occurred! " + ex.Message);
             }
-            if(user != null)
+            if (user != null)
             {
                 RecurrenceEngine recurrenceEngine = new RecurrenceEngine();
                 recurrenceEngine.ScheduleEventsOfThisMonth();
