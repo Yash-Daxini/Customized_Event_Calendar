@@ -1,4 +1,5 @@
-﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+﻿using System.Data.SqlClient;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories
 {
@@ -30,6 +31,31 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
             Disconnect();
 
             return null;
+        }
+
+        public List<User> ReadInsensitiveInformation(Func<SqlDataReader, User> createObject)
+        {
+            List<User> users = new List<User>();
+
+            string query = @$"SELECT [dbo].[User].Id
+                                    ,[dbo].[User].Name
+                                    ,[dbo].[User].Email
+                                    FROM [dbo].[User]";
+
+            Connect();
+
+            ExecuteQuery(query);
+
+            if (sqlDataReader.Read())
+            {
+                User user = new User(Convert.ToInt32(sqlDataReader["Id"]), sqlDataReader["Name"].ToString(), sqlDataReader["Email"].ToString());
+                users.Add(user);
+            }
+
+            Disconnect();
+
+            return users;
+
         }
     }
 }

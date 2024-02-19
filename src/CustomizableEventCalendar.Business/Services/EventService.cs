@@ -51,7 +51,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             try
             {
-                listOfEvents = eventRepository.Read<Event>(data => new Event(data));
+                listOfEvents = eventRepository.Read<Event>(data => new Event(data)).Where(eventObj => eventObj.UserId == GlobalData.user.Id).ToList();
             }
             catch (Exception ex)
             {

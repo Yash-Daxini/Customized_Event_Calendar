@@ -17,9 +17,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             EventService eventService = new EventService();
 
-            List<Event> events = eventService.Read()
-                                             .Where(eventObj => eventObj.UserId == GlobalData.user.Id)
-                                             .ToList();
+            List<Event> events = eventService.Read();
 
             HashSet<int> eventIds = events.Select(eventObj => eventObj.Id)
                                           .ToHashSet();

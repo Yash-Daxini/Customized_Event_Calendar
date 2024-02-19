@@ -16,10 +16,28 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
     internal class EventHandling
     {
         public static EventService eventService = new EventService();
+        public static void ShowAllChoices()
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("1. Add Event");
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine("2. See all Events");
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("3. Delete Event");
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine("4. Update Event");
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("5. See calendar view");
+            Console.ResetColor();
+            Console.WriteLine("0. Back");
+            Console.Write("Select Any Option :- ");
+        }
         public static void AskForChoice()
         {
-            Console.WriteLine("\n1. Add Event 2. See all events 3. Delete Event 4. Update Event 5. See calendar view  0. Back");
-            Console.Write("Select Any Option :- ");
+            //Console.WriteLine("\n1. Add Event 2. See all events 3. Delete Event 4. Update Event 5. See calendar view  0. Back");
+            //Console.Write("Select Any Option :- ");
+
+            ShowAllChoices();
 
             EventOperationsEnum choice = (EventOperationsEnum)Convert.ToInt32(Console.ReadLine());
 

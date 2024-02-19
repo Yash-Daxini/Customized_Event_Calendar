@@ -90,8 +90,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             Console.Clear();
 
+            Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine($"\t\t\t\t\t\t\tWelcome {GlobalData.user.Name}");
             Thread.Sleep(2000);
+            Console.ResetColor();
 
             Console.Clear();
 
