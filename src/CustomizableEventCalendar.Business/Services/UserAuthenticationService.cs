@@ -17,7 +17,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Some error occurred!");
+                Console.WriteLine("Some error occurred! " + ex.Message);
+            }
+            if(user != null)
+            {
+                RecurrenceEngine recurrenceEngine = new RecurrenceEngine();
+                recurrenceEngine.ScheduleEventsOfThisMonth();
             }
             return user != null;
         }
@@ -40,7 +45,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Some error occurred!");
+                Console.WriteLine("Some error occurred! " + ex.Message);
             }
         }
     }

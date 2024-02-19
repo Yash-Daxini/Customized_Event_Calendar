@@ -11,7 +11,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
     internal class Event : BaseData
     {
         public Event() { }
-        public Event(int Id, string Title, string Description, string Location, string TimeBlock, int UserId, int? RecurrenceId)
+        public Event(int Id, string Title, string Description, string Location, string TimeBlock, int UserId, int RecurrenceId)
         {
             this.Id = Id;
             this.Title = Title;
@@ -21,7 +21,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
             this.UserId = UserId;
             this.RecurrenceId = RecurrenceId;
         }
-        public Event(string Title, string Description, string Location, int UserId, string TimeBlock, int? RecurrenceId)
+        public Event(string Title, string Description, string Location, int UserId, string TimeBlock, int RecurrenceId)
         {
             this.Title = Title;
             this.Description = Description;
@@ -38,16 +38,16 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
             this.Location = sqlDataReader["Location"].ToString();
             this.TimeBlock = sqlDataReader["TimeBlock"].ToString();
             this.UserId = Convert.ToInt32(sqlDataReader["UserId"]);
-            this.RecurrenceId = sqlDataReader["RecurrenceId"] == DBNull.Value ? null : Convert.ToInt32(sqlDataReader["RecurrenceId"]);
+            this.RecurrenceId = Convert.ToInt32(sqlDataReader["RecurrenceId"]);
         }
         [NotMapped]
-        public int Id { get; }
+        public int Id { get; set;  }
         public string Title { get; set; }
         public string Description { get; set; }
         public string Location { get; set; }
         public string TimeBlock { get; set; }
         public int UserId { get; set; }
-        public int? RecurrenceId { get; set; }
+        public int RecurrenceId { get; set; }
         public override string ToString()
         {
             return $"{Id},\t{Title},\t{Description},\t{Location},\t{TimeBlock}";

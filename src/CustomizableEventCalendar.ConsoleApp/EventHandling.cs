@@ -74,9 +74,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             eventObj.UserId = GlobalData.user.Id;
 
-            eventObj.RecurrenceId = RecurrenceHandling.AskForRecurrenceChoice(eventObj.RecurrenceId);
+            RecurrencePattern recurrencePattern = RecurrenceHandling.AskForRecurrenceChoice(null);
 
-            eventService.Create(eventObj);
+            eventService.Create(eventObj, recurrencePattern);
         }
         public static void Display()
         {
@@ -102,13 +102,17 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             Event eventObj = eventService.Read(Id);
 
+            int recurrenceId = eventObj.RecurrenceId;
+
             GetEventDetails(ref eventObj);
 
             eventObj.UserId = GlobalData.user.Id;
 
-            eventObj.RecurrenceId = RecurrenceHandling.AskForRecurrenceChoice(eventObj.RecurrenceId);
+            eventObj.RecurrenceId = recurrenceId;
 
-            eventService.Update(eventObj, Id);
+            RecurrencePattern recurrencePattern = RecurrenceHandling.AskForRecurrenceChoice(recurrenceId);
+
+            eventService.Update(eventObj, recurrencePattern, Id, eventObj.RecurrenceId);
         }
     }
 }

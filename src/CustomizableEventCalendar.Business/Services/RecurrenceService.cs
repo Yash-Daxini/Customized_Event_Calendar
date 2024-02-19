@@ -16,7 +16,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Some error occurred!");
+                Console.WriteLine("Some error occurred! " + ex.Message);
             }
 
             return recurrencePatterns;
@@ -31,7 +31,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Some error occurred!");
+                Console.WriteLine("Some error occurred! " + ex.Message);
             }
 
             return recurrencePatterns;
@@ -45,7 +45,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Some error occurred!");
+                Console.WriteLine("Some error occurred! " + ex.Message);
             }
             return Id;
         }
@@ -57,7 +57,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Some error occurred!");
+                Console.WriteLine("Some error occurred! " + ex.Message);
             }
         }
         public void Update(RecurrencePattern recurrencePattern, int Id)
@@ -68,7 +68,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Some error occurred!");
+                Console.WriteLine("Some error occurred! " + ex.Message);
             }
         }
     }

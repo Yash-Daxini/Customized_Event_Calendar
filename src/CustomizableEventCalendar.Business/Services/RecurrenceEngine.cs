@@ -6,9 +6,21 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
     {
         SchedulerService schedulerService = new SchedulerService();
         RecurrenceService recurrenceService = new RecurrenceService();
+
+        public void ScheduleEventsOfThisMonth()
+        {
+            EventService eventService = new EventService();
+            List<Event> events = eventService.Read()
+                                             .Where(eventObj => eventObj.UserId == GlobalData.user.Id)
+                                             .ToList();
+            foreach (var eventObj in events)
+            {
+                AddEventToScheduler(eventObj);
+            }
+        }
         public void AddEventToScheduler(Event eventObj)
         {
-            int recurrenceId = eventObj.RecurrenceId == null ? 0 : eventObj.RecurrenceId.Value;
+            int recurrenceId = eventObj.RecurrenceId;
             RecurrencePattern recurrencePattern = recurrenceService.Read(recurrenceId);
 
             ScheduleEvents(eventObj, recurrencePattern);

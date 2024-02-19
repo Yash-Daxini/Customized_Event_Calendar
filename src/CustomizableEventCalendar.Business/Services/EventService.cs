@@ -9,20 +9,38 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
     internal class EventService
     {
         EventRepository eventRepository = new EventRepository();
-        RecurrenceService recurrenceService = new RecurrenceService();
+        RecurrencePatternRepository recurrencePatternRepository = new RecurrencePatternRepository();
         ScheduleRepository scheduleRepository = new ScheduleRepository();
 
-        public int Create(Event eventObj)
+        public int Create(Event eventObj, RecurrencePattern recurrencePattern)
         {
             int Id = 0;
 
-            try
+            using (TransactionScope transactionScope = new TransactionScope())
             {
-                Id = eventRepository.Create<Event>(eventObj);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Some error occurred!");
+                try
+                {
+                    int recurrenceId = recurrencePatternRepository.Create(recurrencePattern);
+
+                    eventObj.RecurrenceId = recurrenceId;
+
+                    Id = eventRepository.Create<Event>(eventObj);
+
+                    eventObj.Id = Id;
+
+                    recurrencePattern.Id = recurrenceId;
+
+                    RecurrenceEngine engine = new RecurrenceEngine();
+
+                    engine.AddEventToScheduler(eventObj);
+
+                    transactionScope.Complete();
+                }
+                catch (Exception ex)
+                {
+                    transactionScope.Dispose();
+                    Console.WriteLine("An error occurred: " + ex.Message);
+                }
             }
 
             return Id;
@@ -37,7 +55,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Some error occurred!");
+                Console.WriteLine("Some error occurred! " + ex.Message);
             }
 
             return listOfEvents;
@@ -53,7 +71,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
             catch (Exception ex)
             {
-
+                Console.WriteLine("Some error occurred ! " + ex.Message);
             }
 
             return listOfEvents;
@@ -72,7 +90,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                     eventRepository.Delete<Event>(Id);
 
-                    recurrenceService.Delete(recurrenceId);
+                    recurrencePatternRepository.Delete<RecurrencePattern>(recurrenceId);
 
                     transactionScope.Complete();
                 }
@@ -83,15 +101,23 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 }
             }
         }
-        public void Update(Event eventObj, int Id)
+        public void Update(Event eventObj, RecurrencePattern recurrencePattern, int eventId, int recurrenceId)
         {
-            try
+            using (TransactionScope transactionScope = new TransactionScope())
             {
-                eventRepository.Update(eventObj, Id);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Some error occurred!");
+                try
+                {
+                    recurrencePatternRepository.Update(recurrencePattern, recurrenceId);
+
+                    eventRepository.Update<Event>(eventObj, eventId);
+
+                    transactionScope.Complete();
+                }
+                catch (Exception ex)
+                {
+                    transactionScope.Dispose();
+                    Console.WriteLine("An error occurred: " + ex.Message);
+                }
             }
         }
         public string GenerateEventList()

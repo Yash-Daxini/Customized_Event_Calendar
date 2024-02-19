@@ -21,7 +21,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Some error occurred!");
+                Console.WriteLine("Some error occurred! " + ex.Message);
             }
 
             return schedulers;
@@ -36,7 +36,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Some error occurred!");
+                Console.WriteLine("Some error occurred! " + ex.Message);
             }
 
             return schedulers;
@@ -49,7 +49,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Some error occurred!");
+                Console.WriteLine("Some error occurred! " + ex.Message);
             }
         }
     }
