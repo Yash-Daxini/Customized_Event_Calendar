@@ -13,9 +13,7 @@ public class Program
     {
         try
         {
-            //Authentication.AskForChoice();
-            CollabrationService collabrationService = new CollabrationService();
-            collabrationService.ShareCalendar(1);
+            Authentication.AskForChoice();
         }
         catch (Exception ex)
         {

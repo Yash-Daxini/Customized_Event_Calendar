@@ -10,16 +10,16 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 {
     internal class UserService
     {
-        public List<User> GetInsensitiveInformationOfUser()
+        public string GetInsensitiveInformationOfUser()
         {
             UserRepository userRepository = new UserRepository();
             List<User> users = userRepository.ReadInsensitiveInformation(data => new User(data));
             StringBuilder userInformation = new StringBuilder();
             foreach (var user in users)
             {
-                userInformation.AppendLine($"")
+                userInformation.AppendLine($"User Sr. No :- {user.Id} , Name :-  {user.Name} , Email :- {user.Email}");
             }
-            return users;
+            return userInformation.ToString();
         }
     }
 }

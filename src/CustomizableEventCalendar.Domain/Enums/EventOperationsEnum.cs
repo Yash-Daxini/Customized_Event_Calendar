@@ -13,6 +13,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums
         Delete = 3,
         Update = 4,
         View = 5,
+        ShareCalendar = 6,
+        ViewSharedCalendar = 7,
+        //Collaboration = 6,
         Back = 0,
     }
 }

@@ -46,7 +46,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
 
             ExecuteQuery(query);
 
-            if (sqlDataReader.Read())
+            while (sqlDataReader.Read())
             {
                 User user = new User(Convert.ToInt32(sqlDataReader["Id"]), sqlDataReader["Name"].ToString(), sqlDataReader["Email"].ToString());
                 users.Add(user);

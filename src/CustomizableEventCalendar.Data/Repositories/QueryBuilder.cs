@@ -24,6 +24,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
             {
                 return $"'{Convert.ToDateTime(value).ToString("yyyy-MM-ddThh:mm:ss")}'";
             }
+            else if (value is DateOnly)
+            {
+                DateTime date = Convert.ToDateTime(value.ToString());
+                return $"'{date.ToString("yyyy-MM-dd")}'";
+            }
             else
             {
                 return value.ToString();

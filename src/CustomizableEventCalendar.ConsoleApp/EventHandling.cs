@@ -16,6 +16,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
     internal class EventHandling
     {
         public static EventService eventService = new EventService();
+
+        public static ShareCalendar shareCalendar = new ShareCalendar();
         public static void ShowAllChoices()
         {
             Console.ForegroundColor = ConsoleColor.Green;
@@ -28,6 +30,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             Console.WriteLine("4. Update Event");
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine("5. See calendar view");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("6. Share calendar");
+            Console.ForegroundColor = ConsoleColor.Magenta;
+            Console.WriteLine("7. View Shared calendar");
             Console.ResetColor();
             Console.WriteLine("0. Back");
             Console.Write("Select Any Option :- ");
@@ -57,6 +63,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                     break;
                 case EventOperationsEnum.View:
                     CalendarView.ViewSelection();
+                    break;
+                case EventOperationsEnum.ShareCalendar:
+                    shareCalendar.GetDetailsToShareCalendar();
+                    break;
+                case EventOperationsEnum.ViewSharedCalendar:
+                    shareCalendar.ViewSharedCalendars();
                     break;
                 case EventOperationsEnum.Back:
                     Console.WriteLine("Going Back ...");
