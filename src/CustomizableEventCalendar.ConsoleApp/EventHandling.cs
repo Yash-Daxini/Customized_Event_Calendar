@@ -34,6 +34,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             PrintColorMessage("6. Share calendar", ConsoleColor.Cyan);
             PrintColorMessage("7. View Shared calendar", ConsoleColor.Magenta);
             PrintColorMessage("8. Collaborate from shared calendar", ConsoleColor.DarkGreen);
+            PrintColorMessage("9. Add event with multiple invitees", ConsoleColor.DarkGray);
             PrintColorMessage("0. Back", ConsoleColor.Gray);
             Console.Write("Select Any Option :- ");
         }
@@ -70,6 +71,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                     SharedEventCollaboration sharedEventCollaboration = new SharedEventCollaboration();
                     sharedEventCollaboration.ShowSharedEvents();
                     break;
+                case EventOperationsEnum.EventWithMultipleInvitees:
+                    HandleProposedEvent();
+                    break;
                 case EventOperationsEnum.Back:
                     Console.WriteLine("Going Back ...");
                     break;
@@ -80,6 +84,44 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             if (!choice.Equals(EventOperationsEnum.Back)) AskForChoice();
             else Authentication.AskForChoice();
+        }
+        public static void HandleProposedEvent()
+        {
+            Event eventObj = new Event();
+            eventObj.IsProposed = true;
+
+            GetEventDetails(ref eventObj);
+
+            RecurrencePattern recurrencePattern = new RecurrencePattern();
+
+            Console.Write("Enter date for the propose event (Enter date in dd-MM-yyyy) :- ");
+            string eventDate = Console.ReadLine();
+            recurrencePattern.DTSTART = Convert.ToDateTime(eventDate);
+            recurrencePattern.UNTILL = Convert.ToDateTime(eventDate);
+
+            int eventId = eventService.Create(eventObj, recurrencePattern);
+
+            string invitees = GetInvitees();
+
+            MultipleInviteesEventService multipleInviteesEventService = new MultipleInviteesEventService();
+            multipleInviteesEventService.AddInviteesInProposedEvent(eventId, invitees);
+
+            Console.WriteLine(eventObj);
+        }
+        public static void ShowAllUser()
+        {
+            UserService userService = new UserService();
+            string users = userService.GetInsensitiveInformationOfUser();
+            Console.WriteLine(users);
+        }
+        public static string GetInvitees()
+        {
+            ShowAllUser();
+
+            Console.Write("Enter users you want to Invite. Enter users Sr No. comma separated Ex:- 1,2,3");
+            string invitees = Console.ReadLine();
+
+            return invitees;
         }
         public static void GetEventDetails(ref Event eventObj)
         {
@@ -96,6 +138,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                 object typedValue = Convert.ChangeType(value, property.PropertyType);
                 property.SetValue(eventObj, typedValue);
             }
+            eventObj.IsProposed = false;
         }
         public static void AddEvent()
         {

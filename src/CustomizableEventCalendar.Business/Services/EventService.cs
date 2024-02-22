@@ -33,10 +33,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                     int eventCollaboratorId = eventCollaboratorsService.Create(new EventCollaborators(GlobalData.user.Id, eventObj.Id));
 
-                    RecurrenceEngine engine = new RecurrenceEngine();
+                    if (!eventObj.IsProposed)
+                    {
+                        RecurrenceEngine engine = new RecurrenceEngine();
 
-                    engine.AddEventToScheduler(eventObj, eventCollaboratorId);
-
+                        engine.AddEventToScheduler(eventObj, eventCollaboratorId);
+                    }
                     transactionScope.Complete();
                 }
                 catch (Exception ex)

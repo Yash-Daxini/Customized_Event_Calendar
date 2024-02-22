@@ -39,13 +39,16 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
             this.TimeBlock = sqlDataReader["TimeBlock"].ToString();
             this.UserId = Convert.ToInt32(sqlDataReader["UserId"]);
             this.RecurrenceId = Convert.ToInt32(sqlDataReader["RecurrenceId"]);
+            this.IsProposed = (sqlDataReader["IsProposed"].ToString() == "0" ? false : true);
         }
         [NotMapped]
-        public int Id { get; set;  }
+        public int Id { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
         public string Location { get; set; }
         public string TimeBlock { get; set; }
+        [NotMapped]
+        public bool IsProposed { get; set; }
         public int UserId { get; set; }
         public int RecurrenceId { get; set; }
         public override string ToString()

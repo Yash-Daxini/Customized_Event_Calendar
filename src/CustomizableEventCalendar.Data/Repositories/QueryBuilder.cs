@@ -29,6 +29,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
                 DateTime date = Convert.ToDateTime(value.ToString());
                 return $"'{date.ToString("yyyy-MM-dd")}'";
             }
+            else if (value is bool)
+            {
+                return Convert.ToBoolean(value) == true ? "1" : "0";
+            }
             else
             {
                 return value.ToString();

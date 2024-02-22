@@ -10,9 +10,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 {
     internal class UserService
     {
+        UserRepository userRepository = new UserRepository();
         public string GetInsensitiveInformationOfUser()
         {
-            UserRepository userRepository = new UserRepository();
             List<User> users = userRepository.ReadInsensitiveInformation(data => new User(data));
 
             StringBuilder userInformation = new StringBuilder();
@@ -23,6 +23,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
 
             return userInformation.ToString();
+        }
+        public User? Read(int userId)
+        {
+            User? user = userRepository.Read(data => new User(data), userId);
+            return user;
         }
     }
 }
