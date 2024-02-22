@@ -6,34 +6,36 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities
 {
-    internal class Scheduler : BaseData
+    internal class ScheduleEvent : BaseData
     {
-        public Scheduler(int Id, int EventId, DateTime ScheduledDate)
+        public ScheduleEvent(int Id, int EventCollaboratorsID, DateTime ScheduledDate)
         {
             this.Id = Id;
-            this.EventId = EventId;
+            this.EventCollaboratorsId = EventCollaboratorsID;
             this.ScheduledDate = ScheduledDate;
         }
-        public Scheduler(int EventId, DateTime ScheduledDate)
+        public ScheduleEvent(int EventCollaboratorsId, DateTime ScheduledDate)
         {
-            this.EventId = EventId;
+            this.EventCollaboratorsId = EventCollaboratorsId;
             this.ScheduledDate = ScheduledDate;
         }
-        public Scheduler(SqlDataReader sqlDataReader)
+        public ScheduleEvent(SqlDataReader sqlDataReader)
         {
-            this.EventId = Convert.ToInt32(sqlDataReader["EventId"]);
+            this.Id = Convert.ToInt32(sqlDataReader["Id"]);
+            this.EventCollaboratorsId = Convert.ToInt32(sqlDataReader["EventCollaboratorsId"]);
             this.ScheduledDate = Convert.ToDateTime(sqlDataReader["ScheduledDate"]);
         }
         [NotMapped]
         public int Id { get; }
-        public int EventId { get; set; }
+        public int EventCollaboratorsId { get; set; }
         public DateTime ScheduledDate { get; set; }
         public override string ToString()
         {
-            return $"{EventId}\t{ScheduledDate}\t";
+            return $"{EventCollaboratorsId}\t{ScheduledDate}\t";
         }
     }
 }

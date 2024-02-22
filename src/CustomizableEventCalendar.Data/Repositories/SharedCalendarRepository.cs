@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories
 {
-    internal class InviteesRepository : GenericRepository
+    internal class SharedCalendarRepository : GenericRepository
     {
     }
 }

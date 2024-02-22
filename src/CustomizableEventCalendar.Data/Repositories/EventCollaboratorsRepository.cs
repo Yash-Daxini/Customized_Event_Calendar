@@ -3,15 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories
 {
-    internal class ScheduleRepository : GenericRepository
+    internal class EventCollaboratorsRepository : GenericRepository
     {
-        public void DeleteByEventId(int EventId)
+        public void DeleteByEventId(int eventId)
         {
-            string query = @$"DELETE FROM [dbo].[Scheduler]
-                              WHERE [dbo].[Scheduler].[EventId] = {EventId}";
+            string query = @$"Delete from [dbo].[EventCollaborators]
+                              where EventId = {eventId}";
             Connect();
 
             ExecuteNonQuery(query);

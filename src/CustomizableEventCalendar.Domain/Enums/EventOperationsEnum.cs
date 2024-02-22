@@ -15,7 +15,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums
         View = 5,
         ShareCalendar = 6,
         ViewSharedCalendar = 7,
-        //Collaboration = 6,
+        SharedEventCollaboration = 8,
         Back = 0,
     }
 }

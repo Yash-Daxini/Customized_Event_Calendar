@@ -10,12 +10,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
     internal class CalendarViewService
     {
         EventService eventService = new EventService();
-        SchedulerService schedulerService = new SchedulerService();
+        ScheduleEventService scheduleEventService = new ScheduleEventService();
         public string GenerateDailyView()
         {
             DateTime todayDate = DateTime.Today;
 
-            List<Scheduler> scheduleEvents = schedulerService.Read()
+            List<ScheduleEvent> scheduleEvents = scheduleEventService.ReadByUserId()
                                             .Where(scheduleEvent => scheduleEvent.ScheduledDate.Date == todayDate.Date)
                                             .ToList();
 
@@ -23,7 +23,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             foreach (var scheduleEvent in scheduleEvents)
             {
-                Event eventObj = eventService.Read(scheduleEvent.EventId);
+                Event eventObj = eventService.Read(scheduleEventService.GetEventIdFromEventCollaborators(scheduleEvent.EventCollaboratorsId));
 
                 AssignEventToSpecificHour(ref timeWithEvent, eventObj);
             }
@@ -66,10 +66,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         }
         public Dictionary<DateTime, int> GetCurrentWeekEvents(DateTime startDateOfWeek, DateTime endDateOfWeek)
         {
-            Dictionary<DateTime, int> currentWeekEvents = schedulerService.Read()
+            Dictionary<DateTime, int> currentWeekEvents = scheduleEventService.ReadByUserId()
                                            .Where(scheduleEvent => scheduleEvent.ScheduledDate.Date >= startDateOfWeek.Date
                                                   && scheduleEvent.ScheduledDate.Date <= endDateOfWeek.Date)
-                                           .ToDictionary(key => key.ScheduledDate.Date, val => val.EventId);
+                                           .ToDictionary(key => key.ScheduledDate.Date, val => scheduleEventService.GetEventIdFromEventCollaborators(val.EventCollaboratorsId));
             return currentWeekEvents;
         }
         public string GenerateWeeklyView()
@@ -107,10 +107,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         }
         public Dictionary<DateTime, int> GetCurrentMonthEvents(DateTime startDateOfMonth, DateTime endDateOfMonth)
         {
-            Dictionary<DateTime, int> currentMonthEvents = schedulerService.Read()
+            Dictionary<DateTime, int> currentMonthEvents = scheduleEventService.ReadByUserId()
                                            .Where(scheduleEvent => scheduleEvent.ScheduledDate.Date >= startDateOfMonth.Date
                                                   && scheduleEvent.ScheduledDate.Date <= endDateOfMonth.Date)
-                                           .ToDictionary(key => key.ScheduledDate.Date, val => val.EventId);
+                                           .ToDictionary(key => key.ScheduledDate.Date, val => scheduleEventService.GetEventIdFromEventCollaborators(val.EventCollaboratorsId));
             return currentMonthEvents;
         }
         public string GenerateMonthView()

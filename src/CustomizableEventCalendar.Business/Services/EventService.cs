@@ -10,7 +10,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
     {
         EventRepository eventRepository = new EventRepository();
         RecurrencePatternRepository recurrencePatternRepository = new RecurrencePatternRepository();
-        ScheduleRepository scheduleRepository = new ScheduleRepository();
 
         public int Create(Event eventObj, RecurrencePattern recurrencePattern)
         {
@@ -30,9 +29,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                     recurrencePattern.Id = recurrenceId;
 
+                    EventCollaboratorsService eventCollaboratorsService = new EventCollaboratorsService();
+
+                    int eventCollaboratorId = eventCollaboratorsService.Create(new EventCollaborators(GlobalData.user.Id, eventObj.Id));
+
                     RecurrenceEngine engine = new RecurrenceEngine();
 
-                    engine.AddEventToScheduler(eventObj);
+                    engine.AddEventToScheduler(eventObj, eventCollaboratorId);
 
                     transactionScope.Complete();
                 }
@@ -76,19 +79,26 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             return listOfEvents;
         }
-        public void Delete(int Id)
+        public void Delete(int eventId)
         {
             using (TransactionScope transactionScope = new TransactionScope())
             {
                 try
                 {
-                    Event? eventObj = eventRepository.Read<Event>(data => new Event(data), Id);
+
+                    EventCollaboratorsService eventCollaboratorsService = new EventCollaboratorsService();
+
+                    ScheduleEventService scheduleEventService = new ScheduleEventService();
+
+                    Event? eventObj = eventRepository.Read<Event>(data => new Event(data), eventId);
 
                     int recurrenceId = eventObj == null ? 0 : Convert.ToInt32(eventObj.RecurrenceId);
 
-                    scheduleRepository.DeleteByEventId(Id);
+                    scheduleEventService.DeleteByEventId(eventId);
 
-                    eventRepository.Delete<Event>(Id);
+                    eventCollaboratorsService.DeleteByEventId(eventId);
+
+                    eventRepository.Delete<Event>(eventId);
 
                     recurrencePatternRepository.Delete<RecurrencePattern>(recurrenceId);
 
@@ -110,6 +120,25 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                     recurrencePatternRepository.Update(recurrencePattern, recurrenceId);
 
                     eventRepository.Update<Event>(eventObj, eventId);
+
+                    ScheduleEventService scheduleEventService = new ScheduleEventService();
+
+                    scheduleEventService.DeleteByEventId(eventId);
+
+                    EventCollaboratorsService eventCollaboratorsService = new EventCollaboratorsService();
+
+                    List<EventCollaborators> eventCollaborators = eventCollaboratorsService.Read();
+
+                    eventCollaborators = eventCollaborators.Where(eventCollaborator => eventCollaborator.EventId ==
+                                                                  eventId)
+                                                           .ToList();
+
+                    RecurrenceEngine engine = new RecurrenceEngine();
+
+                    foreach (var eventCollaborator in eventCollaborators)
+                    {
+                        engine.AddEventToScheduler(eventObj, eventCollaborator.Id);
+                    }
 
                     transactionScope.Complete();
                 }

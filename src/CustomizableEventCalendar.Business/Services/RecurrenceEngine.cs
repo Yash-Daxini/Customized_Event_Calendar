@@ -4,60 +4,69 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 {
     internal class RecurrenceEngine
     {
-        SchedulerService schedulerService = new SchedulerService();
+        ScheduleEventService scheduleEventService = new ScheduleEventService();
         RecurrenceService recurrenceService = new RecurrenceService();
-
+        EventCollaboratorsService eventCollaboratorsService = new EventCollaboratorsService();
         public void ScheduleEventsOfThisMonth()
         {
             EventService eventService = new EventService();
+
+            List<EventCollaborators> eventCollaborators = eventCollaboratorsService.Read();
+
             List<Event> events = eventService.Read()
                                              .Where(eventObj => eventObj.UserId == GlobalData.user.Id)
                                              .ToList();
-            foreach (var eventObj in events)
+
+            foreach (var eventCollaborator in eventCollaborators)
             {
-                AddEventToScheduler(eventObj);
+                Event? eventObj = events.FirstOrDefault(eventObj => eventObj.Id == eventCollaborator.EventId);
+                if (eventObj == null) continue;
+                AddEventToScheduler(eventObj, eventCollaborator.Id);
             }
         }
-        public void AddEventToScheduler(Event eventObj)
+        public void AddEventToScheduler(Event eventObj, int eventCollaboratorId)
         {
             int recurrenceId = eventObj.RecurrenceId;
             RecurrencePattern recurrencePattern = recurrenceService.Read(recurrenceId);
 
-            ScheduleEvents(eventObj, recurrencePattern);
+            ScheduleEvents(eventObj, recurrencePattern, eventCollaboratorId);
         }
-        public void ScheduleEvents(Event eventObj, RecurrencePattern recurrencePattern) // Event that have recurrence
+        public void ScheduleEvents(Event eventObj, RecurrencePattern recurrencePattern, int eventCollaboratorId) // Event that have recurrence
         {
-            List<Scheduler> lastScheduledEvents = schedulerService.Read().Where(data => data.EventId == eventObj.Id).ToList();
-            Scheduler? lastScheduledEvent = lastScheduledEvents.FirstOrDefault(data => data.ScheduledDate == (lastScheduledEvents.Max(data => data.ScheduledDate)));
+            List<ScheduleEvent> lastScheduledEvents = scheduleEventService.Read()
+                                                                          .Where(data => scheduleEventService.GetEventIdFromEventCollaborators(data.EventCollaboratorsId) == eventObj.Id).ToList();
+
+            ScheduleEvent? lastScheduledEvent = lastScheduledEvents.FirstOrDefault(data => data.ScheduledDate == (lastScheduledEvents.Max(data => data.ScheduledDate)));
+
             DateTime startDate = lastScheduledEvent == null ? recurrencePattern.DTSTART : lastScheduledEvent.ScheduledDate;
 
             switch (recurrencePattern.FREQ)
             {
                 case null:
                     if (lastScheduledEvent == null)
-                        ScheduleNonRecurrenceEvents(eventObj, recurrencePattern.DTSTART, recurrencePattern.UNTILL);
+                        ScheduleNonRecurrenceEvents(eventObj, recurrencePattern.DTSTART, recurrencePattern.UNTILL, eventCollaboratorId);
                     break;
                 case "daily":
-                    ScheduleDailyEvents(eventObj, recurrencePattern, startDate);
+                    ScheduleDailyEvents(eventObj, recurrencePattern, startDate, eventCollaboratorId);
                     break;
                 case "weekly":
-                    ScheduleWeeklyEvents(eventObj, recurrencePattern, startDate);
+                    ScheduleWeeklyEvents(eventObj, recurrencePattern, startDate, eventCollaboratorId);
                     break;
                 case "monthly":
-                    ScheduleMonthlyEvents(eventObj, recurrencePattern, startDate);
+                    ScheduleMonthlyEvents(eventObj, recurrencePattern, startDate, eventCollaboratorId);
                     break;
                 case "yearly":
-                    ScheduleYearlyEvents(eventObj, recurrencePattern, startDate);
+                    ScheduleYearlyEvents(eventObj, recurrencePattern, startDate, eventCollaboratorId);
                     break;
             }
 
         }
-        public void ScheduleNonRecurrenceEvents(Event eventObj, DateTime startDate, DateTime endDate)
+        public void ScheduleNonRecurrenceEvents(Event eventObj, DateTime startDate, DateTime endDate, int eventCollaboratorId)
         {
-            Scheduler scheduler = new Scheduler(eventObj.Id, startDate);
-            schedulerService.Create(scheduler);
+            ScheduleEvent scheduler = new ScheduleEvent(eventCollaboratorId, startDate);
+            scheduleEventService.Create(scheduler);
         }
-        public void ScheduleDailyEvents(Event eventObj, RecurrencePattern recurrencePattern, DateTime startDate)
+        public void ScheduleDailyEvents(Event eventObj, RecurrencePattern recurrencePattern, DateTime startDate, int eventCollaboratorId)
         {
             HashSet<string> days = recurrencePattern.BYDAY.Split(",").ToHashSet<string>();
 
@@ -69,13 +78,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                 if (days.Contains(day))
                 {
-                    Scheduler scheduler = new Scheduler(eventObj.Id, startDate);
-                    schedulerService.Create(scheduler);
+                    ScheduleEvent scheduler = new ScheduleEvent(eventCollaboratorId, startDate);
+                    scheduleEventService.Create(scheduler);
                 }
                 startDate = startDate.AddDays(Convert.ToInt32(recurrencePattern.INTERVAL) + 1);
             }
         }
-        public void ScheduleWeeklyEvents(Event eventObj, RecurrencePattern recurrencePattern, DateTime startDate)
+        public void ScheduleWeeklyEvents(Event eventObj, RecurrencePattern recurrencePattern, DateTime startDate, int eventCollaboratorId)
         {
             HashSet<string> weekDays = recurrencePattern.BYDAY.Split(",").ToHashSet();
 
@@ -87,8 +96,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                 if (weekDays.Contains(day))
                 {
-                    Scheduler scheduler = new Scheduler(eventObj.Id, startDate);
-                    schedulerService.Create(scheduler);
+                    ScheduleEvent scheduler = new ScheduleEvent(eventCollaboratorId, startDate);
+                    scheduleEventService.Create(scheduler);
                 }
                 startDate = startDate.AddDays(7 * Convert.ToInt32(recurrencePattern.INTERVAL) + 1);
             }
@@ -106,7 +115,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             return months;
         }
-        public void ScheduleMonthlyEvents(Event eventObj, RecurrencePattern recurrencePattern, DateTime startDate)
+        public void ScheduleMonthlyEvents(Event eventObj, RecurrencePattern recurrencePattern, DateTime startDate, int eventCollaboratorId)
         {
             HashSet<string> monthDays = recurrencePattern.BYMONTHDAY.Split(",").Where(data => data.Length > 0).ToHashSet();
 
@@ -123,9 +132,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 foreach (var day in monthDays)
                 {
                     DateTime scheduleDate = new DateTime(startDate.Year, startDate.Month, Convert.ToInt32(day), startDate.Hour, startDate.Minute, startDate.Second);
-                    Scheduler scheduler = new Scheduler(eventObj.Id, scheduleDate);
+                    ScheduleEvent scheduler = new ScheduleEvent(eventCollaboratorId, scheduleDate);
 
-                    schedulerService.Create(scheduler);
+                    scheduleEventService.Create(scheduler);
                 }
             }
         }
@@ -142,7 +151,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             return years;
         }
-        public void ScheduleYearlyEvents(Event eventObj, RecurrencePattern recurrencePattern, DateTime startDate)
+        public void ScheduleYearlyEvents(Event eventObj, RecurrencePattern recurrencePattern, DateTime startDate, int eventCollaboratorId)
         {
             HashSet<string> years = CalculateProcessingYear(recurrencePattern.DTSTART, recurrencePattern.UNTILL, recurrencePattern.INTERVAL);
 
@@ -166,9 +175,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                         if (scheduleDate >= recurrencePattern.DTSTART && scheduleDate <= recurrencePattern.UNTILL)
                         {
-                            Scheduler scheduler = new Scheduler(eventObj.Id, scheduleDate);
+                            ScheduleEvent scheduler = new ScheduleEvent(eventCollaboratorId, scheduleDate);
 
-                            schedulerService.Create(scheduler);
+                            scheduleEventService.Create(scheduler);
                         }
                     }
                     catch (Exception e)

@@ -31,7 +31,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             UserRepository userRepository = new UserRepository();
             User user = userRepository.Read<User>(data => new User(data), UserId);
 
-            SharedEvents sharedEvents = new SharedEvents(UserId, GlobalData.user == null ? 0 : GlobalData.user.Id, startDate, endDate);
+            SharedCalendar sharedEvents = new SharedCalendar(UserId, GlobalData.user == null ? 0 : GlobalData.user.Id, startDate, endDate);
 
             calendarSharingService.AddSharedCalendar(sharedEvents);
 
@@ -46,7 +46,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         public void ViewSharedCalendars()
         
         {
-            Console.WriteLine("This users shared you a calendar");
+            Console.WriteLine("Calendars shared to you !");
 
             string sharedEvents = calendarSharingService.GenerateDisplayFormatForSharedEvents();
 

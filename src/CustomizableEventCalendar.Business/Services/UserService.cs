@@ -14,11 +14,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             UserRepository userRepository = new UserRepository();
             List<User> users = userRepository.ReadInsensitiveInformation(data => new User(data));
+
             StringBuilder userInformation = new StringBuilder();
+
             foreach (var user in users)
             {
                 userInformation.AppendLine($"User Sr. No :- {user.Id} , Name :-  {user.Name} , Email :- {user.Email}");
             }
+
             return userInformation.ToString();
         }
     }

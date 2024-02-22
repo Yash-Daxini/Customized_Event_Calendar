@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities
 {
-    internal class SharedEvents : BaseData
+    internal class SharedCalendar : BaseData
     {
-        public SharedEvents(int Id, int UserId, int SharedByUserId, DateOnly FromDate, DateOnly ToDate)
+        public SharedCalendar(int Id, int UserId, int SharedByUserId, DateOnly FromDate, DateOnly ToDate)
         {
             this.Id = Id;
             this.UserId = UserId;
@@ -18,14 +18,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
             this.FromDate = FromDate;
             this.ToDate = ToDate;
         }
-        public SharedEvents(int UserId, int SharedByUserId, DateOnly FromDate, DateOnly ToDate)
+        public SharedCalendar(int UserId, int SharedByUserId, DateOnly FromDate, DateOnly ToDate)
         {
             this.UserId = UserId;
             this.SharedByUserId = SharedByUserId;
             this.FromDate = FromDate;
             this.ToDate = ToDate;
         }
-        public SharedEvents(SqlDataReader sqlDataReader)
+        public SharedCalendar(SqlDataReader sqlDataReader)
         {
             this.Id = Convert.ToInt32(sqlDataReader["Id"]);
             this.UserId = Convert.ToInt32(sqlDataReader["UserId"]);

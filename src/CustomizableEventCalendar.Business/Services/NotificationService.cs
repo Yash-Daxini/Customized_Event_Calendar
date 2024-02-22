@@ -9,11 +9,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 {
     internal class NotificationService
     {
+        ScheduleEventService scheduleEventService = new ScheduleEventService();
         public string GenerateNotification()
         {
             StringBuilder notification = new StringBuilder();
-
-            SchedulerService schedulerService = new SchedulerService();
 
             EventService eventService = new EventService();
 
@@ -22,8 +21,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             HashSet<int> eventIds = events.Select(eventObj => eventObj.Id)
                                           .ToHashSet();
 
-            List<Scheduler> scheduleEvents = schedulerService.Read()
-                                                             .Where(scheduleEvent => eventIds.Contains(scheduleEvent.EventId))
+            List<ScheduleEvent> scheduleEvents = scheduleEventService.Read()
+                                                             .Where(scheduleEvent => eventIds.Contains(scheduleEventService.GetEventIdFromEventCollaborators(scheduleEvent.EventCollaboratorsId)))
                                                              .ToList();
 
             string completedEvents = GetCompletedEvents(scheduleEvents, events);
@@ -34,17 +33,25 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             return notification.ToString();
         }
-        public string GetCompletedEvents(List<Scheduler> scheduleEvents, List<Event> events)
+        public string GetCompletedEvents(List<ScheduleEvent> scheduleEvents, List<Event> events)
         {
             StringBuilder completedEvents = new StringBuilder();
 
             DateTime todayDate = DateTime.Now;
 
+            List<ScheduleEvent> missedEvents = scheduleEvents.Where(scheduleEvent => scheduleEvent.ScheduledDate.Date <
+
+                                                                todayDate.Date)
+                                                             .ToList();
+
+            if (missedEvents.Count == 0) return "";
+
             completedEvents.AppendLine("You missed this events :- ");
 
-            foreach (Scheduler scheduleEvent in scheduleEvents.Where(scheduleEvent => scheduleEvent.ScheduledDate.Date < todayDate.Date))
+
+            foreach (ScheduleEvent scheduleEvent in missedEvents)
             {
-                Event eventObj = events.FirstOrDefault(eventObj => eventObj.Id == scheduleEvent.EventId);
+                Event eventObj = events.FirstOrDefault(eventObj => eventObj.Id == scheduleEventService.GetEventIdFromEventCollaborators(scheduleEvent.EventCollaboratorsId));
                 completedEvents.AppendLine($"Event :- {eventObj.Title}, " +
                                            $"Description :- {eventObj.Description}, " +
                                            $"Time :- {eventObj.TimeBlock}");
@@ -52,17 +59,23 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             return completedEvents.ToString();
         }
-        public string GetUpcommingEvents(List<Scheduler> scheduleEvents, List<Event> events)
+        public string GetUpcommingEvents(List<ScheduleEvent> scheduleEvents, List<Event> events)
         {
             StringBuilder upcommingEvents = new StringBuilder();
 
             DateTime todayDate = DateTime.Now;
 
+            List<ScheduleEvent> upcommingEventsList = scheduleEvents.Where(scheduleEvent =>
+                                                                    scheduleEvent.ScheduledDate.Date == todayDate.Date)
+                                                                    .ToList();
+
+            if (upcommingEventsList.Count == 0) return "";
+
             upcommingEvents.AppendLine("Your today's events :- ");
 
-            foreach (Scheduler scheduleEvent in scheduleEvents.Where(scheduleEvent => scheduleEvent.ScheduledDate.Date == todayDate.Date))
+            foreach (ScheduleEvent scheduleEvent in upcommingEventsList)
             {
-                Event eventObj = events.FirstOrDefault(eventObj => eventObj.Id == scheduleEvent.EventId);
+                Event eventObj = events.FirstOrDefault(eventObj => eventObj.Id == scheduleEventService.GetEventIdFromEventCollaborators(scheduleEvent.EventCollaboratorsId));
                 upcommingEvents.AppendLine($"Event :- {eventObj.Title}, " +
                                            $"Description :- {eventObj.Description}, " +
                                            $"Time :- {eventObj.TimeBlock}");
