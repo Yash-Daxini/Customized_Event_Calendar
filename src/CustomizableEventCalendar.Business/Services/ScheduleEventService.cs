@@ -52,15 +52,25 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 Console.WriteLine("Some error occurred! " + ex.Message);
             }
         }
-        public int GetEventIdFromEventCollaborators(int eventCollaboratorsId)
+        public EventCollaborators GetEventCollaborator(int eventCollaboratorsId)
         {
             EventCollaboratorsRepository eventCollaboratorsRepository = new EventCollaboratorsRepository();
 
             List<EventCollaborators> eventCollaborators = eventCollaboratorsRepository.Read(data => new
                                                                                 EventCollaborators(data));
 
-            EventCollaborators eventCollaborator = eventCollaborators.First(eventCollaborator => eventCollaborator.Id == eventCollaboratorsId);
-            return eventCollaborator.EventId;
+            EventCollaborators eventCollaborator = eventCollaborators.First(eventCollaboratorObj => eventCollaboratorObj.Id == eventCollaboratorsId);
+
+            return eventCollaborator;
+        }
+        public int GetEventIdFromEventCollaborators(int eventCollaboratorsId)
+        {
+            return GetEventCollaborator(eventCollaboratorsId).EventId;
+        }
+        public int GetUserIdFromEventCollaborators(int eventCollaboratorsId)
+        {
+
+            return GetEventCollaborator(eventCollaboratorsId).UserId;
         }
         public void DeleteByEventId(int eventId)
         {

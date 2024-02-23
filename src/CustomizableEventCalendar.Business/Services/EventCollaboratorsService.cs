@@ -24,6 +24,19 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
             return eventCollaborators;
         }
+        public EventCollaborators? Read(int eventCollaboratorId)
+        {
+            EventCollaborators? eventCollaborators = null;
+            try
+            {
+                eventCollaborators = eventCollaboratorsRepository.Read(data => new EventCollaborators(data), eventCollaboratorId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Some error occurred ! " + ex.Message);
+            }
+            return eventCollaborators;
+        }
         public int Create(EventCollaborators eventCollaborators)
         {
             int eventCollaboratorsId = 0;
@@ -48,6 +61,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             {
                 Console.WriteLine("Some error occurred ! " + ex.Message);
             }
+        }
+        public int GetUserIdFromEventCollaborationId(int eventCollaborationId)
+        {
+            EventCollaborators? eventCollaborator = Read(eventCollaborationId);
+            if (eventCollaborator == null) return 0;
+            return eventCollaborator.UserId;
         }
         public int? ProvideEventCollaboratorIdFromEventId(int eventId)
         {

@@ -39,7 +39,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
             this.TimeBlock = sqlDataReader["TimeBlock"].ToString();
             this.UserId = Convert.ToInt32(sqlDataReader["UserId"]);
             this.RecurrenceId = Convert.ToInt32(sqlDataReader["RecurrenceId"]);
-            this.IsProposed = (sqlDataReader["IsProposed"].ToString() == "0" ? false : true);
+            this.IsProposed = Convert.ToBoolean(sqlDataReader["IsProposed"]);
         }
         [NotMapped]
         public int Id { get; set; }

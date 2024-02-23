@@ -23,5 +23,58 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
 
         }
+        public void CalculateMutualTime(Event eventObj) //WIP
+        {
+            EventCollaboratorsService eventCollaboratorsService = new EventCollaboratorsService();
+
+            HashSet<int> eventInviteesIds = GetInviteesOfEvent(eventObj.Id);
+
+            HashSet<int> eventInviteesUserIds = eventInviteesIds.Select(eventCollaboratorsService
+                                                                        .GetUserIdFromEventCollaborationId)
+                                                                .ToHashSet();
+
+            foreach (int userId in eventInviteesIds)
+            {
+                 
+            }
+
+            CalendarSharingService calendarSharingService = new CalendarSharingService();
+
+            List<SharedCalendar> sharedCalendars = calendarSharingService.GetSharedEvents();
+
+            //HashSet<int> notAvailableUsers = sharedCalendars.Where(sharedCalendar=>sharedCalendar.Event);
+
+            //HashSet<int> notAgreedInvitees =
+        }
+        public void ScheduleProposedEvent(Event eventObj)
+        {
+            MakeConfirmEventFromProposedEvent(ref eventObj);
+
+            RecurrenceEngine recurrenceEngine = new RecurrenceEngine();
+
+            HashSet<int> eventCollaboratorsIds = GetInviteesOfEvent(eventObj.Id);
+
+            foreach (var eventCollaboratorsId in eventCollaboratorsIds)
+            {
+                recurrenceEngine.AddEventToScheduler(eventObj, eventCollaboratorsId);
+            }
+
+        }
+        public HashSet<int> GetInviteesOfEvent(int eventId)
+        {
+            EventCollaboratorsService eventCollaboratorsService = new EventCollaboratorsService();
+
+            HashSet<int> eventCollaboratorsId = eventCollaboratorsService.Read()
+                                                                      .Where(eventCollaborator =>
+                                                                             eventCollaborator.EventId == eventId)
+                                                                      .Select(eventCollaborator =>
+                                                                             eventCollaborator.Id)
+                                                                      .ToHashSet();
+            return eventCollaboratorsId;
+        }
+        public void MakeConfirmEventFromProposedEvent(ref Event eventObj)
+        {
+            eventObj.IsProposed = false;
+        }
     }
 }

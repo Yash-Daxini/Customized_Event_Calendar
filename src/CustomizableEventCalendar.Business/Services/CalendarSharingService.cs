@@ -49,7 +49,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             foreach (var sharedEvent in sharedEvents)
             {
                 User user = userService.Read(data => new User(data), sharedEvent.SharedByUserId);
-                sharedEventUsers.Append($" Sr. NO :- {sharedEvent.Id}" +
+                sharedEventUsers.AppendLine($" Sr. NO :- {sharedEvent.Id}" +
                                         $", Shared by {user.Name} " +
                                         $", From :- {sharedEvent.FromDate} , To :- {sharedEvent.ToDate}");
             }
@@ -103,14 +103,16 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             {
                 ScheduleEvent? scheduleEvent = schedulers.FirstOrDefault(scheduleEvent =>
                                                                     DateOnly.FromDateTime(
-                                                                    Convert.ToDateTime(scheduleEvent.ScheduledDate))
+                                                                    Convert.ToDateTime
+                                                                    (scheduleEvent.ScheduledDate))
                                                                     == startDate);
 
                 if (scheduleEvent != null)
                 {
                     Event? eventObj = events.FirstOrDefault(eventObj => eventObj.Id == scheduleEventService
-                                                .GetEventIdFromEventCollaborators(scheduleEvent.EventCollaboratorsId)
-                                            );
+                                                            .GetEventIdFromEventCollaborators
+                                                             (scheduleEvent.EventCollaboratorsId)
+                                                            );
 
                     sharedEventInfo.AppendLine($"\t{scheduleEvent.Id}\t{eventObj.Id}\t{eventObj.Title}" +
                                                $"\t{eventObj.Description}\t{scheduleEvent.ScheduledDate}\t");
