@@ -72,11 +72,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             return GetEventCollaborator(eventCollaboratorsId).UserId;
         }
-        public void DeleteByEventId(int eventId)
+        public void DeleteByEventId(int eventId, int userId)
         {
             try
             {
-                scheduleEventRepository.DeleteByEventId(eventId);
+                scheduleEventRepository.DeleteByEventId(eventId, userId);
             }
             catch (Exception ex)
             {

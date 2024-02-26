@@ -19,5 +19,24 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
 
             Disconnect();
         }
+        public EventCollaborators ReadByEventId(int eventId)
+        {
+            string query = @$"Select * from [dbo].[EventCollaborators]
+                              where EventId = {eventId} and UserId = {GlobalData.user.Id}";
+            Connect();
+
+            ExecuteQuery(query);
+
+            EventCollaborators eventCollaborators = null;
+
+            if (sqlDataReader.Read())
+            {
+                eventCollaborators = new EventCollaborators(sqlDataReader);
+            }
+
+            Disconnect();
+
+            return eventCollaborators;
+        }
     }
 }

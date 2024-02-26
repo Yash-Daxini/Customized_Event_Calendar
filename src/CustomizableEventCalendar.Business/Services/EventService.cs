@@ -1,6 +1,7 @@
 ﻿using System.Data.SqlClient;
 using System.Text;
 using System.Transactions;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 
@@ -11,9 +12,17 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         EventRepository eventRepository = new EventRepository();
         RecurrencePatternRepository recurrencePatternRepository = new RecurrencePatternRepository();
 
-        public int Create(Event eventObj, RecurrencePattern recurrencePattern)
+        public int Create(Event eventObj, RecurrencePatternCustom recurrencePattern)
         {
             int Id = 0;
+
+            OverlappingEventService overlappingEventService = new OverlappingEventService();
+
+            if (overlappingEventService.IsOverlappingEvent(recurrencePattern))
+            {
+                Console.WriteLine("This event overlaps with other event. Please enter valid event");
+                EventHandling.AskForChoice();
+            }
 
             using (TransactionScope transactionScope = new TransactionScope())
             {
@@ -96,13 +105,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                     int recurrenceId = eventObj == null ? 0 : Convert.ToInt32(eventObj.RecurrenceId);
 
-                    scheduleEventService.DeleteByEventId(eventId);
+                    scheduleEventService.DeleteByEventId(eventId, GlobalData.user.Id);
 
                     eventCollaboratorsService.DeleteByEventId(eventId);
 
                     eventRepository.Delete<Event>(eventId);
 
-                    recurrencePatternRepository.Delete<RecurrencePattern>(recurrenceId);
+                    recurrencePatternRepository.Delete<RecurrencePatternCustom>(recurrenceId);
 
                     transactionScope.Complete();
                 }
@@ -113,7 +122,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 }
             }
         }
-        public void Update(Event eventObj, RecurrencePattern recurrencePattern, int eventId, int recurrenceId)
+        public void Update(Event eventObj, RecurrencePatternCustom recurrencePattern, int eventId, int recurrenceId)
         {
             using (TransactionScope transactionScope = new TransactionScope())
             {
@@ -125,7 +134,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                     ScheduleEventService scheduleEventService = new ScheduleEventService();
 
-                    scheduleEventService.DeleteByEventId(eventId);
+                    scheduleEventService.DeleteByEventId(eventId, GlobalData.user.Id);
 
                     EventCollaboratorsService eventCollaboratorsService = new EventCollaboratorsService();
 
@@ -165,6 +174,17 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
 
             return eventList.ToString();
+        }
+        public void ConvertProposedEventToScheduleEvent(int eventId)
+        {
+            try
+            {
+                eventRepository.ConvertProposedEventToScheduleEvent(eventId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("An error occurred: " + ex.Message);
+            }
         }
     }
 }

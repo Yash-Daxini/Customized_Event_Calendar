@@ -6,13 +6,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
     internal class RecurrenceService
     {
         RecurrencePatternRepository recurrencePatternRepository = new RecurrencePatternRepository();
-        public List<RecurrencePattern> Read()
+        public List<RecurrencePatternCustom> Read()
         {
-            List<RecurrencePattern> recurrencePatterns = new List<RecurrencePattern>();
+            List<RecurrencePatternCustom> recurrencePatterns = new List<RecurrencePatternCustom>();
 
             try
             {
-                recurrencePatterns = recurrencePatternRepository.Read<RecurrencePattern>(data => new RecurrencePattern(data));
+                recurrencePatterns = recurrencePatternRepository.Read<RecurrencePatternCustom>(data => new RecurrencePatternCustom(data));
             }
             catch (Exception ex)
             {
@@ -21,13 +21,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             return recurrencePatterns;
         }
-        public RecurrencePattern Read(int Id)
+        public RecurrencePatternCustom Read(int Id)
         {
-            RecurrencePattern recurrencePatterns = new RecurrencePattern();
+            RecurrencePatternCustom recurrencePatterns = new RecurrencePatternCustom();
 
             try
             {
-                recurrencePatterns = recurrencePatternRepository.Read<RecurrencePattern>(data => new RecurrencePattern(data), Id);
+                recurrencePatterns = recurrencePatternRepository.Read<RecurrencePatternCustom>(data => new RecurrencePatternCustom(data), Id);
             }
             catch (Exception ex)
             {
@@ -36,7 +36,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             return recurrencePatterns;
         }
-        public int Create(RecurrencePattern recurrencePattern)
+        public int Create(RecurrencePatternCustom recurrencePattern)
         {
             int Id = 0;
             try
@@ -53,14 +53,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             try
             {
-                recurrencePatternRepository.Delete<RecurrencePattern>(Id);
+                recurrencePatternRepository.Delete<RecurrencePatternCustom>(Id);
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Some error occurred! " + ex.Message);
             }
         }
-        public void Update(RecurrencePattern recurrencePattern, int Id)
+        public void Update(RecurrencePatternCustom recurrencePattern, int Id)
         {
             try
             {

@@ -14,7 +14,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             List<EventCollaborators> eventCollaborators = eventCollaboratorsService.Read();
 
             List<Event> events = eventService.Read()
-                                             .Where(eventObj => eventObj.UserId == GlobalData.user.Id)
                                              .ToList();
 
             foreach (var eventCollaborator in eventCollaborators)
@@ -27,14 +26,15 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         public void AddEventToScheduler(Event eventObj, int eventCollaboratorId)
         {
             int recurrenceId = eventObj.RecurrenceId;
-            RecurrencePattern recurrencePattern = recurrenceService.Read(recurrenceId);
+            RecurrencePatternCustom recurrencePattern = recurrenceService.Read(recurrenceId);
 
             ScheduleEvents(eventObj, recurrencePattern, eventCollaboratorId);
         }
-        public void ScheduleEvents(Event eventObj, RecurrencePattern recurrencePattern, int eventCollaboratorId) // Event that have recurrence
+        public void ScheduleEvents(Event eventObj, RecurrencePatternCustom recurrencePattern, int eventCollaboratorId) // Event that have recurrence
         {
             List<ScheduleEvent> lastScheduledEvents = scheduleEventService.Read()
-                                                                          .Where(data => scheduleEventService.GetEventIdFromEventCollaborators(data.EventCollaboratorsId) == eventObj.Id).ToList();
+                                                                          .Where(data => scheduleEventService.GetEventIdFromEventCollaborators(data.EventCollaboratorsId) == eventObj.Id
+                                                                                 && scheduleEventService.GetUserIdFromEventCollaborators(data.EventCollaboratorsId) == GlobalData.user.Id).ToList();
 
             ScheduleEvent? lastScheduledEvent = lastScheduledEvents.FirstOrDefault(data => data.ScheduledDate == (lastScheduledEvents.Max(data => data.ScheduledDate)));
 
@@ -63,10 +63,23 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         }
         public void ScheduleNonRecurrenceEvents(Event eventObj, DateTime startDate, DateTime endDate, int eventCollaboratorId)
         {
-            ScheduleEvent scheduler = new ScheduleEvent(eventCollaboratorId, startDate);
-            scheduleEventService.Create(scheduler);
+            ScheduleEvent scheduleEvent = new ScheduleEvent(eventCollaboratorId, startDate);
+
+            string TimeBlock = eventObj.TimeBlock;
+
+            string startTime = TimeBlock.Split("-")[0];
+            int startHour = Convert.ToInt32(startTime.Substring(0, startTime.Length - 2)) + (startTime.EndsWith("PM") ? 12 : 0);
+
+            if (startHour == 12 && startTime.EndsWith("AM")) startHour = 0;
+
+            string endTime = TimeBlock.Split("-")[1];
+            int endHour = Convert.ToInt32(endTime.Substring(0, endTime.Length - 2)) + (endTime.EndsWith("PM") ? 12 : 0);
+
+            if (endHour == 12 && endTime.EndsWith("AM")) endHour = 0;
+
+            SchduleForSpecificHour(startHour, endHour, ref scheduleEvent);
         }
-        public void ScheduleDailyEvents(Event eventObj, RecurrencePattern recurrencePattern, DateTime startDate, int eventCollaboratorId)
+        public void ScheduleDailyEvents(Event eventObj, RecurrencePatternCustom recurrencePattern, DateTime startDate, int eventCollaboratorId)
         {
             HashSet<string> days = recurrencePattern.BYDAY.Split(",").ToHashSet<string>();
 
@@ -78,13 +91,33 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                 if (days.Contains(day))
                 {
-                    ScheduleEvent scheduler = new ScheduleEvent(eventCollaboratorId, startDate);
-                    scheduleEventService.Create(scheduler);
+                    ScheduleEvent scheduleEvent = new ScheduleEvent(eventCollaboratorId, startDate);
+
+                    string TimeBlock = eventObj.TimeBlock;
+
+                    string startTime = TimeBlock.Split("-")[0];
+                    int startHour = Convert.ToInt32(startTime.Substring(0, startTime.Length - 2)) + (TimeBlock.EndsWith("PM") ? 12 : 0);
+
+                    string endTime = TimeBlock.Split("-")[1];
+                    int endHour = Convert.ToInt32(endTime.Substring(0, endTime.Length - 2)) + (TimeBlock.EndsWith("PM") ? 12 : 0);
+
+                    SchduleForSpecificHour(startHour, endHour, ref scheduleEvent);
                 }
                 startDate = startDate.AddDays(Convert.ToInt32(recurrencePattern.INTERVAL) + 1);
             }
         }
-        public void ScheduleWeeklyEvents(Event eventObj, RecurrencePattern recurrencePattern, DateTime startDate, int eventCollaboratorId)
+        public void SchduleForSpecificHour(int startHour, int endHour, ref ScheduleEvent scheduleEvent)
+        {
+            while (startHour < endHour)
+            {
+                DateTime scheduleDate = scheduleEvent.ScheduledDate;
+                scheduleEvent.ScheduledDate = new DateTime(scheduleDate.Year, scheduleDate.Month
+                                                          , scheduleDate.Day, startHour, 0, 0);
+                scheduleEventService.Create(scheduleEvent);
+                startHour++;
+            }
+        }
+        public void ScheduleWeeklyEvents(Event eventObj, RecurrencePatternCustom recurrencePattern, DateTime startDate, int eventCollaboratorId)
         {
             HashSet<string> weekDays = recurrencePattern.BYDAY.Split(",").ToHashSet();
 
@@ -96,8 +129,17 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                 if (weekDays.Contains(day))
                 {
-                    ScheduleEvent scheduler = new ScheduleEvent(eventCollaboratorId, startDate);
-                    scheduleEventService.Create(scheduler);
+                    ScheduleEvent scheduleEvent = new ScheduleEvent(eventCollaboratorId, startDate);
+
+                    string TimeBlock = eventObj.TimeBlock;
+
+                    string startTime = TimeBlock.Split("-")[0];
+                    int startHour = Convert.ToInt32(startTime.Substring(0, startTime.Length - 2)) + (TimeBlock.EndsWith("PM") ? 12 : 0);
+
+                    string endTime = TimeBlock.Split("-")[1];
+                    int endHour = Convert.ToInt32(endTime.Substring(0, endTime.Length - 2)) + (TimeBlock.EndsWith("PM") ? 12 : 0);
+
+                    SchduleForSpecificHour(startHour, endHour, ref scheduleEvent);
                 }
                 startDate = startDate.AddDays(7 * Convert.ToInt32(recurrencePattern.INTERVAL) + 1);
             }
@@ -115,7 +157,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             return months;
         }
-        public void ScheduleMonthlyEvents(Event eventObj, RecurrencePattern recurrencePattern, DateTime startDate, int eventCollaboratorId)
+        public void ScheduleMonthlyEvents(Event eventObj, RecurrencePatternCustom recurrencePattern, DateTime startDate, int eventCollaboratorId)
         {
             HashSet<string> monthDays = recurrencePattern.BYMONTHDAY.Split(",").Where(data => data.Length > 0).ToHashSet();
 
@@ -132,9 +174,17 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 foreach (var day in monthDays)
                 {
                     DateTime scheduleDate = new DateTime(startDate.Year, startDate.Month, Convert.ToInt32(day), startDate.Hour, startDate.Minute, startDate.Second);
-                    ScheduleEvent scheduler = new ScheduleEvent(eventCollaboratorId, scheduleDate);
+                    ScheduleEvent scheduleEvent = new ScheduleEvent(eventCollaboratorId, scheduleDate);
 
-                    scheduleEventService.Create(scheduler);
+                    string TimeBlock = eventObj.TimeBlock;
+
+                    string startTime = TimeBlock.Split("-")[0];
+                    int startHour = Convert.ToInt32(startTime.Substring(0, startTime.Length - 2)) + (TimeBlock.EndsWith("PM") ? 12 : 0);
+
+                    string endTime = TimeBlock.Split("-")[1];
+                    int endHour = Convert.ToInt32(endTime.Substring(0, endTime.Length - 2)) + (TimeBlock.EndsWith("PM") ? 12 : 0);
+
+                    SchduleForSpecificHour(startHour, endHour, ref scheduleEvent);
                 }
             }
         }
@@ -151,7 +201,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             return years;
         }
-        public void ScheduleYearlyEvents(Event eventObj, RecurrencePattern recurrencePattern, DateTime startDate, int eventCollaboratorId)
+        public void ScheduleYearlyEvents(Event eventObj, RecurrencePatternCustom recurrencePattern, DateTime startDate, int eventCollaboratorId)
         {
             HashSet<string> years = CalculateProcessingYear(recurrencePattern.DTSTART, recurrencePattern.UNTILL, recurrencePattern.INTERVAL);
 
@@ -175,9 +225,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                         if (scheduleDate >= recurrencePattern.DTSTART && scheduleDate <= recurrencePattern.UNTILL)
                         {
-                            ScheduleEvent scheduler = new ScheduleEvent(eventCollaboratorId, scheduleDate);
+                            ScheduleEvent scheduleEvent = new ScheduleEvent(eventCollaboratorId, scheduleDate);
 
-                            scheduleEventService.Create(scheduler);
+                            scheduleEventService.Create(scheduleEvent);
                         }
                     }
                     catch (Exception e)

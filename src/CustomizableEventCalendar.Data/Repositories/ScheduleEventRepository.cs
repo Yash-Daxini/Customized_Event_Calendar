@@ -9,13 +9,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
 {
     internal class ScheduleEventRepository : GenericRepository
     {
-        public void DeleteByEventId(int eventId)
+        public void DeleteByEventId(int eventId, int userId)
         {
             string query = @$"Delete from [dbo].[ScheduleEvent]
                               where EventCollaboratorsId in 
                                                         (
-                                                            Select EventCollaboratorsId from [dbo].[EventCollaborators] 
-                                                            where EventId = {eventId}
+                                                            Select Id from [dbo].[EventCollaborators] 
+                                                            where EventId = {eventId} and UserId = {userId}
                                                          )";
             Connect();
 

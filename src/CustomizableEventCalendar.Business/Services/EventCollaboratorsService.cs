@@ -62,6 +62,19 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 Console.WriteLine("Some error occurred ! " + ex.Message);
             }
         }
+        public EventCollaborators ReadByEventId(int eventId)
+        {
+            EventCollaborators eventCollaborator = null;
+            try
+            {
+                eventCollaborator = eventCollaboratorsRepository.ReadByEventId(eventId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Some error occurred ! " + ex.Message);
+            }
+            return eventCollaborator;
+        }
         public int GetUserIdFromEventCollaborationId(int eventCollaborationId)
         {
             EventCollaborators? eventCollaborator = Read(eventCollaborationId);

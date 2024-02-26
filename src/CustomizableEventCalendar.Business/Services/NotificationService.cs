@@ -63,7 +63,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                                                     .GetEventIdFromEventCollaborators
                                                      (scheduleEvent.EventCollaboratorsId);
 
-                EventCollaborators? eventCollaborator = eventCollaboratorsService.Read
+                EventCollaborators? eventCollaborator = eventCollaboratorsService.ReadByEventId
                                                                                  (eventIdFromEventCollaboratorId);
 
                 if (eventCollaborator != null && eventCollaborator.UserId != GlobalData.user.Id) continue;
@@ -101,7 +101,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                                                     .GetEventIdFromEventCollaborators
                                                      (scheduleEvent.EventCollaboratorsId);
 
-                EventCollaborators? eventCollaborator = eventCollaboratorsService.Read
+                EventCollaborators? eventCollaborator = eventCollaboratorsService.ReadByEventId
                                                                                  (eventIdFromEventCollaboratorId);
 
                 if (eventCollaborator != null && eventCollaborator.UserId != GlobalData.user.Id) continue;
@@ -153,7 +153,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 Event eventObj = eventService.Read(eventCollaborator.EventId);
                 if (eventObj.UserId == GlobalData.user.Id) continue;
                 User? eventProposer = userService.Read(eventObj.UserId);
-                RecurrencePattern recurrencePattern = recurrenceService.Read(eventObj.RecurrenceId);
+                RecurrencePatternCustom recurrencePattern = recurrenceService.Read(eventObj.RecurrenceId);
                 proposedEvents.AppendLine($"Event Proposed by {eventProposer.Name} on " +
                                           $"{recurrencePattern.DTSTART}between {eventObj.TimeBlock}. " +
                                           $"Event Title :- {eventObj.Title} , " +

@@ -9,12 +9,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
     internal class RecurrenceHandling
     {
         public static RecurrenceService recurrenceService = new RecurrenceService();
-        public static RecurrencePattern AskForRecurrenceChoice(int? Id)
+        public static RecurrencePatternCustom AskForRecurrenceChoice(int? Id)
         {
             Console.WriteLine("Are you want repeat this event ? \n 1. Yes 2. No :- ");
             RecurrencePatternChoiceEnum isRepeative = (RecurrencePatternChoiceEnum)Convert.ToInt32(Console.ReadLine());
 
-            RecurrencePattern recurrencePattern = new RecurrencePattern();
+            RecurrencePatternCustom recurrencePattern = new RecurrencePatternCustom();
 
             switch (isRepeative)
             {
@@ -32,7 +32,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             return recurrencePattern;
         }
-        public static void GetDates(ref RecurrencePattern recurrencePattern)
+        public static void GetDates(ref RecurrencePatternCustom recurrencePattern)
         {
             Console.WriteLine("Enter dates for the event :- ");
 
@@ -42,22 +42,22 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             Console.Write(RecurrencePatternMessages.EndDate);
             recurrencePattern.UNTILL = Convert.ToDateTime(Console.ReadLine());
         }
-        public static RecurrencePattern GetRecurrenceForSingleEvent(int? Id)
+        public static RecurrencePatternCustom GetRecurrenceForSingleEvent(int? Id)
         {
-            RecurrencePattern recurrencePattern;
+            RecurrencePatternCustom recurrencePattern;
 
-            if (Id == null) recurrencePattern = new RecurrencePattern();
+            if (Id == null) recurrencePattern = new RecurrencePatternCustom();
             else recurrencePattern = recurrenceService.Read(Convert.ToInt32(Id));
 
             GetDates(ref recurrencePattern);
 
             return recurrencePattern;
         }
-        public static RecurrencePattern GetRecurrencePattern(int? Id)
+        public static RecurrencePatternCustom GetRecurrencePattern(int? Id)
         {
-            RecurrencePattern recurrencePattern;
+            RecurrencePatternCustom recurrencePattern;
 
-            if (Id == null) recurrencePattern = new RecurrencePattern();
+            if (Id == null) recurrencePattern = new RecurrencePatternCustom();
             else recurrencePattern = recurrenceService.Read(Convert.ToInt32(Id));
 
             Console.WriteLine("Fill details to make event repetitive :- ");
@@ -74,7 +74,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             return recurrencePattern;
         }
-        public static void HandleRecurrenceFrequency(RecurrencePatternFrequencyEnum choiceForFreq, ref RecurrencePattern recurrencePattern)
+        public static void HandleRecurrenceFrequency(RecurrencePatternFrequencyEnum choiceForFreq, ref RecurrencePatternCustom recurrencePattern)
         {
             switch (choiceForFreq)
             {

@@ -92,7 +92,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             GetEventDetails(ref eventObj);
 
-            RecurrencePattern recurrencePattern = new RecurrencePattern();
+            RecurrencePatternCustom recurrencePattern = new RecurrencePatternCustom();
 
             Console.Write("Enter date for the propose event (Enter date in dd-MM-yyyy) :- ");
             string eventDate = Console.ReadLine();
@@ -147,7 +147,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             eventObj.UserId = GlobalData.user.Id;
 
-            RecurrencePattern recurrencePattern = RecurrenceHandling.AskForRecurrenceChoice(null);
+            RecurrencePatternCustom recurrencePattern = RecurrenceHandling.AskForRecurrenceChoice(null);
 
             eventService.Create(eventObj, recurrencePattern);
         }
@@ -183,7 +183,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             eventObj.RecurrenceId = recurrenceId;
 
-            RecurrencePattern recurrencePattern = RecurrenceHandling.AskForRecurrenceChoice(recurrenceId);
+            RecurrencePatternCustom recurrencePattern = RecurrenceHandling.AskForRecurrenceChoice(recurrenceId);
 
             eventService.Update(eventObj, recurrencePattern, Id, eventObj.RecurrenceId);
         }

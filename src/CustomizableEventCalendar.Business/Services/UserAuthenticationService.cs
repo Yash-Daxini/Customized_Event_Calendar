@@ -23,6 +23,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             {
                 RecurrenceEngine recurrenceEngine = new RecurrenceEngine();
                 recurrenceEngine.ScheduleEventsOfThisMonth();
+                MultipleInviteesEventService multipleInviteesEventService =
+                    new MultipleInviteesEventService();
+                multipleInviteesEventService.StartSchedulingProcessOfProposedEvent();
             }
             return user != null;
         }

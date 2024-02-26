@@ -40,7 +40,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             }
         }
         public static void DailyView()
-        {   
+        {
             string dailyView = calendarViewService.GenerateDailyView();
             Console.WriteLine(dailyView);
         }

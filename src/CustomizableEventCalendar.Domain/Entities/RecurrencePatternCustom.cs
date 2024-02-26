@@ -9,10 +9,10 @@ using System.Xml.Linq;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities
 {
-    internal class RecurrencePattern : BaseData
+    internal class RecurrencePatternCustom : BaseData
     {
-        public RecurrencePattern() { }
-        public RecurrencePattern(int Id, DateTime DTSTART, DateTime UNTILL, string FREQ, string COUNT, string INTERVAL, string BYDAY, string BYWEEK, string BYMONTH, string BYYEAR, string BYMONTHDAY)
+        public RecurrencePatternCustom() { }
+        public RecurrencePatternCustom(int Id, DateTime DTSTART, DateTime UNTILL, string FREQ, string COUNT, string INTERVAL, string BYDAY, string BYWEEK, string BYMONTH, string BYYEAR, string BYMONTHDAY)
         {
             this.Id = Id;
             this.DTSTART = DTSTART;
@@ -26,7 +26,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
             this.BYYEAR = BYYEAR;
             this.BYMONTHDAY = BYMONTHDAY;
         }
-        public RecurrencePattern(DateTime DTSTART, DateTime UNTILL, string FREQ, string COUNT, string INTERVAL, string BYDAY, string BYWEEK, string BYMONTH, string BYYEAR, string BYMONTHDAY)
+        public RecurrencePatternCustom(DateTime DTSTART, DateTime UNTILL, string FREQ, string COUNT, string INTERVAL, string BYDAY, string BYWEEK, string BYMONTH, string BYYEAR, string BYMONTHDAY)
         {
             this.DTSTART = DTSTART;
             this.UNTILL = UNTILL;
@@ -39,7 +39,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
             this.BYYEAR = BYYEAR;
             this.BYMONTHDAY = BYMONTHDAY;
         }
-        public RecurrencePattern(SqlDataReader sqlDataReader)
+        public RecurrencePatternCustom(SqlDataReader sqlDataReader)
         {
             DTSTART = Convert.ToDateTime(sqlDataReader["DTSTART"]);
             UNTILL = Convert.ToDateTime(sqlDataReader["UNTILL"]);

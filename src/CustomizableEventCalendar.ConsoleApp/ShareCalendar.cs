@@ -44,7 +44,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             Console.WriteLine(userInformations);
         }
         public void ViewSharedCalendars()
-        
+
         {
             Console.WriteLine("Calendars shared to you !");
 

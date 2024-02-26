@@ -24,9 +24,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
             this.Email = Email;
             this.Password = Password;
         }
-        public User(int Id,string Name, string Email)
+        public User(int Id, string Name, string Email)
         {
-            this.Id = Id;   
+            this.Id = Id;
             this.Name = Name;
             this.Email = Email;
         }

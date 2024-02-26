@@ -22,7 +22,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
             }
             else if (value is DateTime)
             {
-                return $"'{Convert.ToDateTime(value).ToString("yyyy-MM-ddThh:mm:ss")}'";
+                return $"'{Convert.ToDateTime(value).ToString("yyyy-MM-ddThh:mm:ss tt")}'";
             }
             else if (value is DateOnly)
             {
@@ -40,6 +40,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
         }
         public static string GetTableName<T>()
         {
+            if (typeof(T).GetTypeInfo().Name.Equals("RecurrencePatternCustom")) return "RecurrencePattern";
             return typeof(T).GetTypeInfo().Name;
         }
         public static PropertyInfo[] GetProperties<T>()
