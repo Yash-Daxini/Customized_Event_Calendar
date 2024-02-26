@@ -1,6 +1,7 @@
 ﻿using System.Data.SqlClient;
 using System.Linq.Expressions;
 using System.Net.Http.Headers;
+using System.Reflection.PortableExecutable;
 using System.Runtime.InteropServices;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp;
@@ -11,9 +12,11 @@ public class Program
 {
     public static void Main(string[] args)
     {
+        Console.SetWindowSize(Console.LargestWindowWidth, Console.LargestWindowHeight);
         try
         {
             Authentication.AskForChoice();
+            Console.ReadKey();
         }
         catch (Exception ex)
         {

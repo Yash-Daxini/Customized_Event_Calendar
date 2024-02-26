@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
@@ -31,7 +32,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                                                             .ToList();
 
             string completedEvents = GetCompletedEvents(scheduleEvents, events);
-            string upcommingEvents = GetUpcommingEvents(scheduleEvents, events);
+            string upcommingEvents = GetUpcomingEvents(scheduleEvents, events);
             string proposedEvents = GetProposedEvents(events);
 
             if (completedEvents.Length > 0) notification.AppendLine(completedEvents);
@@ -53,7 +54,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             if (missedEvents.Count == 0) return "";
 
-            completedEvents.AppendLine("You missed this events :- ");
+            completedEvents.AppendLine($"You missed this events :- ");
+            completedEvents.AppendLine($"{PrintHandler.PrintHorizontalLine()}");   
 
             EventCollaboratorsService eventCollaboratorsService = new EventCollaboratorsService();
 
@@ -71,13 +73,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 Event eventObj = events.FirstOrDefault(eventObj => eventObj.Id == eventIdFromEventCollaboratorId);
                 completedEvents.AppendLine($"Event :- {eventObj.Title}, " +
                                            $"Description :- {eventObj.Description}, " +
-                                           $"Date : {scheduleEvent.ScheduledDate}" +
-                                           $"Time :- {eventObj.TimeBlock}");
+                                           $"Date : {scheduleEvent.ScheduledDate}");
             }
 
             return completedEvents.ToString();
         }
-        public string GetUpcommingEvents(List<ScheduleEvent> scheduleEvents, List<Event> events)
+        public string GetUpcomingEvents(List<ScheduleEvent> scheduleEvents, List<Event> events)
         {
             StringBuilder upcommingEvents = new StringBuilder();
 
@@ -91,6 +92,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             if (upcommingEventsList.Count == 0) return "";
 
             upcommingEvents.AppendLine("Your today's events :- ");
+            upcommingEvents.AppendLine($"{PrintHandler.PrintHorizontalLine()}");
 
             EventCollaboratorsService eventCollaboratorsService = new EventCollaboratorsService();
 
@@ -142,6 +144,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             if (events.Count == 0 || !isUserHasProposedEvent) return "";
 
             proposedEvents.AppendLine("Proposed Events");
+            proposedEvents.AppendLine($"{PrintHandler.PrintHorizontalLine()}");
 
             UserService userService = new UserService();
             RecurrenceService recurrenceService = new RecurrenceService();

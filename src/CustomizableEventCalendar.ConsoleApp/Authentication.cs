@@ -3,6 +3,7 @@ using System.Reflection;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
 {
@@ -91,13 +92,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             Console.Clear();
 
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine($"\t\t\t\t\t\t\tWelcome {GlobalData.user.Name}");
+            Console.WriteLine($"{PrintHandler.CenterText()}Welcome {GlobalData.user.Name}");
             Thread.Sleep(2000);
             Console.ResetColor();
-
             Console.Clear();
 
-            Console.WriteLine($"\t\t\t\t\t\t\tUser Name : {GlobalData.user.Name}");
+            Console.WriteLine(PrintHandler.PrintHorizontalLine());
+            Console.WriteLine($"{PrintHandler.CenterText()}Name : {GlobalData.user.Name}");
+            Console.WriteLine(PrintHandler.PrintHorizontalLine());
             Console.WriteLine();
 
             ShowNotification();
