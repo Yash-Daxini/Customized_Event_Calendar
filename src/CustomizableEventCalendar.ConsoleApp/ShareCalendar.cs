@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp.InputMessageStore;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 
@@ -13,20 +14,18 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
     internal class ShareCalendar
     {
         CalendarSharingService calendarSharingService = new CalendarSharingService();
+        ValidationService validationService = new ValidationService();
         public void GetDetailsToShareCalendar()
         {
             ShowAllUser();
 
-            Console.Write("Enter User No. whom you want to share calendar :- ");
-            int UserId = Convert.ToInt32(Console.ReadLine());
+            int UserId = ValidatedInputProvider.GetValidatedInteger("Enter User No. whom you want to share calendar :- ");
 
             Console.WriteLine("Enter Time Range for which you want to share events");
 
-            Console.Write("Enter start date in dd-MM-yyyy format :-  ");
-            DateOnly startDate = DateOnly.Parse(Console.ReadLine());
+            DateOnly startDate = ValidatedInputProvider.GetValidatedDateOnly("Enter start date in dd-MM-yyyy format :-  ");
 
-            Console.Write("Enter end date in dd-MM-yyyy format :-  ");
-            DateOnly endDate = DateOnly.Parse(Console.ReadLine());
+            DateOnly endDate = ValidatedInputProvider.GetValidatedDateOnly("Enter end date in dd-MM-yyyy format :-  ");
 
             UserRepository userRepository = new UserRepository();
             User user = userRepository.Read<User>(data => new User(data), UserId);
@@ -36,6 +35,22 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             calendarSharingService.AddSharedCalendar(sharedEvents);
 
             Console.WriteLine($"Your Calendar shared with {user.Name} from {startDate} to {endDate}");
+        }
+        public int GetValidatedInteger(string inputMessage)
+        {
+
+            Console.Write(inputMessage);
+            string inputFromConsole = Console.ReadLine();
+
+            int Id;
+
+            while (!validationService.ValidateInput(inputFromConsole, out Id, int.TryParse))
+            {
+                Console.Write(inputMessage);
+                inputFromConsole = Console.ReadLine();
+            }
+
+            return Id;
         }
         public void ShowAllUser()
         {
@@ -52,8 +67,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             Console.WriteLine(sharedEvents);
 
-            Console.Write("Select Sr No. which calendar you want to see :- ");
-            int sharedCalendarId = Convert.ToInt32(Console.ReadLine());
+            int sharedCalendarId = ValidatedInputProvider.GetValidatedInteger("Select Sr No. which calendar you want to see :- ");
 
             ViewSpecificCalendar(sharedCalendarId);
         }

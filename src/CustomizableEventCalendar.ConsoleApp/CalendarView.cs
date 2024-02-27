@@ -11,12 +11,15 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
     internal class CalendarView
     {
         static CalendarViewService calendarViewService = new CalendarViewService();
+        static ValidationService validationService = new ValidationService();
         public static void ViewSelection()
         {
-            Console.Write("\nChoose the view you want to see : 1. Daily View 2. Weekly View 3. Monthly View 0. Back :- ");
-            int choice = Convert.ToInt32(Console.ReadLine());
+            int choice = ValidatedInputProvider.GetValidatedInteger("\nChoose the view you want to see : 1. Daily View " +
+                                                                    "2. Weekly View 3. Monthly View 0. Back :- ");
 
-            switch ((CalendarViewEnum)choice)
+            CalendarViewEnum option = (CalendarViewEnum)choice;
+
+            switch (option)
             {
                 case CalendarViewEnum.Daily:
                     DailyView();

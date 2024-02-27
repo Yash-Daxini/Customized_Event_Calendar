@@ -18,5 +18,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             return new string('-', Console.WindowWidth);
         }
+        public static void PrintInvalidMessage(string message)
+        {
+            Console.WriteLine(message);
+        }
     }
 }

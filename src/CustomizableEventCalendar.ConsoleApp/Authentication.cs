@@ -3,17 +3,19 @@ using System.Reflection;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
 {
     internal class Authentication
     {
         public static UserAuthenticationService userAuthenticationService = new UserAuthenticationService();
+        static ValidationService validationService = new ValidationService();
         public static void AskForChoice()
         {
-            Console.Write("\nChoose the option: \n1. Login\t2. Sign up \t3. Logout \t0. Exit :-");
-            UserActionEnum option = (UserActionEnum)Convert.ToInt32(Console.ReadLine());
+            int choice = ValidatedInputProvider.GetValidatedInteger("\nChoose the option: \n1. Login\t2. Sign up " +
+                                                                    "\t3. Logout \t0. Exit :-");
+
+            UserActionEnum option = (UserActionEnum)choice;
 
             switch (option)
             {
@@ -48,6 +50,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             {
                 Console.Write($"Enter value for {property.Name}: ");
                 string value = Console.ReadLine();
+
+                if (property.Name.Equals("Email"))
+                {
+                    value = ValidatedInputProvider.GetValidateEmail(value);
+                }
+
                 object typedValue = Convert.ChangeType(value, property.PropertyType);
                 property.SetValue(user, typedValue);
             }
@@ -57,8 +65,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             GetSignupDetails(out User user);
 
             userAuthenticationService.AddUser(user);
-
-            Console.WriteLine("Sign up successfully !");
         }
         public static void GetLoginDetails(out string userName, out string password)
         {

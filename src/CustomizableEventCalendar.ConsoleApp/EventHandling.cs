@@ -18,6 +18,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         public static EventService eventService = new EventService();
 
         public static ShareCalendar shareCalendar = new ShareCalendar();
+
+        static ValidationService validationService = new ValidationService();
         public static void PrintColorMessage(string message, ConsoleColor color)
         {
             Console.ForegroundColor = color;
@@ -36,15 +38,16 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             PrintColorMessage("8. Collaborate from shared calendar", ConsoleColor.DarkGreen);
             PrintColorMessage("9. Add event with multiple invitees", ConsoleColor.DarkGray);
             PrintColorMessage("0. Back", ConsoleColor.Gray);
+
             Console.Write("Select Any Option :- ");
         }
         public static void AskForChoice()
         {
-            ShowAllChoices();
+            int choice = GetValidatedChoice();
 
-            EventOperationsEnum choice = (EventOperationsEnum)Convert.ToInt32(Console.ReadLine());
+            EventOperationsEnum option = (EventOperationsEnum)choice;
 
-            switch (choice)
+            switch (option)
             {
                 case EventOperationsEnum.Add:
                     AddEvent();
@@ -85,6 +88,21 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             if (!choice.Equals(EventOperationsEnum.Back)) AskForChoice();
             else Authentication.AskForChoice();
         }
+        public static int GetValidatedChoice()
+        {
+            ShowAllChoices();
+
+            string inputFromConsole = Console.ReadLine();
+            int choice;
+
+            while (!validationService.ValidateInput(inputFromConsole, out choice, int.TryParse))
+            {
+                ShowAllChoices();
+
+                inputFromConsole = Console.ReadLine();
+            }
+            return choice;
+        }
         public static void HandleProposedEvent()
         {
             Event eventObj = new Event();
@@ -94,10 +112,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             RecurrencePatternCustom recurrencePattern = new RecurrencePatternCustom();
 
-            Console.Write("Enter date for the propose event (Enter date in dd-MM-yyyy) :- ");
-            string eventDate = Console.ReadLine();
-            recurrencePattern.DTSTART = Convert.ToDateTime(eventDate);
-            recurrencePattern.UNTILL = Convert.ToDateTime(eventDate);
+            DateTime propedDate = ValidatedInputProvider.GetValidatedDateTime("Enter date for the propose event (Enter " +
+                                                                              "date in dd-MM-yyyy) :- ");
+
+            recurrencePattern.DTSTART = propedDate;
+            recurrencePattern.UNTILL = propedDate;
 
             int eventId = eventService.Create(eventObj, recurrencePattern);
 
@@ -105,21 +124,20 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             MultipleInviteesEventService multipleInviteesEventService = new MultipleInviteesEventService();
             multipleInviteesEventService.AddInviteesInProposedEvent(eventId, invitees);
-
-            Console.WriteLine(eventObj);
         }
         public static void ShowAllUser()
         {
             UserService userService = new UserService();
             string users = userService.GetInsensitiveInformationOfUser();
+
             Console.WriteLine(users);
         }
         public static string GetInvitees()
         {
             ShowAllUser();
 
-            Console.Write("Enter users you want to Invite. Enter users Sr No. comma separated Ex:- 1,2,3");
-            string invitees = Console.ReadLine();
+            string invitees = ValidatedInputProvider.GetValidatedCommaSeparatedInput("Enter users you want to Invite. " +
+                                                                        "Enter users Sr No. comma separated Ex:- 1,2,3");
 
             return invitees;
         }
@@ -135,6 +153,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             {
                 Console.Write($"Enter value for {property.Name}: ");
                 string value = Console.ReadLine();
+
+                if (property.Name.Equals("TimeBlock"))
+                {
+                    value = ValidatedInputProvider.GetValidatedTimeBlock(value);
+                }
+
                 object typedValue = Convert.ChangeType(value, property.PropertyType);
                 property.SetValue(eventObj, typedValue);
             }
@@ -160,8 +184,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             Display();
 
-            Console.Write("From Above events give event no. that you want to delete :- ");
-            int Id = Convert.ToInt32(Console.ReadLine());
+            int Id = ValidatedInputProvider.GetValidatedInteger("From Above events give event no. that you want to delete :- ");
 
             eventService.Delete(Id);
 
@@ -170,8 +193,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             Display();
 
-            Console.Write("From Above events give event no. that you want to update :- ");
-            int Id = Convert.ToInt32(Console.ReadLine());
+            int Id = ValidatedInputProvider.GetValidatedInteger("From Above events give event no. that you want to update :- ");
 
             Event eventObj = eventService.Read(Id);
 

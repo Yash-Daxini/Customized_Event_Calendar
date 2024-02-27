@@ -9,13 +9,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {
     internal class SharedEventCollaboration
     {
+        static ValidationService validationService = new ValidationService();
         public void ShowSharedEvents()
         {
             ShareCalendar shareCalendar = new ShareCalendar();
             shareCalendar.ViewSharedCalendars();
 
-            Console.Write("Enter Sr.No of the event which you want to collaborate :- ");
-            int scheduleEventId = Convert.ToInt32(Console.ReadLine());
+            int scheduleEventId = ValidatedInputProvider.GetValidatedInteger("Enter Sr.No of the event which you " +
+                                                                             "want to collaborate :- ");
 
             SharedEventCollaborationService sharedEventCollaborationService = new SharedEventCollaborationService();
             sharedEventCollaborationService.AddCollaborator(scheduleEventId);

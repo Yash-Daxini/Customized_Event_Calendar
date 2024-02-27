@@ -1,4 +1,5 @@
-﻿// Ignore Spelling: Upsert
+﻿using System.Reflection;
+using System.Threading.Channels;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp.InputMessageStore;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
@@ -9,10 +10,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
     internal class RecurrenceHandling
     {
         public static RecurrenceService recurrenceService = new RecurrenceService();
+
+        static ValidationService validationService = new ValidationService();
         public static RecurrencePatternCustom AskForRecurrenceChoice(int? Id)
         {
-            Console.WriteLine("Are you want repeat this event ? \n 1. Yes 2. No :- ");
-            RecurrencePatternChoiceEnum isRepeative = (RecurrencePatternChoiceEnum)Convert.ToInt32(Console.ReadLine());
+            int choice = ValidatedInputProvider.GetValidatedInteger("Are you want repeat this event ? \n 1. Yes 2. No :- ");
+
+            RecurrencePatternChoiceEnum isRepeative = (RecurrencePatternChoiceEnum)choice;
 
             RecurrencePatternCustom recurrencePattern = new RecurrencePatternCustom();
 
@@ -36,11 +40,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             Console.WriteLine("Enter dates for the event :- ");
 
-            Console.Write(RecurrencePatternMessages.StartDate);
-            recurrencePattern.DTSTART = Convert.ToDateTime(Console.ReadLine());
+            recurrencePattern.DTSTART = ValidatedInputProvider.GetValidatedDateTime(RecurrencePatternMessages.StartDate);
 
-            Console.Write(RecurrencePatternMessages.EndDate);
-            recurrencePattern.UNTILL = Convert.ToDateTime(Console.ReadLine());
+            recurrencePattern.UNTILL = ValidatedInputProvider.GetValidatedDateTime(RecurrencePatternMessages.EndDate);
         }
         public static RecurrencePatternCustom GetRecurrenceForSingleEvent(int? Id)
         {
@@ -64,13 +66,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             GetDates(ref recurrencePattern);
 
-            Console.Write(RecurrencePatternMessages.Frequency);
-            RecurrencePatternFrequencyEnum choiceForFreq = (RecurrencePatternFrequencyEnum)Convert.ToInt32(Console.ReadLine());
+            int frequency = ValidatedInputProvider.GetValidatedInteger(RecurrencePatternMessages.Frequency);
+
+            RecurrencePatternFrequencyEnum choiceForFreq = (RecurrencePatternFrequencyEnum)frequency;
 
             HandleRecurrenceFrequency(choiceForFreq, ref recurrencePattern);
 
-            Console.Write(RecurrencePatternMessages.Interval);
-            recurrencePattern.INTERVAL = Console.ReadLine();
+            recurrencePattern.INTERVAL = ValidatedInputProvider.GetValidatedInteger(RecurrencePatternMessages.Interval) + "";
 
             return recurrencePattern;
         }
@@ -78,24 +80,34 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             switch (choiceForFreq)
             {
+
                 case RecurrencePatternFrequencyEnum.Daily:
                     recurrencePattern.FREQ = "daily";
+
                     recurrencePattern.BYDAY = DailyRecurrence();
                     break;
+
                 case RecurrencePatternFrequencyEnum.Weekly:
                     recurrencePattern.FREQ = "weekly";
+
                     recurrencePattern.BYDAY = WeeklyRecurrence();
                     break;
+
                 case RecurrencePatternFrequencyEnum.Monthly:
                     recurrencePattern.FREQ = "monthly";
+
                     recurrencePattern.BYMONTHDAY = MonthlyRecurrence();
                     break;
+
                 case RecurrencePatternFrequencyEnum.Yearly:
                     recurrencePattern.FREQ = "yearly";
+
                     string yearlyRecurrenceDetails = YearlyRecurrence();
+
                     recurrencePattern.BYMONTH = yearlyRecurrenceDetails.Split("-")[0];
                     recurrencePattern.BYMONTHDAY = yearlyRecurrenceDetails.Split("-")[1];
                     break;
+
                 default:
                     Console.WriteLine("Please Enter correct option !");
                     GetRecurrencePattern(null);
@@ -104,34 +116,29 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         }
         public static string DailyRecurrence()
         {
-            Console.Write(RecurrencePatternMessages.Days);
+            string days = ValidatedInputProvider.GetValidatedCommaSeparatedInput(RecurrencePatternMessages.Days);
 
-            string days = Console.ReadLine();
             return days;
         }
         public static string WeeklyRecurrence()
         {
-            Console.Write(RecurrencePatternMessages.Days);
-            string days = Console.ReadLine();
+            string days = ValidatedInputProvider.GetValidatedCommaSeparatedInput(RecurrencePatternMessages.Days);
 
             return days;
         }
         public static string MonthlyRecurrence()
         {
-            Console.Write(RecurrencePatternMessages.MonthDays);
-            string days = Console.ReadLine();
+            string monthDays = ValidatedInputProvider.GetValidatedCommaSeparatedInput(RecurrencePatternMessages.MonthDays);
 
-            return days;
+            return monthDays;
         }
         public static string YearlyRecurrence()
         {
-            Console.WriteLine(RecurrencePatternMessages.Months);
-            string days = Console.ReadLine();
+            string monthDays = ValidatedInputProvider.GetValidatedCommaSeparatedInput(RecurrencePatternMessages.MonthDays);
 
-            Console.WriteLine(RecurrencePatternMessages.MonthDays);
-            string month = Console.ReadLine();
+            string month = ValidatedInputProvider.GetValidatedCommaSeparatedInput(RecurrencePatternMessages.Months);
 
-            return days + "-" + month;
+            return monthDays + "-" + month;
         }
     }
 }
