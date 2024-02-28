@@ -5,7 +5,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 {
     internal class RecurrenceService
     {
-        RecurrencePatternRepository recurrencePatternRepository = new RecurrencePatternRepository();
+        private readonly RecurrencePatternRepository recurrencePatternRepository = new RecurrencePatternRepository();
         public List<RecurrencePatternCustom> Read()
         {
             List<RecurrencePatternCustom> recurrencePatterns = new List<RecurrencePatternCustom>();

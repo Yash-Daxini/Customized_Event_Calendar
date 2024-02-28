@@ -16,7 +16,6 @@ public class Program
         try
         {
             Authentication.AskForChoice();
-            Console.ReadKey();
         }
         catch (Exception ex)
         {

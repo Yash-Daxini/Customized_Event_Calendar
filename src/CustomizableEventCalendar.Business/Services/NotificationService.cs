@@ -10,7 +10,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 {
     internal class NotificationService
     {
-        ScheduleEventService scheduleEventService = new ScheduleEventService();
+        private readonly ScheduleEventService scheduleEventService = new ScheduleEventService();
         public string GenerateNotification()
         {
             StringBuilder notification = new StringBuilder();
@@ -54,8 +54,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             if (missedEvents.Count == 0) return "";
 
-            completedEvents.AppendLine($"You missed this events :- ");
-            completedEvents.AppendLine($"{PrintHandler.PrintHorizontalLine()}");   
+            completedEvents.AppendLine($"Completed events :- ");
+            completedEvents.AppendLine($"{PrintHandler.PrintHorizontalLine()}");
 
             EventCollaboratorsService eventCollaboratorsService = new EventCollaboratorsService();
 
@@ -70,7 +70,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                 if (eventCollaborator != null && eventCollaborator.UserId != GlobalData.user.Id) continue;
 
-                Event eventObj = events.FirstOrDefault(eventObj => eventObj.Id == eventIdFromEventCollaboratorId);
+                Event? eventObj = events.FirstOrDefault(eventObj => eventObj.Id == eventIdFromEventCollaboratorId);
                 completedEvents.AppendLine($"Event :- {eventObj.Title}, " +
                                            $"Description :- {eventObj.Description}, " +
                                            $"Date : {scheduleEvent.ScheduledDate}");
@@ -137,8 +137,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                                                            eventCollaborator.UserId == GlobalData.user.Id)
                                                    .ToList();
 
-            bool isUserHasProposedEvent = eventCollaborators.Count(eventCollaborator =>
-                                                             eventCollaborator.UserId == GlobalData.user.Id) != 0;
+            bool isUserHasProposedEvent = eventCollaborators.Exists(eventCollaborator =>
+                                                             eventCollaborator.UserId == GlobalData.user.Id);
 
 
             if (events.Count == 0 || !isUserHasProposedEvent) return "";

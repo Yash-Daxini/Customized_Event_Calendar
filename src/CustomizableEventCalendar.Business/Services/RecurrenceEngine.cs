@@ -4,9 +4,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 {
     internal class RecurrenceEngine
     {
-        ScheduleEventService scheduleEventService = new ScheduleEventService();
-        RecurrenceService recurrenceService = new RecurrenceService();
-        EventCollaboratorsService eventCollaboratorsService = new EventCollaboratorsService();
+        private readonly ScheduleEventService scheduleEventService = new ScheduleEventService();
+        private readonly RecurrenceService recurrenceService = new RecurrenceService();
+        private readonly EventCollaboratorsService eventCollaboratorsService = new EventCollaboratorsService();
         public void ScheduleEventsOfThisMonth()
         {
             EventService eventService = new EventService();

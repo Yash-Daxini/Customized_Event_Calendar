@@ -98,9 +98,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                                                                      .ToList();
 
 
-            foreach (var scheduleEvent in scheduleEvents)
+            foreach (var scheduleDate in scheduleEvents.Select(scheduleEvent => scheduleEvent.ScheduledDate))
             {
-                DateTime scheduleDate = scheduleEvent.ScheduledDate;
                 nonFreeHours[scheduleDate.Hour]++;
             }
 

@@ -128,8 +128,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                 var calendar2 = Calendar.Load(event2Serialized);
 
-                Calendar calendar = new Calendar();
-
                 var occurrences1 = calendar1.GetOccurrences(event1.Start, event1.End).ToList();
                 var occurrences2 = calendar2.GetOccurrences(event2.Start, event2.End).ToList();
 

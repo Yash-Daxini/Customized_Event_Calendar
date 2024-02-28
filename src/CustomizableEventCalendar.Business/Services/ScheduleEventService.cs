@@ -10,7 +10,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 {
     internal class ScheduleEventService
     {
-        ScheduleEventRepository scheduleEventRepository = new ScheduleEventRepository();
+        private readonly ScheduleEventRepository scheduleEventRepository = new ScheduleEventRepository();
         public List<ScheduleEvent> Read()
         {
             List<ScheduleEvent> schedulers = new List<ScheduleEvent>();

@@ -9,7 +9,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {
     internal class SharedEventCollaboration
     {
-        static ValidationService validationService = new ValidationService();
         public void ShowSharedEvents()
         {
             ShareCalendar shareCalendar = new ShareCalendar();

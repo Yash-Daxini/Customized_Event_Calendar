@@ -97,9 +97,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             Console.Clear();
 
+            PrintHandler.ShowLoadingAnimation();
             Console.ForegroundColor = ConsoleColor.Green;
+            Console.SetCursorPosition(0, Console.CursorTop);
             Console.WriteLine($"{PrintHandler.CenterText()}Welcome {GlobalData.user.Name}");
-            Thread.Sleep(2000);
+            Thread.Sleep(1000);
             Console.ResetColor();
             Console.Clear();
 

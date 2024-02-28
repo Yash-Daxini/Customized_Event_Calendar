@@ -10,13 +10,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 {
     internal class EventCollaboratorsService
     {
-        EventCollaboratorsRepository eventCollaboratorsRepository = new EventCollaboratorsRepository();
+        private readonly EventCollaboratorsRepository _eventCollaboratorsRepository = new EventCollaboratorsRepository();
         public List<EventCollaborators> Read()
         {
             List<EventCollaborators> eventCollaborators = new List<EventCollaborators>();
             try
             {
-                eventCollaborators = eventCollaboratorsRepository.Read(data => new EventCollaborators(data));
+                eventCollaborators = _eventCollaboratorsRepository.Read(data => new EventCollaborators(data));
             }
             catch (Exception ex)
             {
@@ -29,7 +29,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             EventCollaborators? eventCollaborators = null;
             try
             {
-                eventCollaborators = eventCollaboratorsRepository.Read(data => new EventCollaborators(data), eventCollaboratorId);
+                eventCollaborators = _eventCollaboratorsRepository.Read(data => new EventCollaborators(data), eventCollaboratorId);
             }
             catch (Exception ex)
             {
@@ -43,7 +43,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             try
             {
-                eventCollaboratorsId = eventCollaboratorsRepository.Create(eventCollaborators);
+                eventCollaboratorsId = _eventCollaboratorsRepository.Create(eventCollaborators);
             }
             catch (Exception ex)
             {
@@ -55,7 +55,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             try
             {
-                eventCollaboratorsRepository.DeleteByEventId(eventId);
+                _eventCollaboratorsRepository.DeleteByEventId(eventId);
             }
             catch (Exception ex)
             {
@@ -67,7 +67,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             EventCollaborators eventCollaborator = null;
             try
             {
-                eventCollaborator = eventCollaboratorsRepository.ReadByEventId(eventId);
+                eventCollaborator = _eventCollaboratorsRepository.ReadByEventId(eventId);
             }
             catch (Exception ex)
             {

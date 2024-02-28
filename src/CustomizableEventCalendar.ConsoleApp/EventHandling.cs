@@ -39,7 +39,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             PrintColorMessage("9. Add event with multiple invitees", ConsoleColor.DarkGray);
             PrintColorMessage("0. Back", ConsoleColor.Gray);
 
-            Console.Write("Select Any Option :- ");
+            Console.Write("\nSelect Any Option :- ");
         }
         public static void AskForChoice()
         {
@@ -85,8 +85,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                     break;
             }
 
-            if (!choice.Equals(EventOperationsEnum.Back)) AskForChoice();
-            else Authentication.AskForChoice();
+            if (option.Equals(EventOperationsEnum.Back)) Authentication.AskForChoice();
+            else AskForChoice();
         }
         public static int GetValidatedChoice()
         {
@@ -177,7 +177,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         }
         public static void Display()
         {
-            string eventList = eventService.GenerateEventList();
+            string eventList = eventService.GenerateEventTable();
             Console.WriteLine(eventList);
         }
         public static void Delete()

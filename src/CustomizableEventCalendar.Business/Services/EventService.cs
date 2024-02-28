@@ -9,8 +9,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 {
     internal class EventService
     {
-        EventRepository eventRepository = new EventRepository();
-        RecurrencePatternRepository recurrencePatternRepository = new RecurrencePatternRepository();
+        private readonly EventRepository _eventRepository = new EventRepository();
+        private readonly RecurrencePatternRepository _recurrencePatternRepository = new RecurrencePatternRepository();
 
         public int Create(Event eventObj, RecurrencePatternCustom recurrencePattern)
         {
@@ -24,15 +24,15 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 EventHandling.AskForChoice();
             }
 
-            using (TransactionScope transactionScope = new TransactionScope())
+            using (TransactionScope transactionScope = new())
             {
                 try
                 {
-                    int recurrenceId = recurrencePatternRepository.Create(recurrencePattern);
+                    int recurrenceId = _recurrencePatternRepository.Create(recurrencePattern);
 
                     eventObj.RecurrenceId = recurrenceId;
 
-                    Id = eventRepository.Create<Event>(eventObj);
+                    Id = _eventRepository.Create<Event>(eventObj);
 
                     eventObj.Id = Id;
 
@@ -52,7 +52,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 }
                 catch (Exception ex)
                 {
-                    transactionScope.Dispose();
                     Console.WriteLine("An error occurred: " + ex.Message);
                 }
             }
@@ -65,7 +64,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             try
             {
-                listOfEvents = eventRepository.Read<Event>(data => new Event(data)).ToList();
+                listOfEvents = _eventRepository.Read<Event>(data => new Event(data)).ToList();
             }
             catch (Exception ex)
             {
@@ -80,7 +79,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             try
             {
-                listOfEvents = eventRepository.Read<Event>(data => new Event(data), Id);
+                listOfEvents = _eventRepository.Read<Event>(data => new Event(data), Id);
 
             }
             catch (Exception ex)
@@ -92,7 +91,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         }
         public void Delete(int eventId)
         {
-            using (TransactionScope transactionScope = new TransactionScope())
+            using (TransactionScope transactionScope = new())
             {
                 try
                 {
@@ -101,7 +100,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                     ScheduleEventService scheduleEventService = new ScheduleEventService();
 
-                    Event? eventObj = eventRepository.Read<Event>(data => new Event(data), eventId);
+                    Event? eventObj = _eventRepository.Read<Event>(data => new Event(data), eventId);
 
                     int recurrenceId = eventObj == null ? 0 : Convert.ToInt32(eventObj.RecurrenceId);
 
@@ -109,28 +108,27 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                     eventCollaboratorsService.DeleteByEventId(eventId);
 
-                    eventRepository.Delete<Event>(eventId);
+                    _eventRepository.Delete<Event>(eventId);
 
-                    recurrencePatternRepository.Delete<RecurrencePatternCustom>(recurrenceId);
+                    _recurrencePatternRepository.Delete<RecurrencePatternCustom>(recurrenceId);
 
                     transactionScope.Complete();
                 }
                 catch (Exception ex)
                 {
-                    transactionScope.Dispose();
                     Console.WriteLine("An error occurred: " + ex.Message);
                 }
             }
         }
         public void Update(Event eventObj, RecurrencePatternCustom recurrencePattern, int eventId, int recurrenceId)
         {
-            using (TransactionScope transactionScope = new TransactionScope())
+            using (TransactionScope transactionScope = new())
             {
                 try
                 {
-                    recurrencePatternRepository.Update(recurrencePattern, recurrenceId);
+                    _recurrencePatternRepository.Update(recurrencePattern, recurrenceId);
 
-                    eventRepository.Update<Event>(eventObj, eventId);
+                    _eventRepository.Update<Event>(eventObj, eventId);
 
                     ScheduleEventService scheduleEventService = new ScheduleEventService();
 
@@ -155,31 +153,33 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 }
                 catch (Exception ex)
                 {
-                    transactionScope.Dispose();
                     Console.WriteLine("An error occurred: " + ex.Message);
                 }
             }
         }
-        public string GenerateEventList()
+        public string GenerateEventTable()
         {
-            StringBuilder eventList = new StringBuilder();
-
             List<Event> events = Read().Where(eventObj => eventObj.UserId == GlobalData.user.Id).ToList();
 
-            eventList.AppendLine("\tEvent NO.\tTitle,\tDescription,\tLocation,\tTimeBlock");
+            List<List<string>> outputRows = new List<List<string>>
+            {
+                new List<string> { "Event NO." , "Title" , "Description" , "Location" , "TimeBlock" }
+            };
 
             foreach (var eventObj in events)
             {
-                eventList.AppendLine($"\t{eventObj.Id}\t{eventObj.Title}\t{eventObj.Description}\t{eventObj.Location}\t{eventObj.TimeBlock}");
+                outputRows.Add(new List<string> { eventObj.Id.ToString(), eventObj.Title, eventObj.Description, eventObj.Location, eventObj.TimeBlock });
             }
 
-            return eventList.ToString();
+            string eventTable = PrintHandler.PrintTable(outputRows);
+
+            return eventTable;
         }
         public void ConvertProposedEventToScheduleEvent(int eventId)
         {
             try
             {
-                eventRepository.ConvertProposedEventToScheduleEvent(eventId);
+                _eventRepository.ConvertProposedEventToScheduleEvent(eventId);
             }
             catch (Exception ex)
             {

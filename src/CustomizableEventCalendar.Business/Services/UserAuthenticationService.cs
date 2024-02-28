@@ -1,4 +1,6 @@
-﻿using System.Data.SqlClient;
+﻿// Ignore Spelling: username
+
+using System.Data.SqlClient;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 
@@ -6,7 +8,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 {
     internal class UserAuthenticationService
     {
-        UserRepository userRepository = new UserRepository();
+        private readonly UserRepository userRepository = new UserRepository();
         public bool Authenticate(string username, string password)
         {
             User? user = null;
