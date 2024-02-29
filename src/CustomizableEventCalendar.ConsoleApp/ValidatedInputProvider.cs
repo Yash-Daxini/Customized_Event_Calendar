@@ -7,7 +7,7 @@ using CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {
-    internal class ValidatedInputProvider
+    internal static class ValidatedInputProvider
     {
         static ValidationService validationService = new ValidationService();
         public static DateTime GetValidatedDateTime(string inputMessage)
@@ -76,7 +76,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             while (!validationService.ValidateEmail(email))
             {
                 Console.Write($"Enter value for Email: ");
-                string value = Console.ReadLine();
+                email = Console.ReadLine();
             }
 
             return email;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
@@ -25,13 +26,15 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         }
         public static void ShowLoadingAnimation()
         {
-            Console.WriteLine("Fetching your data");
+            string message = "Fetching your data";
+            Console.SetCursorPosition((Console.WindowWidth - message.Length) / 2, Console.CursorTop);
+            Console.WriteLine(message);
             for (int i = 0; i <= 100; i++)
             {
                 Console.SetCursorPosition(0, Console.CursorTop);
                 Console.Write(new string(' ', Console.WindowWidth));
 
-                Console.SetCursorPosition(0, Console.CursorTop);
+                Console.SetCursorPosition((Console.WindowWidth - 100) / 2, Console.CursorTop);
 
                 Console.Write("Progress: [{0}{1}] {2}%", new string('=', i), new string(' ', 100 - i), i);
 
@@ -39,70 +42,43 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             }
             Console.Clear();
         }
-        public static string PrintTable(List<List<string>> data)
+        public static void PrintEndingLine(int left)
         {
-            StringBuilder table = new StringBuilder();
+            Console.SetCursorPosition(left + 1, Console.CursorTop - 1);
+            Console.WriteLine("|");
+        }
+        public static string GiveTable(List<List<string>> data)
+        {
+            PrintService printService = new PrintService();
 
-            var columnWidths = new List<int>();
-            for (int col = 0; col < data[0].Count; col++)
-            {
-                int maxWidth = 0;
-                foreach (var row in data)
-                {
-                    maxWidth = Math.Max(maxWidth, row[col].Length);
-                }
-                columnWidths.Add(maxWidth);
-            }
-
-            for (int col = 0; col < data[0].Count; col++)
-            {
-                for (int row = 0; row < data.Count; row++)
-                {
-                    columnWidths[col] = Math.Max(columnWidths[col], data[row][col].Length);
-                }
-            }
-
-            for (int row = 0; row < data.Count; row++)
-            {
-                if (row == 0)
-                {
-                    table.Append("┌");
-                    for (int col = 0; col < data[row].Count; col++)
-                    {
-                        table.Append(new string('─', columnWidths[col] + 2) + "┬");
-                    }
-                    table.AppendLine();
-                }
-
-                table.Append("│");
-                for (int col = 0; col < data[row].Count; col++)
-                {
-                    table.Append(data[row][col].PadRight(columnWidths[col] + 2));
-                    table.Append("│");
-                }
-                table.AppendLine();
-
-                if (row < data.Count - 1)
-                {
-                    table.Append("├");
-                    for (int col = 0; col < data[row].Count; col++)
-                    {
-                        table.Append(new string('─', columnWidths[col] + 2) + "┼");
-                    }
-                    table.AppendLine();
-                }
-                else
-                {
-                    table.Append("└");
-                    for (int col = 0; col < data[row].Count; col++)
-                    {
-                        table.Append(new string('─', columnWidths[col] + 2) + "┴");
-                    }
-                    table.AppendLine();
-                }
-            }
+            string table = printService.GenerateTable(data);
 
             return table.ToString();
+        }
+        public static string GiveTableForNotification(List<List<string>> data)
+        {
+            PrintService printService = new PrintService();
+
+            string table = printService.GenerateTableForNotification(data);
+
+            return table.ToString();
+        }
+        public static void SetCursorToMiddle()
+        {
+            Console.SetCursorPosition((Console.WindowWidth - 30) / 2, Console.CursorTop);
+        }
+        public static void PrintUserName(string userName)
+        {
+            SetCursorToMiddle();
+            Console.WriteLine("╔═══════════════════════════════╗");
+            SetCursorToMiddle();
+            Console.WriteLine("║                               ║");
+            SetCursorToMiddle();
+            Console.WriteLine($"              {userName}              ");
+            SetCursorToMiddle();
+            Console.WriteLine("║                               ║");
+            SetCursorToMiddle();
+            Console.WriteLine("╚═══════════════════════════════╝");
         }
     }
 }

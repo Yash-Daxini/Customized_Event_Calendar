@@ -86,7 +86,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             }
 
             if (option.Equals(EventOperationsEnum.Back)) Authentication.AskForChoice();
-            else AskForChoice();
+            else AskForChoice(); // Remove recursion
         }
         public static int GetValidatedChoice()
         {
@@ -122,19 +122,43 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             string invitees = GetInvitees();
 
+            if (invitees.Length == 0) return;
+
             MultipleInviteesEventService multipleInviteesEventService = new MultipleInviteesEventService();
             multipleInviteesEventService.AddInviteesInProposedEvent(eventId, invitees);
         }
-        public static void ShowAllUser()
+        public static bool ShowAllUser()
         {
             UserService userService = new UserService();
-            string users = userService.GetInsensitiveInformationOfUser();
+            List<User> users = userService.GetInsensitiveInformationOfUser();
 
-            Console.WriteLine(users);
+            StringBuilder userInformation = new StringBuilder();
+
+            if (users.Count != 0)
+            {
+                List<List<string>> userTableContent = [["User Sr. No", "Name", "Email"]];
+
+                foreach (var user in users)
+                {
+                    userTableContent.Add([user.Id.ToString(), user.Name, user.Email]);
+                }
+
+                userInformation.AppendLine(PrintHandler.GiveTable(userTableContent));
+
+                Console.WriteLine(userInformation);
+            }
+            else
+            {
+                Console.WriteLine("No Users are available!");
+            }
+            return users.Count > 0;
+
         }
         public static string GetInvitees()
         {
-            ShowAllUser();
+            bool isUsersAvailable = ShowAllUser();
+
+            if (!isUsersAvailable) return "";
 
             string invitees = ValidatedInputProvider.GetValidatedCommaSeparatedInput("Enter users you want to Invite. " +
                                                                         "Enter users Sr No. comma separated Ex:- 1,2,3");
@@ -196,6 +220,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             int Id = ValidatedInputProvider.GetValidatedInteger("From Above events give event no. that you want to update :- ");
 
             Event eventObj = eventService.Read(Id);
+
+            if (eventObj == null) return;
 
             int recurrenceId = eventObj.RecurrenceId;
 

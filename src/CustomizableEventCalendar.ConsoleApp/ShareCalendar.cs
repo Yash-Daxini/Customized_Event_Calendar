@@ -17,7 +17,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         ValidationService validationService = new ValidationService();
         public void GetDetailsToShareCalendar()
         {
-            ShowAllUser();
+            bool isUsersAvailble = ShowAllUser();
+
+            if (!isUsersAvailble) return;
 
             int UserId = ValidatedInputProvider.GetValidatedInteger("Enter User No. whom you want to share calendar :- ");
 
@@ -52,11 +54,33 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             return Id;
         }
-        public void ShowAllUser()
+        public bool ShowAllUser()
         {
             UserService userService = new UserService();
-            string userInformations = userService.GetInsensitiveInformationOfUser();
-            Console.WriteLine(userInformations);
+
+            List<User> users = userService.GetInsensitiveInformationOfUser();
+
+            if(users.Count > 0) 
+            {
+                StringBuilder userInformation = new StringBuilder();
+
+                List<List<string>> userTableContent = [["User Sr. No", "Name", "Email"]];
+
+                foreach (var user in users)
+                {
+                    userTableContent.Add([user.Id.ToString(), user.Name, user.Email]);
+                }
+
+                userInformation.AppendLine(PrintHandler.GiveTable(userTableContent));
+
+                Console.WriteLine(userInformation);
+            }
+            else
+            {
+                Console.WriteLine("No users are available !");
+            }
+            return users.Count > 0;
+
         }
         public void ViewSharedCalendars()
 

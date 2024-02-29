@@ -12,22 +12,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
     internal class UserService
     {
         private readonly UserRepository userRepository = new UserRepository();
-        public string GetInsensitiveInformationOfUser()
+        public List<User> GetInsensitiveInformationOfUser()
         {
-            List<User> users = userRepository.ReadInsensitiveInformation(data => new User(data));
+            List<User> users = userRepository.ReadInsensitiveInformation(data => new User(data))
+                                             .Where(user => user.Id != GlobalData.user.Id)
+                                             .ToList();
 
-            StringBuilder userInformation = new StringBuilder();
-
-            List<List<string>> userTableContent = new List<List<string>> { new List<string> { "User Sr. No", "Name", "Email" } };
-
-            foreach (var user in users)
-            {
-                userTableContent.Add(new List<string> { user.Id.ToString(), user.Name, user.Email });
-            }
-
-            userInformation.AppendLine(PrintHandler.PrintTable(userTableContent));
-
-            return userInformation.ToString();
+            return users;
+            
         }
         public User? Read(int userId)
         {

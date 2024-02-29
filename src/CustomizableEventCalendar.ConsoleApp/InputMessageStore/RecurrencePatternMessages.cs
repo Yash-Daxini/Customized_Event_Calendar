@@ -10,7 +10,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp.Inp
     {
         public readonly static string StartDate = "Enter Start Date :-  (Please enter date in dd-mm-yyyy hh:mm:ss) :- ";
 
-        public readonly static string EndDate = "Enter Start Date :-  (Please enter date in dd-mm-yyyy hh:mm:ss) :- ";
+        public readonly static string EndDate = "Enter End Date :-  (Please enter date in dd-mm-yyyy hh:mm:ss) :- ";
 
         public readonly static string Frequency = "How frequent you want to repeat the event:" +
                                                   "\n1. Daily\t2. Weekly\t3. Monthly\t4. Yearly: ";

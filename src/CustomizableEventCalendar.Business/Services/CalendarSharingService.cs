@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
@@ -12,12 +7,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 {
     internal class CalendarSharingService
     {
-        SharedCalendarRepository _sharedEventsRepository = new SharedCalendarRepository();
+        private readonly SharedCalendarRepository _sharedEventsRepository = new();
         public void AddSharedCalendar(SharedCalendar sharedEvent)
         {
             try
             {
-                _sharedEventsRepository = new SharedCalendarRepository();
                 _sharedEventsRepository.Create(sharedEvent);
             }
             catch (Exception ex)
@@ -28,7 +22,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public List<SharedCalendar> GetSharedEvents()
         {
-            List<SharedCalendar> sharedEvents = new List<SharedCalendar>();
+            List<SharedCalendar> sharedEvents = [];
 
             try
             {
@@ -48,68 +42,71 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         public string GenerateDisplayFormatForSharedEvents()
         {
             List<SharedCalendar> sharedEvents = GetSharedEvents();
-            StringBuilder sharedEventsDisplayString = new StringBuilder();
 
-            UserRepository userService = new UserRepository();
+            StringBuilder sharedEventsDisplayString = new();
 
-            List<List<string>> sharedEventsTableContent = new List<List<string>> { new List<string> { "Sr. NO", "Shared by", "From", "To" } };
+            UserRepository userService = new();
+
+            List<List<string>> sharedEventsTableContent = [["Sr. NO", "Shared by", "From", "To"]];
 
             foreach (var sharedEvent in sharedEvents)
             {
-                User user = userService.Read(data => new User(data), sharedEvent.SharedByUserId);
-                sharedEventsTableContent.Add(new List<string>{sharedEvent.Id.ToString(),user.Name,
-                                                              sharedEvent.FromDate+"" , sharedEvent.ToDate+"" });
+                User? user = userService.Read(data => new User(data), sharedEvent.SharedByUserId);
+                sharedEventsTableContent.Add([sharedEvent.Id.ToString(),user.Name,sharedEvent.FromDate+""
+                                              ,sharedEvent.ToDate+"" ]);
             }
 
-            sharedEventsDisplayString.Append(PrintHandler.PrintTable(sharedEventsTableContent));
+            sharedEventsDisplayString.Append(PrintHandler.GiveTable(sharedEventsTableContent));
 
             return sharedEventsDisplayString.ToString();
         }
 
         public List<ScheduleEvent> GetSharedScheduleEvents(SharedCalendar sharedEvent, HashSet<int> sharedEventIds)
         {
-            ScheduleEventRepository scheduleEventRepository = new ScheduleEventRepository();
+            ScheduleEventRepository scheduleEventRepository = new();
 
-            ScheduleEventService scheduleEventService = new ScheduleEventService();
+            ScheduleEventService scheduleEventService = new();
 
             List<ScheduleEvent> schedulers = scheduleEventRepository.Read(data => new ScheduleEvent(data))
-                                                           .Where(scheduleEvent =>
-                                                                DateOnly.FromDateTime(scheduleEvent.ScheduledDate)
-                                                                >= sharedEvent.FromDate &&
-                                                                DateOnly.FromDateTime(scheduleEvent.ScheduledDate)
-                                                                <= sharedEvent.ToDate)
-                                                           .ToList();
+                                                                    .Where(scheduleEvent =>
+                                                                        DateOnly.FromDateTime(scheduleEvent.ScheduledDate)
+                                                                        >= sharedEvent.FromDate &&
+                                                                        DateOnly.FromDateTime(scheduleEvent.ScheduledDate)
+                                                                        <= sharedEvent.ToDate)
+                                                                    .ToList();
 
             schedulers = schedulers.Where(scheduleEvent => sharedEventIds.Contains
                                     (scheduleEventService.GetEventIdFromEventCollaborators(
                                                                   scheduleEvent.EventCollaboratorsId)))
-                                    .ToList();
+                                   .ToList();
 
             return schedulers;
         }
 
         public string GenerateSharedCalendar(int sharedEventId)
         {
-            SharedCalendar sharedEvent = _sharedEventsRepository.Read(data => new SharedCalendar(data), sharedEventId);
+            SharedCalendar? sharedEvent = _sharedEventsRepository.Read(data => new SharedCalendar(data), sharedEventId);
 
-            EventRepository eventRepository = new EventRepository();
+            if (sharedEvent == null) return "";
+
+            EventRepository eventRepository = new();
             List<Event> events = eventRepository.Read(data => new Event(data));
 
             HashSet<int> sharedEventIds = events.Where(eventObj => eventObj.UserId == sharedEvent.SharedByUserId)
-                                          .Select(eventObj => eventObj.Id)
-                                          .ToHashSet();
+                                                .Select(eventObj => eventObj.Id)
+                                                .ToHashSet();
 
             List<ScheduleEvent> schedulers = GetSharedScheduleEvents(sharedEvent, sharedEventIds);
 
-            StringBuilder sharedEventInfo = new StringBuilder();
+            StringBuilder sharedEventInfo = new();
 
             DateOnly startDate = sharedEvent.FromDate;
             DateOnly endDate = sharedEvent.ToDate;
 
             ScheduleEventService scheduleEventService = new ScheduleEventService();
 
-            List<List<string>> sharedEventTableContent = new List<List<string>> { new List<string> { "Sr No.", "Event No.",
-                                                                                 "Event Title", "Event Description", "Event Timing" } };
+            List<List<string>> sharedEventTableContent = [[ "Sr No.", "Event No.","Event Title","Event Description",
+                                                            "Event Timing"]];
 
             while (startDate <= endDate)
             {
@@ -126,14 +123,16 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                                                              (scheduleEvent.EventCollaboratorsId)
                                                             );
 
-                    sharedEventTableContent.Add(new List<string> { scheduleEvent.Id.ToString() , eventObj.Id.ToString(),eventObj.Title,
-                                                                   eventObj.Description,scheduleEvent.ScheduledDate.ToString() });
+                    sharedEventTableContent.Add([scheduleEvent.Id.ToString() , eventObj.Id.ToString(),
+                                                 eventObj.Title,eventObj.Description,
+                                                 scheduleEvent.ScheduledDate.ToString()
+                                                ]);
                 }
 
                 startDate = startDate.AddDays(1);
             }
 
-            sharedEventInfo.AppendLine(PrintHandler.PrintTable(sharedEventTableContent));
+            sharedEventInfo.AppendLine(PrintHandler.GiveTable(sharedEventTableContent));
 
             return sharedEventInfo.ToString();
         }

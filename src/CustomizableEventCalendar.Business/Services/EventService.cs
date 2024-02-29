@@ -21,7 +21,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             if (overlappingEventService.IsOverlappingEvent(recurrencePattern))
             {
                 Console.WriteLine("This event overlaps with other event. Please enter valid event");
-                EventHandling.AskForChoice();
+                return 0;
             }
 
             using (TransactionScope transactionScope = new())
@@ -171,7 +171,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 outputRows.Add(new List<string> { eventObj.Id.ToString(), eventObj.Title, eventObj.Description, eventObj.Location, eventObj.TimeBlock });
             }
 
-            string eventTable = PrintHandler.PrintTable(outputRows);
+            string eventTable = PrintHandler.GiveTable(outputRows);
 
             return eventTable;
         }

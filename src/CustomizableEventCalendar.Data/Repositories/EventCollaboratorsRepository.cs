@@ -19,7 +19,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
 
             Disconnect();
         }
-        public EventCollaborators ReadByEventId(int eventId)
+        public EventCollaborators? ReadByEventId(int eventId)
         {
             string query = @$"Select * from [dbo].[EventCollaborators]
                               where EventId = {eventId} and UserId = {GlobalData.user.Id}";

@@ -108,8 +108,15 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             var event1Serialized = serializer.SerializeToString(new Calendar { Events = { event1 } });
             var calendar1 = Calendar.Load(event1Serialized);
 
-            RecurrenceService recurrenceService = new RecurrenceService();
-            List<RecurrencePatternCustom> recurrencePatternCustoms = recurrenceService.Read();
+            EventService eventService = new EventService();
+            List<Event> events = eventService.Read()
+                                             .Where(eventObj => eventObj.UserId == GlobalData.user.Id)
+                                             .ToList();
+
+            RecurrenceService recurrenceService = new RecurrenceService(); 
+            List<RecurrencePatternCustom> recurrencePatternCustoms = events.Select(eventObj => recurrenceService
+                                                                                    .Read(eventObj.RecurrenceId))
+                                                                           .ToList();
 
             foreach (var recurrencePattern in recurrencePatternCustoms)
             {

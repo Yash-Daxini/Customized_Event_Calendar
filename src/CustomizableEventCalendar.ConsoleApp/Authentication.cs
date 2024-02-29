@@ -105,9 +105,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             Console.ResetColor();
             Console.Clear();
 
-            Console.WriteLine(PrintHandler.PrintHorizontalLine());
-            Console.WriteLine($"{PrintHandler.CenterText()}Name : {GlobalData.user.Name}");
-            Console.WriteLine(PrintHandler.PrintHorizontalLine());
+            PrintHandler.PrintUserName(GlobalData.user.Name);
             Console.WriteLine();
 
             ShowNotification();

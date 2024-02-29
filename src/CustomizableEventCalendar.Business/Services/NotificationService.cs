@@ -48,7 +48,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             DateTime todayDate = DateTime.Now;
 
             List<ScheduleEvent> missedEvents = scheduleEvents.Where(scheduleEvent =>
-                                                                    scheduleEvent.ScheduledDate.Date <
+                                                                    scheduleEvent.ScheduledDate.Date <=
                                                                     todayDate.Date)
                                                              .ToList();
 
@@ -58,6 +58,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             completedEvents.AppendLine($"{PrintHandler.PrintHorizontalLine()}");
 
             EventCollaboratorsService eventCollaboratorsService = new EventCollaboratorsService();
+
+            List<List<string>> completedEventNotificationsTableContent = new List<List<string>> { new List<string> { "Event",
+                                                                                            "Description", "Date" } };
 
             foreach (ScheduleEvent scheduleEvent in missedEvents)
             {
@@ -71,10 +74,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 if (eventCollaborator != null && eventCollaborator.UserId != GlobalData.user.Id) continue;
 
                 Event? eventObj = events.FirstOrDefault(eventObj => eventObj.Id == eventIdFromEventCollaboratorId);
-                completedEvents.AppendLine($"Event :- {eventObj.Title}, " +
-                                           $"Description :- {eventObj.Description}, " +
-                                           $"Date : {scheduleEvent.ScheduledDate}");
+                completedEventNotificationsTableContent.Add(new List<string> {eventObj.Title,
+                                                                         eventObj.Description,
+                                                                         scheduleEvent.ScheduledDate.ToString() });
             }
+
+            completedEvents.AppendLine(PrintHandler.GiveTableForNotification(completedEventNotificationsTableContent));
 
             return completedEvents.ToString();
         }
@@ -94,6 +99,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             upcommingEvents.AppendLine("Your today's events :- ");
             upcommingEvents.AppendLine($"{PrintHandler.PrintHorizontalLine()}");
 
+            List<List<string>> upcommingEventNotificationsTableContent = new List<List<string>> { new List<string> { "Event",
+                                                                                            "Description", "Date" , "Time" } };
+
             EventCollaboratorsService eventCollaboratorsService = new EventCollaboratorsService();
 
             foreach (ScheduleEvent scheduleEvent in upcommingEventsList)
@@ -112,11 +120,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                                                        scheduleEventService.GetEventIdFromEventCollaborators
                                                                             (scheduleEvent.EventCollaboratorsId));
 
-                upcommingEvents.AppendLine($"Event :- {eventObj.Title}, " +
-                                           $"Description :- {eventObj.Description}, " +
-                                           $"Date : {scheduleEvent.ScheduledDate}" +
-                                           $"Time :- {eventObj.TimeBlock}");
+                upcommingEventNotificationsTableContent.Add(new List<string>{eventObj.Title,
+                                                                             eventObj.Description,
+                                                                             scheduleEvent.ScheduledDate.ToString(),
+                                                                             eventObj.TimeBlock});
             }
+
+            upcommingEvents.AppendLine(PrintHandler.GiveTableForNotification(upcommingEventNotificationsTableContent));
 
             return upcommingEvents.ToString();
         }
@@ -146,6 +156,15 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             proposedEvents.AppendLine("Proposed Events");
             proposedEvents.AppendLine($"{PrintHandler.PrintHorizontalLine()}");
 
+            List<List<string>> propsedEventNotificationsTableContent = new List<List<string>> { new List<string>
+                                                                                                    { "Event Proposed by",
+                                                                                                      "Date",
+                                                                                                      "Time Block",
+                                                                                                      "Event",
+                                                                                                      "Description"
+                                                                                                    }
+                                                                                               };
+
             UserService userService = new UserService();
             RecurrenceService recurrenceService = new RecurrenceService();
             EventService eventService = new EventService();
@@ -157,11 +176,15 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 if (eventObj.UserId == GlobalData.user.Id) continue;
                 User? eventProposer = userService.Read(eventObj.UserId);
                 RecurrencePatternCustom recurrencePattern = recurrenceService.Read(eventObj.RecurrenceId);
-                proposedEvents.AppendLine($"Event Proposed by {eventProposer.Name} on " +
-                                          $"{recurrencePattern.DTSTART}between {eventObj.TimeBlock}. " +
-                                          $"Event Title :- {eventObj.Title} , " +
-                                          $"Event Description :-{eventObj.Description}");
+                propsedEventNotificationsTableContent.Add(new List<string> { eventProposer.Name,
+                                                                             recurrencePattern.DTSTART.ToString(),
+                                                                             eventObj.TimeBlock,
+                                                                             eventObj.Title,eventObj.Description
+                                                                           }
+                                                         );
             }
+
+            proposedEvents.AppendLine(PrintHandler.GiveTableForNotification(propsedEventNotificationsTableContent));
 
             return proposedEvents.ToString();
         }
