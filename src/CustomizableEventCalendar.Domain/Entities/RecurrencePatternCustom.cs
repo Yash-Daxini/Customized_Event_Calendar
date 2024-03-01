@@ -12,6 +12,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
     internal class RecurrencePatternCustom : BaseData
     {
         public RecurrencePatternCustom() { }
+
         public RecurrencePatternCustom(int Id, DateTime DTSTART, DateTime UNTILL, string FREQ, string COUNT, string INTERVAL, string BYDAY, string BYWEEK, string BYMONTH, string BYYEAR, string BYMONTHDAY)
         {
             this.Id = Id;
@@ -26,6 +27,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
             this.BYYEAR = BYYEAR;
             this.BYMONTHDAY = BYMONTHDAY;
         }
+
         public RecurrencePatternCustom(DateTime DTSTART, DateTime UNTILL, string FREQ, string COUNT, string INTERVAL, string BYDAY, string BYWEEK, string BYMONTH, string BYYEAR, string BYMONTHDAY)
         {
             this.DTSTART = DTSTART;
@@ -39,6 +41,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
             this.BYYEAR = BYYEAR;
             this.BYMONTHDAY = BYMONTHDAY;
         }
+
         public RecurrencePatternCustom(SqlDataReader sqlDataReader)
         {
             DTSTART = Convert.ToDateTime(sqlDataReader["DTSTART"]);
@@ -52,6 +55,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
             BYYEAR = sqlDataReader["BYYEAR"] == DBNull.Value ? null : sqlDataReader["BYYEAR"].ToString();
             BYMONTHDAY = sqlDataReader["BYMONTHDAY"] == DBNull.Value ? null : sqlDataReader["BYMONTHDAY"].ToString();
         }
+
         [NotMapped]
         public int Id { get; set; }
         public DateTime DTSTART { get; set; }
@@ -64,6 +68,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
         public string? BYMONTH { get; set; }
         public string? BYYEAR { get; set; }
         public string? BYMONTHDAY { get; set; }
+
         public override string ToString()
         {
             return $"{DTSTART}\t{UNTILL}\t{FREQ}\t{COUNT}\t{INTERVAL}\t{BYDAY}\t{BYWEEK}\t{BYMONTH}\t{BYYEAR}\t{BYMONTHDAY}";

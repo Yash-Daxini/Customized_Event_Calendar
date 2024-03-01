@@ -10,6 +10,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
 {
     internal class SharedCalendar : BaseData
     {
+
         public SharedCalendar(int Id, int UserId, int SharedByUserId, DateOnly FromDate, DateOnly ToDate)
         {
             this.Id = Id;
@@ -18,6 +19,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
             this.FromDate = FromDate;
             this.ToDate = ToDate;
         }
+
         public SharedCalendar(int UserId, int SharedByUserId, DateOnly FromDate, DateOnly ToDate)
         {
             this.UserId = UserId;
@@ -25,6 +27,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
             this.FromDate = FromDate;
             this.ToDate = ToDate;
         }
+
         public SharedCalendar(SqlDataReader sqlDataReader)
         {
             this.Id = Convert.ToInt32(sqlDataReader["Id"]);
@@ -33,6 +36,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
             this.FromDate = DateOnly.FromDateTime(Convert.ToDateTime(sqlDataReader["FromDate"].ToString()));
             this.ToDate = DateOnly.FromDateTime(Convert.ToDateTime(sqlDataReader["ToDate"].ToString()));
         }
+
         [NotMapped]
         public int Id { get; }
         public int SharedByUserId { get; set; }

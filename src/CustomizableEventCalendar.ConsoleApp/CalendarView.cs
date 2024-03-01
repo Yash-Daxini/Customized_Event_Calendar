@@ -11,7 +11,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
     internal class CalendarView
     {
         static CalendarViewService calendarViewService = new CalendarViewService();
-        static ValidationService validationService = new ValidationService();
+    
         public static void ViewSelection()
         {
             int choice = ValidatedInputProvider.GetValidatedInteger("\nChoose the view you want to see : 1. Daily View " +
@@ -42,19 +42,25 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                     break;
             }
         }
+
         public static void DailyView()
         {
             string dailyView = calendarViewService.GenerateDailyView();
+
             Console.WriteLine(dailyView);
         }
+
         public static void WeeklyView()
         {
             string weeklyView = calendarViewService.GenerateWeeklyView();
+
             Console.WriteLine(weeklyView);
         }
+
         public static void MonthlyView()
         {
             string monthlyView = calendarViewService.GenerateMonthView();
+
             Console.WriteLine(monthlyView);
         }
     }

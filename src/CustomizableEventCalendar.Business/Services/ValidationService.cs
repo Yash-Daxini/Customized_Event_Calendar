@@ -11,6 +11,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
     internal class ValidationService
     {
         public delegate bool GenericTryParse<T>(string input, out T result);
+
         public bool ValidateInput<T>(string inputFromConsole, out T choice,
                                      GenericTryParse<T> genericTryParse)
         {
@@ -21,6 +22,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
             return true;
         }
+
         public bool ValidateListOfCommaSeparatedIntegers(string input)
         {
             string[] numbers = input.Split(',')
@@ -37,6 +39,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
             return true;
         }
+
         public bool ValidateTimeBlock(string input)
         {
             string pattern = @"^\s*(?:([1-9]|0[1-9]|1[0-2])\s*(AM|PM))\s*-\s*(?:([1-9]|0[1-9]|1[0-2])\s*(AM|PM))\s*$";
@@ -50,6 +53,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
             return true;
         }
+
         public bool ValidateEmail(string input)
         {
             string pattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";

@@ -7,8 +7,9 @@ using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories
 {
-    internal class ScheduleEventRepository : GenericRepository
+    internal class ScheduleEventRepository : GenericRepository<ScheduleEvent>
     {
+
         public void DeleteByEventId(int eventId, int userId)
         {
             string query = @$"Delete from [dbo].[ScheduleEvent]
@@ -23,6 +24,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
 
             Disconnect();
         }
+
         public List<ScheduleEvent> ReadByUserId()
         {
             string query = $@"SELECT * FROM [dbo].[ScheduleEvent] 

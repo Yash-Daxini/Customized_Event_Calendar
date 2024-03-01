@@ -20,12 +20,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         public static ShareCalendar shareCalendar = new ShareCalendar();
 
         static ValidationService validationService = new ValidationService();
+
         public static void PrintColorMessage(string message, ConsoleColor color)
         {
             Console.ForegroundColor = color;
             Console.WriteLine(message);
             Console.ResetColor();
         }
+
         public static void ShowAllChoices()
         {
             PrintColorMessage("1. Add Event", ConsoleColor.Green);
@@ -41,6 +43,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             Console.Write("\nSelect Any Option :- ");
         }
+
         public static void AskForChoice()
         {
             int choice = GetValidatedChoice();
@@ -88,6 +91,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             if (option.Equals(EventOperationsEnum.Back)) Authentication.AskForChoice();
             else AskForChoice(); // Remove recursion
         }
+
         public static int GetValidatedChoice()
         {
             ShowAllChoices();
@@ -103,9 +107,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             }
             return choice;
         }
+
         public static void HandleProposedEvent()
         {
             Event eventObj = new Event();
+
             eventObj.IsProposed = true;
 
             GetEventDetails(ref eventObj);
@@ -127,6 +133,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             MultipleInviteesEventService multipleInviteesEventService = new MultipleInviteesEventService();
             multipleInviteesEventService.AddInviteesInProposedEvent(eventId, invitees);
         }
+
         public static bool ShowAllUser()
         {
             UserService userService = new UserService();
@@ -154,6 +161,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return users.Count > 0;
 
         }
+
         public static string GetInvitees()
         {
             bool isUsersAvailable = ShowAllUser();
@@ -165,13 +173,18 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             return invitees;
         }
+
         public static void GetEventDetails(ref Event eventObj)
         {
             Console.WriteLine("\nFill Details Related to Event : ");
 
             eventObj = new Event();
 
-            PropertyInfo[] properties = eventObj.GetType().GetProperties().Where(property => !Attribute.IsDefined(property, typeof(NotMappedAttribute)) && !property.Name.EndsWith("Id")).ToArray();
+            PropertyInfo[] properties = eventObj.GetType().GetProperties().Where(property =>
+                                                                                 !Attribute.IsDefined(property,
+                                                                                    typeof(NotMappedAttribute))
+                                                                                 && !property.Name.EndsWith("Id"))
+                                                                          .ToArray();
 
             foreach (PropertyInfo property in properties)
             {
@@ -188,6 +201,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             }
             eventObj.IsProposed = false;
         }
+
         public static void AddEvent()
         {
             Event eventObj = new Event();
@@ -199,11 +213,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             eventService.Create(eventObj, recurrencePattern);
         }
+
         public static void Display()
         {
             string eventList = eventService.GenerateEventTable();
             Console.WriteLine(eventList);
         }
+
         public static void Delete()
         {
             Display();
@@ -213,6 +229,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             eventService.Delete(Id);
 
         }
+
         public static void Update()
         {
             Display();

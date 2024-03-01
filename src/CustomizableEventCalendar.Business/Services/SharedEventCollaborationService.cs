@@ -9,6 +9,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 {
     internal class SharedEventCollaborationService
     {
+
         public void AddCollaborator(int scheduleEventId)
         {
             ScheduleEventService scheduleEventService = new ScheduleEventService();

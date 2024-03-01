@@ -8,8 +8,10 @@ using System.Threading.Tasks;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories
 {
+
     internal static class QueryBuilder
     {
+
         public static string FormatPropertyValue(object? value)
         {
             if (value == null)
@@ -38,16 +40,19 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
                 return value.ToString();
             }
         }
+
         public static string GetTableName<T>()
         {
             if (typeof(T).GetTypeInfo().Name.Equals("RecurrencePatternCustom")) return "RecurrencePattern";
             return typeof(T).GetTypeInfo().Name;
         }
+
         public static PropertyInfo[] GetProperties<T>()
         {
             PropertyInfo[] properties = [.. typeof(T).GetProperties()];
             return properties;
         }
+
         public static string Read<T>()
         {
             PropertyInfo[] properties = GetProperties<T>();
@@ -58,6 +63,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
 
             return $"SELECT {keys} FROM [dbo].[{tableName}]";
         }
+
         public static string Read<T>(int id)
         {
             PropertyInfo[] properties = GetProperties<T>();
@@ -68,6 +74,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
 
             return $"SELECT {keys} FROM [dbo].[{tableName}] WHERE id={id}";
         }
+
         public static string Create<T>(T data)
         {
             PropertyInfo[] properties = GetProperties<T>()
@@ -81,6 +88,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
 
             return $"INSERT INTO [dbo].[{tableName}] ({keys}) VALUES ({values}) SET @Id = SCOPE_IDENTITY()";
         }
+
         public static string Update<T>(T data, int id)
         {
             PropertyInfo[] properties = GetProperties<T>()
@@ -93,6 +101,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
 
             return $"UPDATE [dbo].[{tableName}] SET {keysValues} WHERE id={id}";
         }
+
         public static string Delete<T>(int id)
         {
             string tableName = GetTableName<T>();

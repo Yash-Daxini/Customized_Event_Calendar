@@ -3,8 +3,9 @@ using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories
 {
-    internal class UserRepository : GenericRepository
+    internal class UserRepository : GenericRepository<User>
     {
+
         public User? AuthenticateUser(string userName, string password)
         {
             string query = @$"SELECT [dbo].[User].Id

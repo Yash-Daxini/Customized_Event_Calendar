@@ -11,46 +11,55 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
     internal class EventCollaboratorsService
     {
         private readonly EventCollaboratorsRepository _eventCollaboratorsRepository = new EventCollaboratorsRepository();
+
         public List<EventCollaborators> Read()
         {
             List<EventCollaborators> eventCollaborators = new List<EventCollaborators>();
+
             try
             {
-                eventCollaborators = _eventCollaboratorsRepository.Read(data => new EventCollaborators(data));
+                eventCollaborators = _eventCollaboratorsRepository.GetAll(data => new EventCollaborators(data));
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Some error occurred ! " + ex.Message);
             }
+
             return eventCollaborators;
         }
+
         public EventCollaborators? Read(int eventCollaboratorId)
         {
             EventCollaborators? eventCollaborators = null;
+
             try
             {
-                eventCollaborators = _eventCollaboratorsRepository.Read(data => new EventCollaborators(data), eventCollaboratorId);
+                eventCollaborators = _eventCollaboratorsRepository.GetById(data => new EventCollaborators(data), eventCollaboratorId);
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Some error occurred ! " + ex.Message);
             }
+
             return eventCollaborators;
         }
+
         public int Create(EventCollaborators eventCollaborators)
         {
             int eventCollaboratorsId = 0;
 
             try
             {
-                eventCollaboratorsId = _eventCollaboratorsRepository.Create(eventCollaborators);
+                eventCollaboratorsId = _eventCollaboratorsRepository.Insert(eventCollaborators);
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Some error occurred ! " + ex.Message);
             }
+
             return eventCollaboratorsId;
         }
+
         public void DeleteByEventId(int eventId)
         {
             try
@@ -62,9 +71,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 Console.WriteLine("Some error occurred ! " + ex.Message);
             }
         }
+
         public EventCollaborators ReadByEventId(int eventId)
         {
             EventCollaborators eventCollaborator = null;
+
             try
             {
                 eventCollaborator = _eventCollaboratorsRepository.ReadByEventId(eventId);
@@ -73,14 +84,19 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             {
                 Console.WriteLine("Some error occurred ! " + ex.Message);
             }
+
             return eventCollaborator;
         }
+
         public int GetUserIdFromEventCollaborationId(int eventCollaborationId)
         {
             EventCollaborators? eventCollaborator = Read(eventCollaborationId);
+
             if (eventCollaborator == null) return 0;
+
             return eventCollaborator.UserId;
         }
+
         public int? ProvideEventCollaboratorIdFromEventId(int eventId)
         {
             EventCollaborators? eventCollaborators = Read().FirstOrDefault(eventCollaborator => eventCollaborator

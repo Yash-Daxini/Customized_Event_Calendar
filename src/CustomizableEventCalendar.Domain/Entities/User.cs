@@ -11,6 +11,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
     internal class User : BaseData
     {
         public User() { }
+
         public User(int Id, string Name, string Email, string Password)
         {
             this.Id = Id;
@@ -18,18 +19,21 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
             this.Email = Email;
             this.Password = Password;
         }
+
         public User(string Name, string Email, string Password)
         {
             this.Name = Name;
             this.Email = Email;
             this.Password = Password;
         }
+
         public User(int Id, string Name, string Email)
         {
             this.Id = Id;
             this.Name = Name;
             this.Email = Email;
         }
+
         public User(SqlDataReader sqlDataReader)
         {
             this.Id = Convert.ToInt32(sqlDataReader["Id"]);
@@ -37,11 +41,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
             this.Email = sqlDataReader["Email"].ToString();
             this.Password = sqlDataReader["Password"].ToString();
         }
+
         [NotMapped]
         public int Id { get; }
         public string Name { get; set; }
         public string Email { get; set; }
         public string Password { get; set; }
+
         public override string ToString()
         {
             return $"Name:{Name}\tEmail:{Email}\tPassword:{Password}";

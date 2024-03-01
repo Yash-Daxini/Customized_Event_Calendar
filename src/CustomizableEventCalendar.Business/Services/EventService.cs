@@ -10,6 +10,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
     internal class EventService
     {
         private readonly EventRepository _eventRepository = new EventRepository();
+
         private readonly RecurrencePatternRepository _recurrencePatternRepository = new RecurrencePatternRepository();
 
         public int Create(Event eventObj, RecurrencePatternCustom recurrencePattern)
@@ -28,11 +29,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             {
                 try
                 {
-                    int recurrenceId = _recurrencePatternRepository.Create(recurrencePattern);
+                    int recurrenceId = _recurrencePatternRepository.Insert(recurrencePattern);
 
                     eventObj.RecurrenceId = recurrenceId;
 
-                    Id = _eventRepository.Create<Event>(eventObj);
+                    Id = _eventRepository.Insert<Event>(eventObj);
 
                     eventObj.Id = Id;
 
@@ -58,13 +59,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             return Id;
         }
+
         public List<Event> Read()
         {
             List<Event> listOfEvents = new List<Event>();
 
             try
             {
-                listOfEvents = _eventRepository.Read<Event>(data => new Event(data)).ToList();
+                listOfEvents = _eventRepository.GetAll<Event>(data => new Event(data)).ToList();
             }
             catch (Exception ex)
             {
@@ -73,13 +75,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             return listOfEvents;
         }
+
         public Event Read(int Id)
         {
             Event listOfEvents = new Event();
 
             try
             {
-                listOfEvents = _eventRepository.Read<Event>(data => new Event(data), Id);
+                listOfEvents = _eventRepository.GetById<Event>(data => new Event(data), Id);
 
             }
             catch (Exception ex)
@@ -89,6 +92,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             return listOfEvents;
         }
+
         public void Delete(int eventId)
         {
             using (TransactionScope transactionScope = new())
@@ -100,7 +104,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                     ScheduleEventService scheduleEventService = new ScheduleEventService();
 
-                    Event? eventObj = _eventRepository.Read<Event>(data => new Event(data), eventId);
+                    Event? eventObj = _eventRepository.GetById<Event>(data => new Event(data), eventId);
 
                     int recurrenceId = eventObj == null ? 0 : Convert.ToInt32(eventObj.RecurrenceId);
 
@@ -120,6 +124,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 }
             }
         }
+
         public void Update(Event eventObj, RecurrencePatternCustom recurrencePattern, int eventId, int recurrenceId)
         {
             using (TransactionScope transactionScope = new())
@@ -157,6 +162,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 }
             }
         }
+
         public string GenerateEventTable()
         {
             List<Event> events = Read().Where(eventObj => eventObj.UserId == GlobalData.user.Id).ToList();
@@ -175,6 +181,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             return eventTable;
         }
+
         public void ConvertProposedEventToScheduleEvent(int eventId)
         {
             try

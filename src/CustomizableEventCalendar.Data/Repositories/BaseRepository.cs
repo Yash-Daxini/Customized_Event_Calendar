@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories
 {
+
     internal class BaseRepository
     {
         public SqlConnection connection { get; set; }
@@ -23,6 +24,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
         {
             connection.Open();
         }
+
         public void Disconnect()
         {
             if (connection == null) return;
@@ -32,12 +34,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
                 connection.Close();
             }
         }
+
         public void ExecuteQuery(string query)
         {
             this.sqlCommand = connection.CreateCommand();
             sqlCommand.CommandText = query;
             sqlDataReader = sqlCommand.ExecuteReader();
         }
+
         public int ExecuteNonQuery(string query)
         {
             this.sqlCommand = connection.CreateCommand();

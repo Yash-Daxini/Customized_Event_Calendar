@@ -13,8 +13,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {
     internal class ShareCalendar
     {
-        CalendarSharingService calendarSharingService = new CalendarSharingService();
-        ValidationService validationService = new ValidationService();
+        private readonly CalendarSharingService _calendarSharingService = new CalendarSharingService();
+
+        private readonly ValidationService _validationService = new ValidationService();
+
         public void GetDetailsToShareCalendar()
         {
             bool isUsersAvailble = ShowAllUser();
@@ -30,14 +32,16 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             DateOnly endDate = ValidatedInputProvider.GetValidatedDateOnly("Enter end date in dd-MM-yyyy format :-  ");
 
             UserRepository userRepository = new UserRepository();
-            User user = userRepository.Read<User>(data => new User(data), UserId);
+            User user = userRepository.GetById<User>(data => new User(data), UserId);
 
             SharedCalendar sharedEvents = new SharedCalendar(UserId, GlobalData.user == null ? 0 : GlobalData.user.Id, startDate, endDate);
 
-            calendarSharingService.AddSharedCalendar(sharedEvents);
+            _calendarSharingService.AddSharedCalendar(sharedEvents);
 
             Console.WriteLine($"Your Calendar shared with {user.Name} from {startDate} to {endDate}");
+
         }
+
         public int GetValidatedInteger(string inputMessage)
         {
 
@@ -46,7 +50,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             int Id;
 
-            while (!validationService.ValidateInput(inputFromConsole, out Id, int.TryParse))
+            while (!_validationService.ValidateInput(inputFromConsole, out Id, int.TryParse))
             {
                 Console.Write(inputMessage);
                 inputFromConsole = Console.ReadLine();
@@ -54,6 +58,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             return Id;
         }
+
         public bool ShowAllUser()
         {
             UserService userService = new UserService();
@@ -82,12 +87,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return users.Count > 0;
 
         }
+
         public void ViewSharedCalendars()
 
         {
             Console.WriteLine("Calendars shared to you !");
 
-            string sharedEvents = calendarSharingService.GenerateDisplayFormatForSharedEvents();
+            string sharedEvents = _calendarSharingService.GenerateDisplayFormatForSharedEvents();
 
             Console.WriteLine(sharedEvents);
 
@@ -95,9 +101,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             ViewSpecificCalendar(sharedCalendarId);
         }
+
         public void ViewSpecificCalendar(int sharedCalendarId)
         {
-            string calendar = calendarSharingService.GenerateSharedCalendar(sharedCalendarId);
+            string calendar = _calendarSharingService.GenerateSharedCalendar(sharedCalendarId);
             Console.WriteLine(calendar);
         }
     }

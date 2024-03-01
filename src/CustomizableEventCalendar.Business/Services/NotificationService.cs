@@ -11,6 +11,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
     internal class NotificationService
     {
         private readonly ScheduleEventService scheduleEventService = new ScheduleEventService();
+
         public string GenerateNotification()
         {
             StringBuilder notification = new StringBuilder();
@@ -41,6 +42,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             return notification.ToString();
         }
+
         public string GetCompletedEvents(List<ScheduleEvent> scheduleEvents, List<Event> events)
         {
             StringBuilder completedEvents = new StringBuilder();
@@ -83,6 +85,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             return completedEvents.ToString();
         }
+
         public string GetUpcomingEvents(List<ScheduleEvent> scheduleEvents, List<Event> events)
         {
             StringBuilder upcommingEvents = new StringBuilder();
@@ -130,6 +133,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             return upcommingEvents.ToString();
         }
+
         public string GetProposedEvents(List<Event> events)
         {
             StringBuilder proposedEvents = new StringBuilder();
@@ -156,14 +160,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             proposedEvents.AppendLine("Proposed Events");
             proposedEvents.AppendLine($"{PrintHandler.PrintHorizontalLine()}");
 
-            List<List<string>> propsedEventNotificationsTableContent = new List<List<string>> { new List<string>
-                                                                                                    { "Event Proposed by",
-                                                                                                      "Date",
-                                                                                                      "Time Block",
-                                                                                                      "Event",
-                                                                                                      "Description"
-                                                                                                    }
-                                                                                               };
+            List<List<string>> propsedEventNotificationsTableContent = [[ "Event Proposed by","Date","Time Block","Event",
+                                                                           "Description"]];
 
             UserService userService = new UserService();
             RecurrenceService recurrenceService = new RecurrenceService();

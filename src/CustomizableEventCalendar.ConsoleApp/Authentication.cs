@@ -9,7 +9,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
     internal class Authentication
     {
         public static UserAuthenticationService userAuthenticationService = new UserAuthenticationService();
-        static ValidationService validationService = new ValidationService();
+        
         public static void AskForChoice()
         {
             int choice = ValidatedInputProvider.GetValidatedInteger("\nChoose the option: \n1. Login\t2. Sign up " +
@@ -38,6 +38,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                     break;
             }
         }
+
         public static void GetSignupDetails(out User user)
         {
             user = new User();
@@ -48,6 +49,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             foreach (PropertyInfo property in properties)
             {
+
                 Console.Write($"Enter value for {property.Name}: ");
                 string value = Console.ReadLine();
 
@@ -58,14 +60,17 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                 object typedValue = Convert.ChangeType(value, property.PropertyType);
                 property.SetValue(user, typedValue);
+
             }
         }
+
         public static void Signup()
         {
             GetSignupDetails(out User user);
 
             userAuthenticationService.AddUser(user);
         }
+
         public static void GetLoginDetails(out string userName, out string password)
         {
             Console.WriteLine("\nEnter Login Details");
@@ -76,6 +81,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             Console.Write("Enter Password: ");
             password = Console.ReadLine();
         }
+
         public static void Login()
         {
             GetLoginDetails(out string usrename, out string password);
@@ -93,19 +99,27 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 Login();
             }
         }
+
         public static void ShowUserInfo()
         {
             Console.Clear();
 
             PrintHandler.ShowLoadingAnimation();
+
             Console.ForegroundColor = ConsoleColor.Green;
+
             Console.SetCursorPosition(0, Console.CursorTop);
+
             Console.WriteLine($"{PrintHandler.CenterText()}Welcome {GlobalData.user.Name}");
+
             Thread.Sleep(1000);
+
             Console.ResetColor();
+
             Console.Clear();
 
             PrintHandler.PrintUserName(GlobalData.user.Name);
+
             Console.WriteLine();
 
             ShowNotification();
@@ -114,11 +128,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         public static void ShowNotification()
         {
             NotificationService notificationService = new NotificationService();
+
             Console.WriteLine(notificationService.GenerateNotification());
         }
         public static void Logout()
         {
             GlobalData.user = null;
+
             Console.WriteLine("Successfully Logout!");
         }
     }

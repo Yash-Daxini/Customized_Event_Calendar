@@ -9,10 +9,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {
     internal static class ValidatedInputProvider
     {
-        static ValidationService validationService = new ValidationService();
+        static ValidationService validationService = new();
+
         public static DateTime GetValidatedDateTime(string inputMessage)
         {
             Console.Write(inputMessage);
+
             string dateTime = Console.ReadLine();
 
             DateTime validatedDateTime;
@@ -25,6 +27,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             return validatedDateTime;
         }
+
         public static DateOnly GetValidatedDateOnly(string inputMessage)
         {
             Console.Write(inputMessage);
@@ -40,6 +43,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             return validatedDateTime;
         }
+
         public static int GetValidatedInteger(string inputMessage)
         {
             Console.Write(inputMessage);
@@ -57,6 +61,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             return choice;
         }
+
         public static string GetValidatedCommaSeparatedInput(string inputMessage)
         {
             Console.Write(inputMessage);
@@ -70,6 +75,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             return input;
         }
+
         public static string GetValidateEmail(string email)
         {
 
@@ -81,6 +87,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             return email;
         }
+
         public static string GetValidatedTimeBlock(string timeBlock)
         {
             while (!validationService.ValidateTimeBlock(timeBlock))

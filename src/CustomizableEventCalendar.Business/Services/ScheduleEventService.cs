@@ -11,13 +11,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
     internal class ScheduleEventService
     {
         private readonly ScheduleEventRepository scheduleEventRepository = new ScheduleEventRepository();
+
         public List<ScheduleEvent> Read()
         {
             List<ScheduleEvent> schedulers = new List<ScheduleEvent>();
 
             try
             {
-                schedulers = scheduleEventRepository.Read(data => new ScheduleEvent(data));
+                schedulers = scheduleEventRepository.GetAll(data => new ScheduleEvent(data));
             }
             catch (Exception ex)
             {
@@ -26,13 +27,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             return schedulers;
         }
+
         public ScheduleEvent? Read(int Id)
         {
             ScheduleEvent? schedulers = null;
 
             try
             {
-                schedulers = scheduleEventRepository.Read(data => new ScheduleEvent(data), Id);
+                schedulers = scheduleEventRepository.GetById(data => new ScheduleEvent(data), Id);
             }
             catch (Exception ex)
             {
@@ -41,37 +43,42 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             return schedulers;
         }
+
         public void Create(ScheduleEvent scheduler)
         {
             try
             {
-                scheduleEventRepository.Create(scheduler);
+                scheduleEventRepository.Insert(scheduler);
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Some error occurred! " + ex.Message);
             }
         }
+
         public EventCollaborators GetEventCollaborator(int eventCollaboratorsId)
         {
             EventCollaboratorsRepository eventCollaboratorsRepository = new EventCollaboratorsRepository();
 
-            List<EventCollaborators> eventCollaborators = eventCollaboratorsRepository.Read(data => new
+            List<EventCollaborators> eventCollaborators = eventCollaboratorsRepository.GetAll(data => new
                                                                                 EventCollaborators(data));
 
             EventCollaborators eventCollaborator = eventCollaborators.First(eventCollaboratorObj => eventCollaboratorObj.Id == eventCollaboratorsId);
 
             return eventCollaborator;
         }
+
         public int GetEventIdFromEventCollaborators(int eventCollaboratorsId)
         {
             return GetEventCollaborator(eventCollaboratorsId).EventId;
         }
+
         public int GetUserIdFromEventCollaborators(int eventCollaboratorsId)
         {
 
             return GetEventCollaborator(eventCollaboratorsId).UserId;
         }
+
         public void DeleteByEventId(int eventId, int userId)
         {
             try
@@ -83,6 +90,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 Console.WriteLine("Some error occurred ! " + ex.Message);
             }
         }
+
         public List<ScheduleEvent> ReadByUserId()
         {
             return scheduleEventRepository.ReadByUserId();

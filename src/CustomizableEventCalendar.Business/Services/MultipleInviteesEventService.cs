@@ -13,7 +13,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
     {
         public void StartSchedulingProcessOfProposedEvent()
         {
+
             EventService eventService = new EventService();
+
             List<Event> events = eventService.Read()
                                              .Where(eventObj => eventObj.IsProposed
                                               && eventObj.UserId == GlobalData.user.Id)
@@ -32,6 +34,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 }
             }
         }
+
         public void AddInviteesInProposedEvent(int eventId, string invitees)
         {
             HashSet<int> invitedUsers = invitees.Split(",")
@@ -46,6 +49,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
 
         }
+
         public void CalculateMutualTime(Event eventObj)
         {
             EventCollaboratorsService eventCollaboratorsService = new EventCollaboratorsService();
@@ -87,14 +91,17 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             eventService.ConvertProposedEventToScheduleEvent(eventObj.Id);
 
         }
+
         public void CountNonFreeHours(DateTime proposedEventDate, int inviteeId, ref int[] nonFreeHours)
         {
             ScheduleEventService scheduleEventService = new ScheduleEventService();
             List<ScheduleEvent> scheduleEvents = scheduleEventService.Read()
                                                                      .Where(scheduleEvent => scheduleEventService
-                                                                     .GetUserIdFromEventCollaborators(scheduleEvent.EventCollaboratorsId)
+                                                                     .GetUserIdFromEventCollaborators
+                                                                        (scheduleEvent.EventCollaboratorsId)
                                                                         == inviteeId
-                                                                        && scheduleEvent.ScheduledDate.Date == proposedEventDate.Date)
+                                                                        && scheduleEvent.ScheduledDate.Date ==
+                                                                            proposedEventDate.Date)
                                                                      .ToList();
 
 
@@ -104,6 +111,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
 
         }
+
         public string FindMaximumMutualTimeBlock(int[] nonFreeHours)
         {
             int mininumBusyUsers = nonFreeHours.Min();
@@ -114,15 +122,21 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             for (int i = 0; i < nonFreeHours.Length; i++)
             {
-                if (nonFreeHours[i] == mininumBusyUsers) curHourBlock++;
+                if (nonFreeHours[i] == mininumBusyUsers)
+                {
+                    curHourBlock++;
+                }
                 else
                 {
                     if (maxHourBlock < curHourBlock)
                     {
                         maxHourBlock = curHourBlock;
+
                         int startHour = (i - curHourBlock);
                         int endHour = i - 1;
+
                         timeBlock = startHour + (startHour > 12 ? "PM" : "AM") + "-" + endHour + (endHour > 12 ? "PM" : "AM");
+
                         timeBlock = timeBlock.Replace("0AM", "12AM");
                     }
                     curHourBlock = 0;
@@ -131,6 +145,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             return timeBlock;
         }
+
         public void ScheduleProposedEvent(Event eventObj)
         {
             RecurrenceEngine recurrenceEngine = new RecurrenceEngine();
@@ -143,6 +158,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
 
         }
+
         public HashSet<int> GetInviteesOfEvent(int eventId)
         {
             EventCollaboratorsService eventCollaboratorsService = new EventCollaboratorsService();

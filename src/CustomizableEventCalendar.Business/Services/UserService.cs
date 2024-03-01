@@ -12,8 +12,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
     internal class UserService
     {
         private readonly UserRepository userRepository = new UserRepository();
+
         public List<User> GetInsensitiveInformationOfUser()
         {
+
             List<User> users = userRepository.ReadInsensitiveInformation(data => new User(data))
                                              .Where(user => user.Id != GlobalData.user.Id)
                                              .ToList();
@@ -21,9 +23,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return users;
             
         }
+
         public User? Read(int userId)
         {
-            User? user = userRepository.Read(data => new User(data), userId);
+            User? user = userRepository.GetById(data => new User(data), userId);
             return user;
         }
     }

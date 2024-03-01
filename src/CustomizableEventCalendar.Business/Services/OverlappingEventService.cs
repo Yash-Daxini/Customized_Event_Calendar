@@ -14,9 +14,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             AddFrequencyInPattern(recurrencePatternCustom, recurrencePattern);
             return recurrencePattern;
         }
+
         public void AddFrequencyInPattern(RecurrencePatternCustom recurrencePatternCustom, RecurrencePattern recurrencePattern)
         {
+
             AddInterval(recurrencePatternCustom.INTERVAL, recurrencePattern);
+
             switch (recurrencePatternCustom.FREQ)
             {
                 case null:
@@ -41,6 +44,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                     break;
             }
         }
+
         public void AddInterval(string interval, RecurrencePattern recurrencePattern)
         {
             if (interval == null || interval.Equals("0")) return;
@@ -49,7 +53,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         public void AddByDay(string ByDay, RecurrencePattern recurrencePattern)
         {
             List<int> days = ByDay.Split(',').Select(day => Convert.ToInt32(day)).ToList();
-            List<WeekDay> weekdays = new List<WeekDay>();
+
+            List<WeekDay> weekdays = [];
+
             foreach (int day in days)
             {
                 switch (day)
@@ -77,18 +83,22 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                         break;
                 }
             }
+
             recurrencePattern.ByDay = weekdays;
         }
+
         public void AddByMonthDay(string ByMonthDay, RecurrencePattern recurrencePattern)
         {
             List<int> monthDays = ByMonthDay.Split(',').Select(day => Convert.ToInt32(day)).ToList();
             recurrencePattern.ByMonthDay = monthDays;
         }
+
         public void AddByMonth(string ByMonth, RecurrencePattern recurrencePattern)
         {
             List<int> months = ByMonth.Split(',').Select(day => Convert.ToInt32(day)).ToList();
             recurrencePattern.ByMonth = months;
         }
+
         public bool IsOverlappingEvent(RecurrencePatternCustom recurrencePatternCustom)
         {
 
@@ -105,15 +115,19 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             };
 
             var serializer = new CalendarSerializer();
+
             var event1Serialized = serializer.SerializeToString(new Calendar { Events = { event1 } });
+
             var calendar1 = Calendar.Load(event1Serialized);
 
             EventService eventService = new EventService();
+
             List<Event> events = eventService.Read()
                                              .Where(eventObj => eventObj.UserId == GlobalData.user.Id)
                                              .ToList();
 
-            RecurrenceService recurrenceService = new RecurrenceService(); 
+            RecurrenceService recurrenceService = new RecurrenceService();
+
             List<RecurrencePatternCustom> recurrencePatternCustoms = events.Select(eventObj => recurrenceService
                                                                                     .Read(eventObj.RecurrenceId))
                                                                            .ToList();
@@ -121,6 +135,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             foreach (var recurrencePattern in recurrencePatternCustoms)
             {
                 RecurrencePattern rrule1 = GenerateRecurrencePattern(recurrencePattern);
+
                 var event2 = new CalendarEvent
                 {
                     Start = new CalDateTime(recurrencePattern.DTSTART),
@@ -144,7 +159,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                     {
                         if (occurrence1.Period.CollidesWith(occurrence2.Period))
                         {
-                            Console.WriteLine(occurrence2 + " " + occurrence1);
                             return true;
                         }
                     }

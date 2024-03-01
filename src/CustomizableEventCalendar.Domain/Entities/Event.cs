@@ -11,6 +11,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
     internal class Event : BaseData
     {
         public Event() { }
+
         public Event(int Id, string Title, string Description, string Location, string TimeBlock, int UserId, int RecurrenceId)
         {
             this.Id = Id;
@@ -21,6 +22,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
             this.UserId = UserId;
             this.RecurrenceId = RecurrenceId;
         }
+
         public Event(string Title, string Description, string Location, int UserId, string TimeBlock, int RecurrenceId)
         {
             this.Title = Title;
@@ -30,6 +32,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
             this.UserId = UserId;
             this.RecurrenceId = RecurrenceId;
         }
+
         public Event(SqlDataReader sqlDataReader)
         {
             this.Id = Convert.ToInt32(sqlDataReader["Id"]);
@@ -41,6 +44,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
             this.RecurrenceId = Convert.ToInt32(sqlDataReader["RecurrenceId"]);
             this.IsProposed = Convert.ToBoolean(sqlDataReader["IsProposed"]);
         }
+
         [NotMapped]
         public int Id { get; set; }
         public string Title { get; set; }
@@ -51,6 +55,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
         public bool IsProposed { get; set; }
         public int UserId { get; set; }
         public int RecurrenceId { get; set; }
+
         public override string ToString()
         {
             return $"{Id},\t{Title},\t{Description},\t{Location},\t{TimeBlock}";

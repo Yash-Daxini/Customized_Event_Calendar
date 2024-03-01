@@ -10,25 +10,31 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {
     internal class PrintHandler
     {
+
         public static string CenterText()
         {
             int padding = Console.WindowWidth / 2;
 
             return $"{new string(' ', padding)}";
         }
+
         public static string PrintHorizontalLine()
         {
             return new string('-', Console.WindowWidth);
         }
+
         public static void PrintInvalidMessage(string message)
         {
             Console.WriteLine(message);
         }
+
         public static void ShowLoadingAnimation()
         {
             string message = "Fetching your data";
+
             Console.SetCursorPosition((Console.WindowWidth - message.Length) / 2, Console.CursorTop);
             Console.WriteLine(message);
+
             for (int i = 0; i <= 100; i++)
             {
                 Console.SetCursorPosition(0, Console.CursorTop);
@@ -40,11 +46,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
                 Thread.Sleep(10);
             }
+
             Console.Clear();
         }
+
         public static void PrintEndingLine(int left)
         {
             Console.SetCursorPosition(left + 1, Console.CursorTop - 1);
+
             Console.WriteLine("|");
         }
         public static string GiveTable(List<List<string>> data)
@@ -69,14 +78,19 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         }
         public static void PrintUserName(string userName)
         {
+
             SetCursorToMiddle();
             Console.WriteLine("╔═══════════════════════════════╗");
+
             SetCursorToMiddle();
             Console.WriteLine("║                               ║");
+
             SetCursorToMiddle();
             Console.WriteLine($"              {userName}              ");
+
             SetCursorToMiddle();
             Console.WriteLine("║                               ║");
+
             SetCursorToMiddle();
             Console.WriteLine("╚═══════════════════════════════╝");
         }

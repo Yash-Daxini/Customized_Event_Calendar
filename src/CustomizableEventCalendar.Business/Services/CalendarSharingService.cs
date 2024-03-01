@@ -12,7 +12,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             try
             {
-                _sharedEventsRepository.Create(sharedEvent);
+                _sharedEventsRepository.Insert(sharedEvent);
             }
             catch (Exception ex)
             {
@@ -26,7 +26,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             try
             {
-                sharedEvents = _sharedEventsRepository.Read(data => new SharedCalendar(data))
+                sharedEvents = _sharedEventsRepository.GetAll(data => new SharedCalendar(data))
                                                                         .Where(sharedEvent =>
                                                                          sharedEvent.UserId == GlobalData.user.Id)
                                                                         .ToList();
@@ -51,7 +51,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             foreach (var sharedEvent in sharedEvents)
             {
-                User? user = userService.Read(data => new User(data), sharedEvent.SharedByUserId);
+                User? user = userService.GetById(data => new User(data), sharedEvent.SharedByUserId);
                 sharedEventsTableContent.Add([sharedEvent.Id.ToString(),user.Name,sharedEvent.FromDate+""
                                               ,sharedEvent.ToDate+"" ]);
             }
@@ -67,7 +67,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             ScheduleEventService scheduleEventService = new();
 
-            List<ScheduleEvent> schedulers = scheduleEventRepository.Read(data => new ScheduleEvent(data))
+            List<ScheduleEvent> schedulers = scheduleEventRepository.GetAll(data => new ScheduleEvent(data))
                                                                     .Where(scheduleEvent =>
                                                                         DateOnly.FromDateTime(scheduleEvent.ScheduledDate)
                                                                         >= sharedEvent.FromDate &&
@@ -85,12 +85,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public string GenerateSharedCalendar(int sharedEventId)
         {
-            SharedCalendar? sharedEvent = _sharedEventsRepository.Read(data => new SharedCalendar(data), sharedEventId);
+            SharedCalendar? sharedEvent = _sharedEventsRepository.GetById(data => new SharedCalendar(data), sharedEventId);
 
             if (sharedEvent == null) return "";
 
             EventRepository eventRepository = new();
-            List<Event> events = eventRepository.Read(data => new Event(data));
+            List<Event> events = eventRepository.GetAll(data => new Event(data));
 
             HashSet<int> sharedEventIds = events.Where(eventObj => eventObj.UserId == sharedEvent.SharedByUserId)
                                                 .Select(eventObj => eventObj.Id)

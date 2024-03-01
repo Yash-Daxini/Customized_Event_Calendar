@@ -9,8 +9,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
     internal class UserAuthenticationService
     {
         private readonly UserRepository userRepository = new UserRepository();
+
         public bool Authenticate(string username, string password)
         {
+
             User? user = null;
             try
             {
@@ -30,12 +32,15 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 multipleInviteesEventService.StartSchedulingProcessOfProposedEvent();
             }
             return user != null;
+
         }
+
         public void AddUser(User user)
         {
+
             try
             {
-                userRepository.Create(user);
+                userRepository.Insert(user);
             }
             catch (SqlException ex)
             {
@@ -52,6 +57,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             {
                 Console.WriteLine("Some error occurred! " + ex.Message);
             }
+
         }
     }
 }
