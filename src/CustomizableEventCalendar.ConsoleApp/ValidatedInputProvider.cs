@@ -9,7 +9,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {
     internal static class ValidatedInputProvider
     {
-        static ValidationService validationService = new();
+        private readonly static ValidationService _validationService = new();
 
         public static DateTime GetValidatedDateTime(string inputMessage)
         {
@@ -19,7 +19,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             DateTime validatedDateTime;
 
-            while (!validationService.ValidateInput(dateTime, out validatedDateTime, DateTime.TryParse))
+            while (!_validationService.ValidateInput(dateTime, out validatedDateTime, DateTime.TryParse))
             {
                 Console.Write(inputMessage);
                 dateTime = Console.ReadLine();
@@ -35,7 +35,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             DateOnly validatedDateTime;
 
-            while (!validationService.ValidateInput(dateTime, out validatedDateTime, DateOnly.TryParse))
+            while (!_validationService.ValidateInput(dateTime, out validatedDateTime, DateOnly.TryParse))
             {
                 Console.Write(inputMessage);
                 dateTime = Console.ReadLine();
@@ -52,7 +52,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             int choice;
 
-            while (!validationService.ValidateInput(inputFromConsole, out choice, int.TryParse))
+            while (!_validationService.ValidateInput(inputFromConsole, out choice, int.TryParse))
             {
                 Console.Write(inputMessage);
 
@@ -67,7 +67,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             Console.Write(inputMessage);
             string input = Console.ReadLine();
 
-            while (!validationService.ValidateListOfCommaSeparatedIntegers(input))
+            while (!_validationService.ValidateListOfCommaSeparatedIntegers(input))
             {
                 Console.Write(inputMessage);
                 input = Console.ReadLine();
@@ -79,7 +79,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         public static string GetValidateEmail(string email)
         {
 
-            while (!validationService.ValidateEmail(email))
+            while (!_validationService.ValidateEmail(email))
             {
                 Console.Write($"Enter value for Email: ");
                 email = Console.ReadLine();
@@ -90,7 +90,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         public static string GetValidatedTimeBlock(string timeBlock)
         {
-            while (!validationService.ValidateTimeBlock(timeBlock))
+            while (!_validationService.ValidateTimeBlock(timeBlock))
             {
                 Console.Write($"Enter value for Time Block: ");
                 timeBlock = Console.ReadLine();

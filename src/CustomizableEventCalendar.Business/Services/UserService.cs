@@ -11,7 +11,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 {
     internal class UserService
     {
-        private readonly UserRepository userRepository = new UserRepository();
+        private readonly UserRepository userRepository = new();
 
         public List<User> GetInsensitiveInformationOfUser()
         {

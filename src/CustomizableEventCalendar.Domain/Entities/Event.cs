@@ -51,7 +51,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
         public string Description { get; set; }
         public string Location { get; set; }
         public string TimeBlock { get; set; }
-        [NotMapped]
         public bool IsProposed { get; set; }
         public int UserId { get; set; }
         public int RecurrenceId { get; set; }

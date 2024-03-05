@@ -12,14 +12,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         public void ShowSharedEvents()
         {
-            ShareCalendar shareCalendar = new ShareCalendar();
+            ShareCalendar shareCalendar = new();
 
             shareCalendar.ViewSharedCalendars();
 
             int scheduleEventId = ValidatedInputProvider.GetValidatedInteger("Enter Sr.No of the event which you " +
                                                                              "want to collaborate :- ");
 
-            SharedEventCollaborationService sharedEventCollaborationService = new SharedEventCollaborationService();
+            SharedEventCollaborationService sharedEventCollaborationService = new();
 
             sharedEventCollaborationService.AddCollaborator(scheduleEventId);
         }

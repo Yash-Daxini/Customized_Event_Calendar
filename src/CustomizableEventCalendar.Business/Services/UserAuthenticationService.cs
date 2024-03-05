@@ -8,7 +8,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 {
     internal class UserAuthenticationService
     {
-        private readonly UserRepository userRepository = new UserRepository();
+        private readonly UserRepository userRepository = new();
 
         public bool Authenticate(string username, string password)
         {
@@ -25,22 +25,25 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
             if (user != null)
             {
-                RecurrenceEngine recurrenceEngine = new RecurrenceEngine();
+                RecurrenceEngine recurrenceEngine = new();
+
                 recurrenceEngine.ScheduleEventsOfThisMonth();
-                MultipleInviteesEventService multipleInviteesEventService =
-                    new MultipleInviteesEventService();
+
+                MultipleInviteesEventService multipleInviteesEventService = new();
+
                 multipleInviteesEventService.StartSchedulingProcessOfProposedEvent();
             }
             return user != null;
 
         }
 
-        public void AddUser(User user)
+        public bool AddUser(User user)
         {
 
             try
             {
                 userRepository.Insert(user);
+                return true;
             }
             catch (SqlException ex)
             {
@@ -57,7 +60,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             {
                 Console.WriteLine("Some error occurred! " + ex.Message);
             }
-
+            return false;
         }
     }
 }

@@ -10,7 +10,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
     {
         public RecurrencePattern GenerateRecurrencePattern(RecurrencePatternCustom recurrencePatternCustom)
         {
-            RecurrencePattern recurrencePattern = new RecurrencePattern();
+            RecurrencePattern recurrencePattern = new();
             AddFrequencyInPattern(recurrencePatternCustom, recurrencePattern);
             return recurrencePattern;
         }
@@ -50,6 +50,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             if (interval == null || interval.Equals("0")) return;
             recurrencePattern.Interval = Convert.ToInt32(interval);
         }
+
         public void AddByDay(string ByDay, RecurrencePattern recurrencePattern)
         {
             List<int> days = ByDay.Split(',').Select(day => Convert.ToInt32(day)).ToList();
@@ -122,14 +123,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             EventService eventService = new EventService();
 
-            List<Event> events = eventService.Read()
+            List<Event> events = eventService.GetAllEvents()
                                              .Where(eventObj => eventObj.UserId == GlobalData.user.Id)
                                              .ToList();
 
             RecurrenceService recurrenceService = new RecurrenceService();
 
             List<RecurrencePatternCustom> recurrencePatternCustoms = events.Select(eventObj => recurrenceService
-                                                                                    .Read(eventObj.RecurrenceId))
+                                                                                    .GetRecurrencePatternById(eventObj.RecurrenceId))
                                                                            .ToList();
 
             foreach (var recurrencePattern in recurrencePatternCustoms)

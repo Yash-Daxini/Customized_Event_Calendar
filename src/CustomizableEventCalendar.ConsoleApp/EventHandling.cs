@@ -13,13 +13,13 @@ using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {
-    internal class EventHandling
+    internal static class EventHandling
     {
-        public static EventService eventService = new EventService();
+        private readonly static EventService _eventService = new();
 
-        public static ShareCalendar shareCalendar = new ShareCalendar();
+        private readonly static ShareCalendar _shareCalendar = new();
 
-        static ValidationService validationService = new ValidationService();
+        private readonly static ValidationService _validationService = new();
 
         public static void PrintColorMessage(string message, ConsoleColor color)
         {
@@ -53,32 +53,32 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             switch (option)
             {
                 case EventOperationsEnum.Add:
-                    AddEvent();
+                    TakeInputToAddEvent();
                     break;
                 case EventOperationsEnum.Display:
-                    Display();
+                    DisplayEvents();
                     break;
                 case EventOperationsEnum.Delete:
-                    Delete();
+                    TakeInputToDeleteEvent();
                     break;
                 case EventOperationsEnum.Update:
-                    Update();
+                    TakeInputToUpdateEvent();
                     break;
                 case EventOperationsEnum.View:
                     CalendarView.ViewSelection();
                     break;
                 case EventOperationsEnum.ShareCalendar:
-                    shareCalendar.GetDetailsToShareCalendar();
+                    _shareCalendar.GetDetailsToShareCalendar();
                     break;
                 case EventOperationsEnum.ViewSharedCalendar:
-                    shareCalendar.ViewSharedCalendars();
+                    _shareCalendar.ViewSharedCalendars();
                     break;
                 case EventOperationsEnum.SharedEventCollaboration:
                     SharedEventCollaboration sharedEventCollaboration = new SharedEventCollaboration();
                     sharedEventCollaboration.ShowSharedEvents();
                     break;
                 case EventOperationsEnum.EventWithMultipleInvitees:
-                    HandleProposedEvent();
+                    TakeInputForProposedEvent();
                     break;
                 case EventOperationsEnum.Back:
                     Console.WriteLine("Going Back ...");
@@ -99,7 +99,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             string inputFromConsole = Console.ReadLine();
             int choice;
 
-            while (!validationService.ValidateInput(inputFromConsole, out choice, int.TryParse))
+            while (!_validationService.ValidateInput(inputFromConsole, out choice, int.TryParse))
             {
                 ShowAllChoices();
 
@@ -108,15 +108,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return choice;
         }
 
-        public static void HandleProposedEvent()
+        public static void TakeInputForProposedEvent()
         {
-            Event eventObj = new Event();
+            Event eventObj = new();
 
-            eventObj.IsProposed = true;
+            GetEventDetailsFromUser(eventObj);
 
-            GetEventDetails(ref eventObj);
-
-            RecurrencePatternCustom recurrencePattern = new RecurrencePatternCustom();
+            RecurrencePatternCustom recurrencePattern = new();
 
             DateTime propedDate = ValidatedInputProvider.GetValidatedDateTime("Enter date for the propose event (Enter " +
                                                                               "date in dd-MM-yyyy) :- ");
@@ -124,22 +122,26 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             recurrencePattern.DTSTART = propedDate;
             recurrencePattern.UNTILL = propedDate;
 
-            int eventId = eventService.Create(eventObj, recurrencePattern);
+            eventObj.UserId = GlobalData.user.Id;
 
-            string invitees = GetInvitees();
+            eventObj.IsProposed = true;
+
+            int eventId = _eventService.InsertEventWithRecurrencePattern(eventObj, recurrencePattern);
+
+            string invitees = GetInviteesFromUser();
 
             if (invitees.Length == 0) return;
 
-            MultipleInviteesEventService multipleInviteesEventService = new MultipleInviteesEventService();
+            MultipleInviteesEventService multipleInviteesEventService = new();
             multipleInviteesEventService.AddInviteesInProposedEvent(eventId, invitees);
         }
 
         public static bool ShowAllUser()
         {
-            UserService userService = new UserService();
+            UserService userService = new();
             List<User> users = userService.GetInsensitiveInformationOfUser();
 
-            StringBuilder userInformation = new StringBuilder();
+            StringBuilder userInformation = new();
 
             if (users.Count != 0)
             {
@@ -162,23 +164,21 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         }
 
-        public static string GetInvitees()
+        public static string GetInviteesFromUser()
         {
             bool isUsersAvailable = ShowAllUser();
 
             if (!isUsersAvailable) return "";
 
             string invitees = ValidatedInputProvider.GetValidatedCommaSeparatedInput("Enter users you want to Invite. " +
-                                                                        "Enter users Sr No. comma separated Ex:- 1,2,3");
+                                                                       "Enter users Sr No. comma separated Ex:- 1,2,3 :- ");
 
             return invitees;
         }
 
-        public static void GetEventDetails(ref Event eventObj)
+        public static void GetEventDetailsFromUser(Event eventObj)
         {
             Console.WriteLine("\nFill Details Related to Event : ");
-
-            eventObj = new Event();
 
             PropertyInfo[] properties = eventObj.GetType().GetProperties().Where(property =>
                                                                                  !Attribute.IsDefined(property,
@@ -188,6 +188,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             foreach (PropertyInfo property in properties)
             {
+                if (property.Name.Equals("IsProposed")) continue;
+
                 Console.Write($"Enter value for {property.Name}: ");
                 string value = Console.ReadLine();
 
@@ -202,47 +204,63 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             eventObj.IsProposed = false;
         }
 
-        public static void AddEvent()
+        public static void TakeInputToAddEvent()
         {
-            Event eventObj = new Event();
-            GetEventDetails(ref eventObj);
+            Event eventObj = new();
+
+            GetEventDetailsFromUser(eventObj);
 
             eventObj.UserId = GlobalData.user.Id;
 
             RecurrencePatternCustom recurrencePattern = RecurrenceHandling.AskForRecurrenceChoice(null);
 
-            eventService.Create(eventObj, recurrencePattern);
+            _eventService.InsertEventWithRecurrencePattern(eventObj, recurrencePattern);
         }
 
-        public static void Display()
+        public static void DisplayEvents()
         {
-            string eventList = eventService.GenerateEventTable();
-            Console.WriteLine(eventList);
+            string events = _eventService.GenerateEventTable();
+            Console.WriteLine(events.Length == 0 ? "No events available !\n" : events);
         }
 
-        public static void Delete()
+        public static bool IsEventsPresent()
         {
-            Display();
+            string events = _eventService.GenerateEventTable();
+            return events.Length > 0;
+        }
 
+        public static void TakeInputToDeleteEvent()
+        {
+            DisplayEvents();
+
+            if (!IsEventsPresent()) return;
             int Id = ValidatedInputProvider.GetValidatedInteger("From Above events give event no. that you want to delete :- ");
 
-            eventService.Delete(Id);
+            _eventService.DeleteEventWithRecurrencePattern(Id);
 
         }
 
-        public static void Update()
+        public static void TakeInputToUpdateEvent()
         {
-            Display();
+            DisplayEvents();
+
+            if (!IsEventsPresent()) return;
 
             int Id = ValidatedInputProvider.GetValidatedInteger("From Above events give event no. that you want to update :- ");
 
-            Event eventObj = eventService.Read(Id);
+            Event eventObj = _eventService.GetEventsById(Id);
 
             if (eventObj == null) return;
 
+            if (eventObj.IsProposed)
+            {
+                TakeInputForProposedEvent();
+                return;
+            }
+
             int recurrenceId = eventObj.RecurrenceId;
 
-            GetEventDetails(ref eventObj);
+            GetEventDetailsFromUser(eventObj);
 
             eventObj.UserId = GlobalData.user.Id;
 
@@ -250,7 +268,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             RecurrencePatternCustom recurrencePattern = RecurrenceHandling.AskForRecurrenceChoice(recurrenceId);
 
-            eventService.Update(eventObj, recurrencePattern, Id, eventObj.RecurrenceId);
+            _eventService.UpdateEventWithRecurrencePattern(eventObj, recurrencePattern, Id, eventObj.RecurrenceId);
         }
     }
 }

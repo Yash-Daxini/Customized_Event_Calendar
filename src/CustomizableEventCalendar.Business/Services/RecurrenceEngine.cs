@@ -4,22 +4,27 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 {
     internal class RecurrenceEngine
     {
-        private readonly ScheduleEventService scheduleEventService = new ScheduleEventService();
-        private readonly RecurrenceService recurrenceService = new RecurrenceService();
-        private readonly EventCollaboratorsService eventCollaboratorsService = new EventCollaboratorsService();
+        private readonly ScheduleEventService scheduleEventService = new();
+        private readonly RecurrenceService recurrenceService = new();
+        private readonly EventCollaboratorsService eventCollaboratorsService = new();
 
         public void ScheduleEventsOfThisMonth()
         {
-            EventService eventService = new EventService();
+            EventService eventService = new();
 
-            List<EventCollaborators> eventCollaborators = eventCollaboratorsService.Read();
+            List<EventCollaborators> eventCollaborators = eventCollaboratorsService.GetAllEventCollaborators()
+                                                                                   .Where(eventCollaborator =>
+                                                                                    eventCollaborator.UserId ==
+                                                                                    GlobalData.user.Id)
+                                                                                   .ToList();
 
-            List<Event> events = eventService.Read()
+            List<Event> events = eventService.GetAllEvents()
                                              .ToList();
 
             foreach (var eventCollaborator in eventCollaborators)
             {
-                Event? eventObj = events.FirstOrDefault(eventObj => eventObj.Id == eventCollaborator.EventId);
+                Event? eventObj = events.FirstOrDefault(eventObj => eventObj.Id == eventCollaborator.EventId
+                                                           && eventObj.UserId == GlobalData.user.Id);
 
                 if (eventObj == null) continue;
 
@@ -31,7 +36,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             int recurrenceId = eventObj.RecurrenceId;
 
-            RecurrencePatternCustom recurrencePattern = recurrenceService.Read(recurrenceId);
+            RecurrencePatternCustom recurrencePattern = recurrenceService.GetRecurrencePatternById(recurrenceId);
 
             ScheduleEvents(eventObj, recurrencePattern, eventCollaboratorId);
         }
@@ -39,7 +44,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         public void ScheduleEvents(Event eventObj, RecurrencePatternCustom recurrencePattern, int eventCollaboratorId)
         // Event that have recurrence
         {
-            List<ScheduleEvent> lastScheduledEvents = scheduleEventService.Read()
+            List<ScheduleEvent> lastScheduledEvents = scheduleEventService.GetAllScheduleEvents()
                                                                           .Where(data => scheduleEventService
                                                                                         .GetEventIdFromEventCollaborators
                                                                                          (data.EventCollaboratorsId)
@@ -79,12 +84,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public void ScheduleNonRecurrenceEvents(Event eventObj, DateTime startDate, DateTime endDate, int eventCollaboratorId)
         {
-            ScheduleEvent scheduleEvent = new ScheduleEvent(eventCollaboratorId, startDate);
+            ScheduleEvent scheduleEvent = new(eventCollaboratorId, startDate);
 
             string TimeBlock = eventObj.TimeBlock;
 
             string startTime = TimeBlock.Split("-")[0];
-            int startHour = Convert.ToInt32(startTime.Substring(0, startTime.Length - 2)) 
+            int startHour = Convert.ToInt32(startTime.Substring(0, startTime.Length - 2))
                             + (startTime.EndsWith("PM") ? 12 : 0);
 
             if (startHour == 12 && startTime.EndsWith("AM")) startHour = 0;
@@ -97,10 +102,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             SchduleForSpecificHour(startHour, endHour, ref scheduleEvent);
         }
 
-        public void ScheduleDailyEvents(Event eventObj, RecurrencePatternCustom recurrencePattern, DateTime startDate, int 
+        public void ScheduleDailyEvents(Event eventObj, RecurrencePatternCustom recurrencePattern, DateTime startDate, int
                                         eventCollaboratorId)
         {
-            HashSet<string> days = recurrencePattern.BYDAY.Split(",").ToHashSet<string>();
+            HashSet<string> days = [.. recurrencePattern.BYDAY.Split(",")];
 
             if (startDate != recurrencePattern.DTSTART) startDate = startDate.AddDays(
                                                                             Convert.ToInt32(recurrencePattern.INTERVAL + 1)
@@ -109,6 +114,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             while (startDate.Month <= Math.Min(DateTime.Now.Month, recurrencePattern.UNTILL.Month) && startDate.Date <= recurrencePattern.UNTILL.Date)
             {
                 string day = startDate.DayOfWeek.ToString("d");
+
+                if (day.Equals("0")) day = "7"; //  Add this into new code
 
                 if (days.Contains(day))
                 {
@@ -154,7 +161,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                 if (weekDays.Contains(day))
                 {
-                    ScheduleEvent scheduleEvent = new ScheduleEvent(eventCollaboratorId, startDate);
+                    ScheduleEvent scheduleEvent = new(eventCollaboratorId, startDate);
 
                     string TimeBlock = eventObj.TimeBlock;
 
@@ -172,7 +179,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public HashSet<string> CalculateProcessingMonth(DateTime startDate, DateTime endDate, string interval)
         {
-            HashSet<string> months = new HashSet<string>();
+            HashSet<string> months = [];
             DateTime curDate = startDate;
 
             while (curDate <= endDate)
@@ -184,12 +191,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return months;
         }
 
-        public void ScheduleMonthlyEvents(Event eventObj, RecurrencePatternCustom recurrencePattern, DateTime startDate, 
+        public void ScheduleMonthlyEvents(Event eventObj, RecurrencePatternCustom recurrencePattern, DateTime startDate,
                                           int eventCollaboratorId)
         {
             HashSet<string> monthDays = recurrencePattern.BYMONTHDAY.Split(",").Where(data => data.Length > 0).ToHashSet();
 
-            HashSet<string> months = CalculateProcessingMonth(recurrencePattern.DTSTART, recurrencePattern.UNTILL, 
+            HashSet<string> months = CalculateProcessingMonth(recurrencePattern.DTSTART, recurrencePattern.UNTILL,
                                                               recurrencePattern.INTERVAL);
 
             if (startDate != recurrencePattern.DTSTART)
@@ -203,10 +210,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                 foreach (var day in monthDays)
                 {
-                    DateTime scheduleDate = new DateTime(startDate.Year, startDate.Month, Convert.ToInt32(day), 
+                    DateTime scheduleDate = new DateTime(startDate.Year, startDate.Month, Convert.ToInt32(day),
                                                          startDate.Hour, startDate.Minute, startDate.Second);
 
-                    ScheduleEvent scheduleEvent = new ScheduleEvent(eventCollaboratorId, scheduleDate);
+                    ScheduleEvent scheduleEvent = new(eventCollaboratorId, scheduleDate);
 
                     string TimeBlock = eventObj.TimeBlock;
 
@@ -224,7 +231,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         public HashSet<string> CalculateProcessingYear(DateTime startDate, DateTime endDate, string interval)
         {
 
-            HashSet<string> years = new HashSet<string>();
+            HashSet<string> years = [];
             DateTime curDate = startDate;
 
             while (curDate <= endDate)
@@ -257,11 +264,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 {
                     try
                     {
-                        DateTime scheduleDate = new DateTime(startDate.Year, startDate.Month, Convert.ToInt32(day), startDate.Hour, startDate.Minute, startDate.Second);
+                        DateTime scheduleDate = new(startDate.Year, startDate.Month, Convert.ToInt32(day), startDate.Hour, startDate.Minute, startDate.Second);
 
                         if (scheduleDate >= recurrencePattern.DTSTART && scheduleDate <= recurrencePattern.UNTILL)
                         {
-                            ScheduleEvent scheduleEvent = new ScheduleEvent(eventCollaboratorId, scheduleDate);
+                            ScheduleEvent scheduleEvent = new(eventCollaboratorId, scheduleDate);
 
                             scheduleEventService.Create(scheduleEvent);
                         }

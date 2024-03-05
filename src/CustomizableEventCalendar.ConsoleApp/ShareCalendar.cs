@@ -13,9 +13,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {
     internal class ShareCalendar
     {
-        private readonly CalendarSharingService _calendarSharingService = new CalendarSharingService();
+        private readonly CalendarSharingService _calendarSharingService = new();
 
-        private readonly ValidationService _validationService = new ValidationService();
+        private readonly ValidationService _validationService = new();
 
         public void GetDetailsToShareCalendar()
         {
@@ -31,10 +31,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             DateOnly endDate = ValidatedInputProvider.GetValidatedDateOnly("Enter end date in dd-MM-yyyy format :-  ");
 
-            UserRepository userRepository = new UserRepository();
+            UserRepository userRepository = new();
+
             User user = userRepository.GetById<User>(data => new User(data), UserId);
 
-            SharedCalendar sharedEvents = new SharedCalendar(UserId, GlobalData.user == null ? 0 : GlobalData.user.Id, startDate, endDate);
+            SharedCalendar sharedEvents = new(UserId, GlobalData.user == null ? 0 : GlobalData.user.Id, startDate, endDate);
 
             _calendarSharingService.AddSharedCalendar(sharedEvents);
 
@@ -61,13 +62,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         public bool ShowAllUser()
         {
-            UserService userService = new UserService();
+            UserService userService = new();
 
             List<User> users = userService.GetInsensitiveInformationOfUser();
 
             if(users.Count > 0) 
             {
-                StringBuilder userInformation = new StringBuilder();
+                StringBuilder userInformation = new();
 
                 List<List<string>> userTableContent = [["User Sr. No", "Name", "Email"]];
 

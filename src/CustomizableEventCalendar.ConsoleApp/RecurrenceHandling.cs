@@ -7,9 +7,9 @@ using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {
-    internal class RecurrenceHandling
+    internal static class RecurrenceHandling
     {
-        private readonly static RecurrenceService _recurrenceService = new RecurrenceService();
+        private readonly static RecurrenceService _recurrenceService = new();
 
         public static RecurrencePatternCustom AskForRecurrenceChoice(int? Id)
         {
@@ -50,7 +50,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             RecurrencePatternCustom recurrencePattern;
 
             if (Id == null) recurrencePattern = new RecurrencePatternCustom();
-            else recurrencePattern = _recurrenceService.Read(Convert.ToInt32(Id));
+            else recurrencePattern = _recurrenceService.GetRecurrencePatternById(Convert.ToInt32(Id));
 
             GetDates(ref recurrencePattern);
 
@@ -62,7 +62,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             RecurrencePatternCustom recurrencePattern;
 
             if (Id == null) recurrencePattern = new RecurrencePatternCustom();
-            else recurrencePattern = _recurrenceService.Read(Convert.ToInt32(Id));
+            else recurrencePattern = _recurrenceService.GetRecurrencePatternById(Convert.ToInt32(Id));
 
             Console.WriteLine("Fill details to make event repetitive :- ");
 
@@ -74,7 +74,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             HandleRecurrenceFrequency(choiceForFreq, ref recurrencePattern);
 
-            recurrencePattern.INTERVAL = ValidatedInputProvider.GetValidatedInteger(RecurrencePatternMessages.Interval) + "";
+            //recurrencePattern.INTERVAL = ValidatedInputProvider.GetValidatedInteger(RecurrencePatternMessages.Interval) + "";
 
             return recurrencePattern;
         }

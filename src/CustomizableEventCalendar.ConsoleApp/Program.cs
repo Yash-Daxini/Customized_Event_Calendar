@@ -22,7 +22,7 @@ public class Program
 
     const int SWP_SHOWWINDOW = 0x0040;
 
-    static readonly IntPtr HWND_TOP = new IntPtr(0);
+    static readonly IntPtr HWND_TOP = new(0);
 
     public static void Main(string[] args)
     {

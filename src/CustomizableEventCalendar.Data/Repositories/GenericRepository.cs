@@ -16,7 +16,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
 
         public List<T> GetAll<T>(Func<SqlDataReader, T> createObject)
         {
-            List<T> list = new List<T>();
+            List<T> list = [];
             string query = QueryBuilder.Read<T>();
 
             Connect();
@@ -60,8 +60,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
         {
             string query = QueryBuilder.Create<T>(data);
 
-            sqlParameters = new List<SqlParameter>();
-            sqlParameters.Add(new SqlParameter { ParameterName = "@Id", SqlDbType = System.Data.SqlDbType.Int, Direction = System.Data.ParameterDirection.Output });
+            sqlParameters =
+            [
+                new SqlParameter { ParameterName = "@Id", SqlDbType = System.Data.SqlDbType.Int, Direction = System.Data.ParameterDirection.Output },
+            ];
 
             Connect();
 

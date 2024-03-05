@@ -14,23 +14,25 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         public void StartSchedulingProcessOfProposedEvent()
         {
 
-            EventService eventService = new EventService();
+            EventService eventService = new();
 
-            List<Event> events = eventService.Read()
+            List<Event> events = eventService.GetAllEvents()
                                              .Where(eventObj => eventObj.IsProposed
                                               && eventObj.UserId == GlobalData.user.Id)
                                              .ToList();
 
-            RecurrenceService recurrenceService = new RecurrenceService();
+            RecurrenceService recurrenceService = new();
 
             foreach (var eventObj in events)
             {
-                RecurrencePatternCustom recurrencePattern = recurrenceService.Read(eventObj.RecurrenceId);
+                RecurrencePatternCustom recurrencePattern = recurrenceService.GetRecurrencePatternById(eventObj.RecurrenceId);
+
                 int remainingDays = (DateTime.Now - recurrencePattern.DTSTART).Days;
+
                 if (remainingDays <= 1)
                 {
                     CalculateMutualTime(eventObj);
-                    ScheduleProposedEvent(eventObj);
+                    ScheduleProposedEvent(eventObj, recurrencePattern);
                 }
             }
         }
@@ -41,37 +43,47 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                                                 .Select(invitedUser => Convert.ToInt32(invitedUser))
                                                 .ToHashSet();
 
-            EventCollaboratorsService eventCollaboratorsService = new EventCollaboratorsService();
+            EventCollaboratorsService eventCollaboratorsService = new();
 
             foreach (int userId in invitedUsers)
             {
-                eventCollaboratorsService.Create(new EventCollaborators(userId, eventId));
+                eventCollaboratorsService.InsertEventCollaborators(new EventCollaborators(userId, eventId));
             }
 
         }
 
+        public DateOnly GetDateOnlyFromDateTime(DateTime date)
+        {
+            return DateOnly.FromDateTime(date);
+        }
+
         public void CalculateMutualTime(Event eventObj)
         {
-            EventCollaboratorsService eventCollaboratorsService = new EventCollaboratorsService();
+            EventCollaboratorsService eventCollaboratorsService = new();
 
             HashSet<int> eventCollaborationIds = GetInviteesOfEvent(eventObj.Id);
 
             HashSet<int> eventInviteesUserIds = eventCollaborationIds.Select(eventCollaboratorsService
                                                                         .GetUserIdFromEventCollaborationId)
-                                                                .ToHashSet();
+                                                                     .ToHashSet();
 
-            RecurrenceService recurrenceService = new RecurrenceService();
+            RecurrenceService recurrenceService = new();
 
-            RecurrencePatternCustom recurrencePattern = recurrenceService.Read(eventObj.RecurrenceId);
+            RecurrencePatternCustom recurrencePattern = recurrenceService.GetRecurrencePatternById(eventObj.RecurrenceId);
 
-            CalendarSharingService calendarSharingService = new CalendarSharingService();
+            CalendarSharingService calendarSharingService = new();
 
-            HashSet<int> inviteesThatSharedCalendar = calendarSharingService.GetSharedEvents()
-                                                                            .Where(sharedCalendar => eventInviteesUserIds.Contains(sharedCalendar.SharedByUserId)
-                                                                             && sharedCalendar.FromDate <= DateOnly.FromDateTime(recurrencePattern.DTSTART)
-                                                                             && sharedCalendar.ToDate >= DateOnly.FromDateTime(recurrencePattern.DTSTART))
-                                                                            .Select(sharedCalendar => sharedCalendar.SharedByUserId)
-                                                                            .ToHashSet();
+            List<SharedCalendar> sharedCalendars = calendarSharingService.GetSharedEvents().ToList();
+
+            HashSet<int> inviteesThatSharedCalendar = sharedCalendars.Where(sharedCalendar => eventInviteesUserIds.Contains
+                                                                                            (sharedCalendar.SharedByUserId)
+                                                                        && sharedCalendar.FromDate <=
+                                                                        GetDateOnlyFromDateTime(recurrencePattern.DTSTART)
+                                                                        && sharedCalendar.ToDate >= GetDateOnlyFromDateTime
+                                                                                                (recurrencePattern.DTSTART))
+                                                                     .Select(sharedCalendar =>                  
+                                                                             sharedCalendar.SharedByUserId)
+                                                                     .ToHashSet();
 
             int[] nonFreeHours = new int[23];
 
@@ -82,11 +94,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             string timeBlock = FindMaximumMutualTimeBlock(nonFreeHours);
 
-            eventObj.TimeBlock = timeBlock;
+            if (!timeBlock.Equals("")) eventObj.TimeBlock = timeBlock;
 
             eventObj.IsProposed = false;
 
-            EventService eventService = new EventService();
+            EventService eventService = new();
 
             eventService.ConvertProposedEventToScheduleEvent(eventObj.Id);
 
@@ -94,8 +106,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public void CountNonFreeHours(DateTime proposedEventDate, int inviteeId, ref int[] nonFreeHours)
         {
-            ScheduleEventService scheduleEventService = new ScheduleEventService();
-            List<ScheduleEvent> scheduleEvents = scheduleEventService.Read()
+            ScheduleEventService scheduleEventService = new();
+
+            List<ScheduleEvent> scheduleEvents = scheduleEventService.GetAllScheduleEvents()
                                                                      .Where(scheduleEvent => scheduleEventService
                                                                      .GetUserIdFromEventCollaborators
                                                                         (scheduleEvent.EventCollaboratorsId)
@@ -135,7 +148,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                         int startHour = (i - curHourBlock);
                         int endHour = i - 1;
 
-                        timeBlock = startHour + (startHour > 12 ? "PM" : "AM") + "-" + endHour + (endHour > 12 ? "PM" : "AM");
+                        timeBlock = startHour + (startHour > 12 ? "PM" : "AM") + "-" +
+                                                endHour + (endHour > 12 ? "PM" : "AM");
 
                         timeBlock = timeBlock.Replace("0AM", "12AM");
                     }
@@ -146,26 +160,30 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return timeBlock;
         }
 
-        public void ScheduleProposedEvent(Event eventObj)
+        public void ScheduleProposedEvent(Event eventObj, RecurrencePatternCustom recurrencePatternCustom)
         {
-            RecurrenceEngine recurrenceEngine = new RecurrenceEngine();
+            RecurrenceEngine recurrenceEngine = new();
 
             HashSet<int> eventCollaboratorsIds = GetInviteesOfEvent(eventObj.Id);
 
             foreach (var eventCollaboratorsId in eventCollaboratorsIds)
             {
-                recurrenceEngine.AddEventToScheduler(eventObj, eventCollaboratorsId);
+
+                recurrenceEngine.ScheduleNonRecurrenceEvents(eventObj, recurrencePatternCustom.DTSTART,
+                                                            recurrencePatternCustom.UNTILL, eventCollaboratorsId);
             }
 
         }
 
         public HashSet<int> GetInviteesOfEvent(int eventId)
         {
-            EventCollaboratorsService eventCollaboratorsService = new EventCollaboratorsService();
+            EventCollaboratorsService eventCollaboratorsService = new();
 
-            HashSet<int> eventCollaboratorsId = eventCollaboratorsService.Read()
+            HashSet<int> eventCollaboratorsId = eventCollaboratorsService.GetAllEventCollaborators()
                                                                       .Where(eventCollaborator =>
-                                                                             eventCollaborator.EventId == eventId)
+                                                                             eventCollaborator.EventId == eventId
+                                                                             && eventCollaborator.UserId !=
+                                                                             GlobalData.user.Id)
                                                                       .Select(eventCollaborator =>
                                                                              eventCollaborator.Id)
                                                                       .ToHashSet();

@@ -23,17 +23,17 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                                                                        scheduleEvent.ScheduledDate.Date == nextDay.Date)
                                                                       .ToList();
 
-            Dictionary<int, Event> timeWithEvent = new Dictionary<int, Event>();
+            Dictionary<int, Event> timeWithEvent = [];
 
             foreach (var scheduleEvent in scheduleEvents)
             {
-                Event eventObj = _eventService.Read(_scheduleEventService.GetEventIdFromEventCollaborators
+                Event eventObj = _eventService.GetEventsById(_scheduleEventService.GetEventIdFromEventCollaborators
                                                                           (scheduleEvent.EventCollaboratorsId));
 
                 AssignEventToSpecificHour(ref timeWithEvent, eventObj);
             }
 
-            StringBuilder dailyView = new StringBuilder();
+            StringBuilder dailyView = new();
 
             dailyView.AppendLine(PrintHandler.PrintHorizontalLine());
 
@@ -50,7 +50,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                     Event eventObj = timeWithEvent[curHour];
                     dailyViewTableContent.Add([GetDateWithAbbreviationFromDateTime(nextDay), eventObj.Title]);
                 }
-                else dailyViewTableContent.Add([GetDateWithAbbreviationFromDateTime(nextDay), "-"]);
+                else
+                {
+                    dailyViewTableContent.Add([GetDateWithAbbreviationFromDateTime(nextDay), "-"]);
+                }
 
                 nextDay = nextDay.AddHours(1);
             }
@@ -76,6 +79,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 eventRecordByHour[i] = eventObj;
             }
         }
+
         public Dictionary<DateTime, List<int>> GetCurrentWeekEvents(DateTime startDateOfWeek, DateTime endDateOfWeek)
         {
             List<ScheduleEvent> scheduleEvents = _scheduleEventService.ReadByUserId();
@@ -96,6 +100,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                                            .ToList());
             return currentWeekEvents;
         }
+
         public string GenerateWeeklyView()
         {
             StringBuilder weeklyView = new();
@@ -126,21 +131,19 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                     foreach (var eventId in currentWeekEvents[startDateOfWeek.Date])
                     {
 
-                        Event eventObj = _eventService.Read(eventId);
-                        weeklyViewTableContent.Add(new List<string> { GetDateFromDateTime(startDateOfWeek) ,
-                                                                       GetDayFromDateTime(startDateOfWeek) ,
-                                                                       eventObj.Title,
-                                                                       {eventObj.TimeBlock} });
+                        Event eventObj = _eventService.GetEventsById(eventId);
+                        weeklyViewTableContent.Add([ GetDateFromDateTime(startDateOfWeek) ,
+                                                     GetDayFromDateTime(startDateOfWeek) ,
+                                                     eventObj.Title,eventObj.TimeBlock]);
                     }
                 }
                 else
                 {
-                    weeklyViewTableContent.Add(new List<string> { GetDateFromDateTime(startDateOfWeek) ,
+                    weeklyViewTableContent.Add([ GetDateFromDateTime(startDateOfWeek) ,
                                                                        GetDayFromDateTime(startDateOfWeek) ,
                                                                        "-",
-                                                                       "-" });
+                                                                       "-" ]);
                 }
-
                 startDateOfWeek = startDateOfWeek.AddDays(1);
             }
 
@@ -148,6 +151,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             return weeklyView.ToString();
         }
+
         public Dictionary<DateTime, List<int>> GetCurrentMonthEvents(DateTime startDateOfMonth, DateTime endDateOfMonth)
         {
             List<ScheduleEvent> scheduleEvents = _scheduleEventService.ReadByUserId();
@@ -167,8 +171,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                                            })
                                            .ToDictionary(key => key.ScheduleDate, val => val.EventCollaboratorIds
                                            .ToList());
+
             return currentMonthEvents;
         }
+
         public string GenerateMonthView()
         {
             StringBuilder monthlyView = new();
@@ -176,16 +182,17 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             DateTime nextDay = DateTime.Now;
 
             DateTime startDateOfMonth = new(nextDay.Year, nextDay.Month, 1);
-            DateTime endDateOfMonth = new DateTime(nextDay.Year, nextDay.Month, DateTime.DaysInMonth(nextDay.Year, nextDay.Month));
+            DateTime endDateOfMonth = new DateTime(nextDay.Year, nextDay.Month, DateTime.DaysInMonth(nextDay.Year,
+                                                    nextDay.Month));
 
             Dictionary<DateTime, List<int>> currentMonthEvents = GetCurrentMonthEvents(startDateOfMonth, endDateOfMonth);
 
             monthlyView.AppendLine(PrintHandler.PrintHorizontalLine());
 
-            monthlyView.AppendLine("Schedule from date :- " + GetDateFromDateTime(startDateOfMonth) + " to date :- " + GetDateFromDateTime(endDateOfMonth) + "\n");
+            monthlyView.AppendLine("Schedule from date :- " + GetDateFromDateTime(startDateOfMonth) + " to date :- " +
+                                    GetDateFromDateTime(endDateOfMonth) + "\n");
 
-            List<List<string>> monthlyViewTableContent = new List<List<string>> { new List<string> { "Date", "Day" , "Event Title" ,
-                                                                                                     "Time" } };
+            List<List<string>> monthlyViewTableContent = [["Date", "Day", "Event Title", "Time"]];
 
             while (startDateOfMonth.Date <= endDateOfMonth.Date)
             {
@@ -195,19 +202,18 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                     foreach (var eventId in currentMonthEvents[startDateOfMonth.Date])
                     {
 
-                        Event eventObj = _eventService.Read(eventId);
-                        monthlyViewTableContent.Add(new List<string> {GetDateFromDateTime(startDateOfMonth),
+                        Event eventObj = _eventService.GetEventsById(eventId);
+                        monthlyViewTableContent.Add([GetDateFromDateTime(startDateOfMonth),
                                                                       startDateOfMonth.DayOfWeek.ToString(),
-                                                                      {eventObj.Title},
-                                                                      {eventObj.TimeBlock} });
+                                                                      eventObj.Title,eventObj.TimeBlock ]);
                     }
                 }
                 else
                 {
-                    monthlyViewTableContent.Add(new List<string> {GetDateFromDateTime(startDateOfMonth),
-                                                                      startDateOfMonth.DayOfWeek.ToString(),
+                    monthlyViewTableContent.Add([GetDateFromDateTime(startDateOfMonth),
+                                                 startDateOfMonth.DayOfWeek.ToString(),
                                                                       "-",
-                                                                      "-" });
+                                                                      "-" ]);
                 }
 
                 startDateOfMonth = startDateOfMonth.AddDays(1);
@@ -217,14 +223,17 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             return monthlyView.ToString();
         }
+
         public string GetDateWithAbbreviationFromDateTime(DateTime dateTime)
         {
             return dateTime.ToString("hh:mm:ss tt");
         }
+
         public string GetDateFromDateTime(DateTime dateTime)
         {
             return dateTime.ToString("dd-MM-yyyy");
         }
+
         public string GetDayFromDateTime(DateTime dateTime)
         {
             return dateTime.ToString("dddd");

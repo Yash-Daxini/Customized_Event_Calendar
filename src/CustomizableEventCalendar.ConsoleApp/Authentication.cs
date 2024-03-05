@@ -6,40 +6,69 @@ using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
 {
-    internal class Authentication
+    internal static class Authentication
     {
-        public static UserAuthenticationService userAuthenticationService = new UserAuthenticationService();
-        
+        private readonly static UserAuthenticationService _userAuthenticationService = new();
+
         public static void AskForChoice()
         {
-            int choice = ValidatedInputProvider.GetValidatedInteger("\nChoose the option: \n1. Login\t2. Sign up " +
-                                                                    "\t3. Logout \t0. Exit :-");
 
-            UserActionEnum option = (UserActionEnum)choice;
+            if (GlobalData.user == null) AskForChoiceToLoginUser();
+            else AskForChoiceToLogoutUser();
+
+        }
+
+        public static void AskForChoiceToLoginUser()
+        {
+
+            int choice = ValidatedInputProvider.GetValidatedInteger("\nChoose the option: \t1. Logout \t0. Exit :-");
+
+            LoginUserChoices option = (LoginUserChoices)choice;
 
             switch (option)
             {
-                case UserActionEnum.Login:
-                    Login();
-                    break;
-                case UserActionEnum.Signup:
-                    Signup();
-                    Login();
-                    break;
-                case UserActionEnum.Logout:
+                case LoginUserChoices.Logout:
                     Logout();
                     AskForChoice();
                     break;
-                case UserActionEnum.Exit:
+                case LoginUserChoices.Exit:
                     break;
                 default:
                     Console.WriteLine("Please choose correct option");
                     AskForChoice();
                     break;
             }
+
         }
 
-        public static void GetSignupDetails(out User user)
+        public static void AskForChoiceToLogoutUser()
+        {
+
+            int choice = ValidatedInputProvider.GetValidatedInteger("\nChoose the option: \n1. Login\t2. Sign up \t0. Exit :-");
+
+            LogoutUserChoices option = (LogoutUserChoices)choice;
+
+            switch (option)
+            {
+                case LogoutUserChoices.Login:
+                    bool isLoggedin = Login();
+                    if (!isLoggedin) AskForChoice();
+                    break;
+                case LogoutUserChoices.Signup:
+                    SignUp();
+                    Login();
+                    break;
+                case LogoutUserChoices.Exit:
+                    break;
+                default:
+                    Console.WriteLine("Please choose correct option");
+                    AskForChoice();
+                    break;
+            }
+
+        }
+
+        public static void GetSignUpDetails(out User user)
         {
             user = new User();
 
@@ -64,11 +93,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
         }
 
-        public static void Signup()
+        public static void SignUp()
         {
-            GetSignupDetails(out User user);
+            GetSignUpDetails(out User user);
 
-            userAuthenticationService.AddUser(user);
+            _userAuthenticationService.AddUser(user);
         }
 
         public static void GetLoginDetails(out string userName, out string password)
@@ -82,11 +111,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             password = Console.ReadLine();
         }
 
-        public static void Login()
+        public static bool Login()
         {
             GetLoginDetails(out string usrename, out string password);
 
-            bool isAuthencticate = userAuthenticationService.Authenticate(usrename, password);
+            bool isAuthencticate = _userAuthenticationService.Authenticate(usrename, password);
 
             if (isAuthencticate)
             {
@@ -96,8 +125,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             else
             {
                 Console.WriteLine("Invalid user name or password! Please try again.");
-                Login();
+                return false;
             }
+            return true;
         }
 
         public static void ShowUserInfo()
@@ -125,12 +155,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             ShowNotification();
 
         }
+
         public static void ShowNotification()
         {
             NotificationService notificationService = new NotificationService();
 
             Console.WriteLine(notificationService.GenerateNotification());
         }
+
         public static void Logout()
         {
             GlobalData.user = null;

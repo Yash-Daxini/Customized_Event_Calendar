@@ -12,22 +12,22 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public void AddCollaborator(int scheduleEventId)
         {
-            ScheduleEventService scheduleEventService = new ScheduleEventService();
+            ScheduleEventService scheduleEventService = new();
 
-            ScheduleEvent? scheduleEvent = scheduleEventService.Read(scheduleEventId);
+            ScheduleEvent? scheduleEvent = scheduleEventService.GetScheduleEventById(scheduleEventId);
 
             if (scheduleEvent == null) return;
 
             int eventId = scheduleEventService.GetEventIdFromEventCollaborators(scheduleEvent.EventCollaboratorsId);
 
-            EventCollaboratorsService eventCollaboratorsService = new EventCollaboratorsService();
+            EventCollaboratorsService eventCollaboratorsService = new();
 
-            int? eventCollaboratorId = eventCollaboratorsService.ProvideEventCollaboratorIdFromEventId(eventId);
+            int? eventCollaboratorId = eventCollaboratorsService.GetEventCollaboratorIdFromEventId(eventId);
 
             if (eventCollaboratorId == null)
             {
-                EventCollaborators eventCollaborators = new EventCollaborators(GlobalData.user.Id, eventId);
-                eventCollaboratorId = eventCollaboratorsService.Create(eventCollaborators);
+                EventCollaborators eventCollaborators = new(GlobalData.user.Id, eventId);
+                eventCollaboratorId = eventCollaboratorsService.InsertEventCollaborators(eventCollaborators);
             }
 
             scheduleEvent.EventCollaboratorsId = Convert.ToInt32(eventCollaboratorId);

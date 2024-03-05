@@ -10,20 +10,20 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 {
     internal class NotificationService
     {
-        private readonly ScheduleEventService scheduleEventService = new ScheduleEventService();
+        private readonly ScheduleEventService scheduleEventService = new();
 
         public string GenerateNotification()
         {
-            StringBuilder notification = new StringBuilder();
+            StringBuilder notification = new();
 
-            EventService eventService = new EventService();
+            EventService eventService = new();
 
-            List<Event> events = eventService.Read();
+            List<Event> events = eventService.GetAllEvents();
 
             HashSet<int> eventIds = events.Select(eventObj => eventObj.Id)
                                           .ToHashSet();
 
-            List<ScheduleEvent> scheduleEvents = scheduleEventService.Read()
+            List<ScheduleEvent> scheduleEvents = scheduleEventService.GetAllScheduleEvents()
                                                             .Where(scheduleEvent => eventIds.Contains
                                                             (scheduleEventService.GetEventIdFromEventCollaborators
                                                             (scheduleEvent.EventCollaboratorsId)) &&
@@ -45,13 +45,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public string GetCompletedEvents(List<ScheduleEvent> scheduleEvents, List<Event> events)
         {
-            StringBuilder completedEvents = new StringBuilder();
+            StringBuilder completedEvents = new();
 
             DateTime todayDate = DateTime.Now;
 
             List<ScheduleEvent> missedEvents = scheduleEvents.Where(scheduleEvent =>
-                                                                    scheduleEvent.ScheduledDate.Date <=
-                                                                    todayDate.Date)
+                                                                    scheduleEvent.ScheduledDate <=
+                                                                    todayDate)
                                                              .ToList();
 
             if (missedEvents.Count == 0) return "";
@@ -59,10 +59,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             completedEvents.AppendLine($"Completed events :- ");
             completedEvents.AppendLine($"{PrintHandler.PrintHorizontalLine()}");
 
-            EventCollaboratorsService eventCollaboratorsService = new EventCollaboratorsService();
+            EventCollaboratorsService eventCollaboratorsService = new();
 
-            List<List<string>> completedEventNotificationsTableContent = new List<List<string>> { new List<string> { "Event",
-                                                                                            "Description", "Date" } };
+            List<List<string>> completedEventNotificationsTableContent = [["Event", "Description", "Date"]];
 
             foreach (ScheduleEvent scheduleEvent in missedEvents)
             {
@@ -70,7 +69,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                                                     .GetEventIdFromEventCollaborators
                                                      (scheduleEvent.EventCollaboratorsId);
 
-                EventCollaborators? eventCollaborator = eventCollaboratorsService.ReadByEventId
+                EventCollaborators? eventCollaborator = eventCollaboratorsService.GetEventCollaboratorsByEventId
                                                                                  (eventIdFromEventCollaboratorId);
 
                 if (eventCollaborator != null && eventCollaborator.UserId != GlobalData.user.Id) continue;
@@ -88,13 +87,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public string GetUpcomingEvents(List<ScheduleEvent> scheduleEvents, List<Event> events)
         {
-            StringBuilder upcommingEvents = new StringBuilder();
+            StringBuilder upcommingEvents = new();
 
             DateTime todayDate = DateTime.Now;
 
             List<ScheduleEvent> upcommingEventsList = scheduleEvents.Where(scheduleEvent =>
-                                                                    scheduleEvent.ScheduledDate.Date ==
-                                                                                  todayDate.Date)
+                                                                            scheduleEvent.ScheduledDate.Date == todayDate.Date)
                                                                     .ToList();
 
             if (upcommingEventsList.Count == 0) return "";
@@ -102,10 +100,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             upcommingEvents.AppendLine("Your today's events :- ");
             upcommingEvents.AppendLine($"{PrintHandler.PrintHorizontalLine()}");
 
-            List<List<string>> upcommingEventNotificationsTableContent = new List<List<string>> { new List<string> { "Event",
-                                                                                            "Description", "Date" , "Time" } };
+            List<List<string>> upcommingEventNotificationsTableContent = [["Event", "Description", "Date", "Time"]];
 
-            EventCollaboratorsService eventCollaboratorsService = new EventCollaboratorsService();
+            EventCollaboratorsService eventCollaboratorsService = new();
 
             foreach (ScheduleEvent scheduleEvent in upcommingEventsList)
             {
@@ -114,7 +111,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                                                     .GetEventIdFromEventCollaborators
                                                      (scheduleEvent.EventCollaboratorsId);
 
-                EventCollaborators? eventCollaborator = eventCollaboratorsService.ReadByEventId
+                EventCollaborators? eventCollaborator = eventCollaboratorsService.GetEventCollaboratorsByEventId
                                                                                  (eventIdFromEventCollaboratorId);
 
                 if (eventCollaborator != null && eventCollaborator.UserId != GlobalData.user.Id) continue;
@@ -123,10 +120,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                                                        scheduleEventService.GetEventIdFromEventCollaborators
                                                                             (scheduleEvent.EventCollaboratorsId));
 
-                upcommingEventNotificationsTableContent.Add(new List<string>{eventObj.Title,
-                                                                             eventObj.Description,
-                                                                             scheduleEvent.ScheduledDate.ToString(),
-                                                                             eventObj.TimeBlock});
+                upcommingEventNotificationsTableContent.Add([eventObj.Title,eventObj.Description,scheduleEvent.ScheduledDate.ToString(),
+                                                             eventObj.TimeBlock]);
             }
 
             upcommingEvents.AppendLine(PrintHandler.GiveTableForNotification(upcommingEventNotificationsTableContent));
@@ -136,15 +131,15 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public string GetProposedEvents(List<Event> events)
         {
-            StringBuilder proposedEvents = new StringBuilder();
+            StringBuilder proposedEvents = new();
 
             HashSet<int> proposedEventIds = events.Where(eventObj => eventObj.IsProposed)
                                                   .Select(eventObj => eventObj.Id)
                                                   .ToHashSet();
 
-            EventCollaboratorsService eventCollaboratorsService = new EventCollaboratorsService();
+            EventCollaboratorsService eventCollaboratorsService = new();
 
-            List<EventCollaborators> eventCollaborators = eventCollaboratorsService.Read();
+            List<EventCollaborators> eventCollaborators = eventCollaboratorsService.GetAllEventCollaborators();
 
             eventCollaborators = eventCollaborators.Where(eventCollaborator => proposedEventIds
                                                           .Contains(eventCollaborator.EventId) &&
@@ -163,22 +158,22 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             List<List<string>> propsedEventNotificationsTableContent = [[ "Event Proposed by","Date","Time Block","Event",
                                                                            "Description"]];
 
-            UserService userService = new UserService();
-            RecurrenceService recurrenceService = new RecurrenceService();
-            EventService eventService = new EventService();
+            UserService userService = new();
+            RecurrenceService recurrenceService = new();
+            EventService eventService = new();
 
 
             foreach (var eventCollaborator in eventCollaborators)
             {
-                Event eventObj = eventService.Read(eventCollaborator.EventId);
+                Event eventObj = eventService.GetEventsById(eventCollaborator.EventId);
                 if (eventObj.UserId == GlobalData.user.Id) continue;
                 User? eventProposer = userService.Read(eventObj.UserId);
-                RecurrencePatternCustom recurrencePattern = recurrenceService.Read(eventObj.RecurrenceId);
-                propsedEventNotificationsTableContent.Add(new List<string> { eventProposer.Name,
+                RecurrencePatternCustom recurrencePattern = recurrenceService.GetRecurrencePatternById(eventObj.RecurrenceId);
+                propsedEventNotificationsTableContent.Add([ eventProposer.Name,
                                                                              recurrencePattern.DTSTART.ToString(),
                                                                              eventObj.TimeBlock,
                                                                              eventObj.Title,eventObj.Description
-                                                                           }
+                                                                           ]
                                                          );
             }
 

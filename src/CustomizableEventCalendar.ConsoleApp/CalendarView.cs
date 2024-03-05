@@ -8,9 +8,9 @@ using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {
-    internal class CalendarView
+    internal static class CalendarView
     {
-        static CalendarViewService calendarViewService = new CalendarViewService();
+        private static readonly CalendarViewService _calendarViewService = new();
     
         public static void ViewSelection()
         {
@@ -45,21 +45,21 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         public static void DailyView()
         {
-            string dailyView = calendarViewService.GenerateDailyView();
+            string dailyView = _calendarViewService.GenerateDailyView();
 
             Console.WriteLine(dailyView);
         }
 
         public static void WeeklyView()
         {
-            string weeklyView = calendarViewService.GenerateWeeklyView();
+            string weeklyView = _calendarViewService.GenerateWeeklyView();
 
             Console.WriteLine(weeklyView);
         }
 
         public static void MonthlyView()
         {
-            string monthlyView = calendarViewService.GenerateMonthView();
+            string monthlyView = _calendarViewService.GenerateMonthView();
 
             Console.WriteLine(monthlyView);
         }
