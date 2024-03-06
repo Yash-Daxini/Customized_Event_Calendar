@@ -19,7 +19,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             OverlappingEventService overlappingEventService = new();
 
-            if (overlappingEventService.IsOverlappingEvent(recurrencePattern))
+            if (overlappingEventService.IsOverlappingEvent(recurrencePattern,eventObj.TimeBlock))
             {
                 Console.WriteLine("This event overlaps with other event. Please enter valid event");
                 return 0;

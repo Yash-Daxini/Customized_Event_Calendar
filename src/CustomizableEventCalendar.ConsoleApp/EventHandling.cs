@@ -30,7 +30,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         public static void ShowAllChoices()
         {
-            PrintColorMessage("1. Add Event", ConsoleColor.Green);
+            PrintColorMessage("\n1. Add Event", ConsoleColor.Green);
             PrintColorMessage("2. See all Events", ConsoleColor.Blue);
             PrintColorMessage("3. Delete Event", ConsoleColor.Red);
             PrintColorMessage("4. Update Event", ConsoleColor.White);
@@ -190,7 +190,15 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             {
                 if (property.Name.Equals("IsProposed")) continue;
 
-                Console.Write($"Enter value for {property.Name}: ");
+                if (property.Name.Equals("TimeBlock"))
+                {
+                    Console.Write($"Enter {property.Name} (Enter like this 2PM-9PM or 10AM-5PM) :- ");
+                }
+                else
+                {
+                    Console.Write($"Enter {property.Name}: ");
+                }
+
                 string value = Console.ReadLine();
 
                 if (property.Name.Equals("TimeBlock"))

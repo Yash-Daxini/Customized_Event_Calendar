@@ -62,6 +62,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
             if (sqlCommand.Parameters.Count > 0 && sqlCommand.Parameters["@Id"].Value != DBNull.Value)
                 Id = (int)sqlCommand.Parameters["@Id"].Value;
 
+            sqlParameters = new List<SqlParameter>();
+
             return Id;
         }
 

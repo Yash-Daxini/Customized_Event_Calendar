@@ -105,7 +105,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         public void ScheduleDailyEvents(Event eventObj, RecurrencePatternCustom recurrencePattern, DateTime startDate, int
                                         eventCollaboratorId)
         {
-            HashSet<string> days = [.. recurrencePattern.BYDAY.Split(",")];
+            HashSet<int> days = [.. recurrencePattern.BYDAY.Split(",").Select(day => Convert.ToInt32(day))];
 
             if (startDate != recurrencePattern.DTSTART) startDate = startDate.AddDays(
                                                                             Convert.ToInt32(recurrencePattern.INTERVAL + 1)
@@ -113,9 +113,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             while (startDate.Month <= Math.Min(DateTime.Now.Month, recurrencePattern.UNTILL.Month) && startDate.Date <= recurrencePattern.UNTILL.Date)
             {
-                string day = startDate.DayOfWeek.ToString("d");
+                int day = Convert.ToInt32(startDate.DayOfWeek.ToString("d"));
 
-                if (day.Equals("0")) day = "7"; //  Add this into new code
+                if (day == 0) day = 7;
 
                 if (days.Contains(day))
                 {
@@ -151,13 +151,15 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public void ScheduleWeeklyEvents(Event eventObj, RecurrencePatternCustom recurrencePattern, DateTime startDate, int eventCollaboratorId)
         {
-            HashSet<string> weekDays = recurrencePattern.BYDAY.Split(",").ToHashSet();
+            HashSet<int> weekDays = [.. recurrencePattern.BYDAY.Split(",").Select(weekDay => Convert.ToInt32(weekDay))];
 
-            if (startDate != recurrencePattern.DTSTART) startDate = startDate.AddDays(7 * Convert.ToInt32(recurrencePattern.INTERVAL + 1));
+            if (startDate != recurrencePattern.DTSTART) startDate = startDate.AddDays(Convert.ToInt32(recurrencePattern.INTERVAL + 1));
 
             while (startDate.Month == Math.Min(DateTime.Now.Month, recurrencePattern.UNTILL.Month))
             {
-                string day = startDate.DayOfWeek.ToString("d");
+                int day = Convert.ToInt32(startDate.DayOfWeek.ToString("d"));
+
+                if (day == 0) day = 7;
 
                 if (weekDays.Contains(day))
                 {
@@ -173,18 +175,18 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                     SchduleForSpecificHour(startHour, endHour, ref scheduleEvent);
                 }
-                startDate = startDate.AddDays(7 * Convert.ToInt32(recurrencePattern.INTERVAL) + 1);
+                startDate = startDate.AddDays(Convert.ToInt32(recurrencePattern.INTERVAL) + 1);
             }
         }
 
-        public HashSet<string> CalculateProcessingMonth(DateTime startDate, DateTime endDate, string interval)
+        public HashSet<int> CalculateProcessingMonth(DateTime startDate, DateTime endDate, string interval)
         {
-            HashSet<string> months = [];
+            HashSet<int> months = [];
             DateTime curDate = startDate;
 
             while (curDate <= endDate)
             {
-                months.Add(curDate.Month.ToString());
+                months.Add(Convert.ToInt32(curDate.Month.ToString()));
                 curDate = curDate.AddMonths(Convert.ToInt32(interval) + 1);
             }
 
@@ -194,9 +196,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         public void ScheduleMonthlyEvents(Event eventObj, RecurrencePatternCustom recurrencePattern, DateTime startDate,
                                           int eventCollaboratorId)
         {
-            HashSet<string> monthDays = recurrencePattern.BYMONTHDAY.Split(",").Where(data => data.Length > 0).ToHashSet();
+            HashSet<int> monthDays = [.. recurrencePattern.BYMONTHDAY.Split(",").Select(monthDay => Convert.ToInt32(monthDay))];
 
-            HashSet<string> months = CalculateProcessingMonth(recurrencePattern.DTSTART, recurrencePattern.UNTILL,
+            HashSet<int> months = CalculateProcessingMonth(recurrencePattern.DTSTART, recurrencePattern.UNTILL,
                                                               recurrencePattern.INTERVAL);
 
             if (startDate != recurrencePattern.DTSTART)
@@ -205,7 +207,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 startDate = new DateTime(newDate.Year, newDate.Month, 1, newDate.Hour, newDate.Minute, newDate.Second);
             }
 
-            if (months.Contains(startDate.Month.ToString()))
+            if (months.Contains(Convert.ToInt32(startDate.Month.ToString())))
             {
 
                 foreach (var day in monthDays)
@@ -228,15 +230,15 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
         }
 
-        public HashSet<string> CalculateProcessingYear(DateTime startDate, DateTime endDate, string interval)
+        public HashSet<int> CalculateProcessingYear(DateTime startDate, DateTime endDate, string interval)
         {
 
-            HashSet<string> years = [];
+            HashSet<int> years = [];
             DateTime curDate = startDate;
 
             while (curDate <= endDate)
             {
-                years.Add(curDate.Year.ToString());
+                years.Add(Convert.ToInt32(curDate.Year.ToString()));
                 curDate = curDate.AddYears(Convert.ToInt32(interval) + 1);
             }
 
@@ -246,11 +248,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public void ScheduleYearlyEvents(Event eventObj, RecurrencePatternCustom recurrencePattern, DateTime startDate, int eventCollaboratorId)
         {
-            HashSet<string> years = CalculateProcessingYear(recurrencePattern.DTSTART, recurrencePattern.UNTILL, recurrencePattern.INTERVAL);
+            HashSet<int> years = CalculateProcessingYear(recurrencePattern.DTSTART, recurrencePattern.UNTILL, recurrencePattern.INTERVAL);
 
-            HashSet<string> months = recurrencePattern.BYMONTH.Split(",").Where(data => data.Length > 0).ToHashSet();
+            HashSet<int> months = [.. recurrencePattern.BYMONTH.Split(",").Select(month => Convert.ToInt32(month))];
 
-            HashSet<string> monthDays = recurrencePattern.BYMONTHDAY.Split(",").Where(data => data.Length > 0).ToHashSet();
+            HashSet<int> monthDays = [.. recurrencePattern.BYMONTHDAY.Split(",").Select(monthDays => Convert.ToInt32(monthDays))];
 
             if (startDate != recurrencePattern.DTSTART)
             {
@@ -258,7 +260,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 startDate = new DateTime(newDate.Year, newDate.Month, 1, newDate.Hour, newDate.Minute, newDate.Second);
             }
 
-            if (years.Contains(startDate.Year.ToString()) && months.Contains(startDate.Month.ToString()))
+            if (years.Contains(Convert.ToInt32(startDate.Year.ToString())) && months.Contains(Convert.ToInt32(startDate.Month.ToString())))
             {
                 foreach (var day in monthDays)
                 {

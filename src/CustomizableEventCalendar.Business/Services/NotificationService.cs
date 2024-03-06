@@ -32,6 +32,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                                                             GlobalData.user.Id)
                                                             .ToList();
 
+            notification.AppendLine(new string('═', Console.WindowWidth));
+
+            notification.AppendLine();
+
+            notification.AppendLine(new string(' ', (Console.WindowWidth - 20) / 2) + "Notifications\n");
+
             string completedEvents = GetCompletedEvents(scheduleEvents, events);
             string upcommingEvents = GetUpcomingEvents(scheduleEvents, events);
             string proposedEvents = GetProposedEvents(events);
@@ -39,6 +45,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             if (completedEvents.Length > 0) notification.AppendLine(completedEvents);
             if (upcommingEvents.Length > 0) notification.AppendLine(upcommingEvents);
             if (proposedEvents.Length > 0) notification.AppendLine(proposedEvents);
+
+            notification.AppendLine(new string('═', Console.WindowWidth));
 
             return notification.ToString();
         }

@@ -13,7 +13,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         public static void AskForChoice()
         {
 
-            if (GlobalData.user == null) AskForChoiceToLoginUser();
+            if (GlobalData.user != null) AskForChoiceToLoginUser();
             else AskForChoiceToLogoutUser();
 
         }
@@ -55,8 +55,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                     if (!isLoggedin) AskForChoice();
                     break;
                 case LogoutUserChoices.Signup:
-                    SignUp();
-                    Login();
+                    bool isSignUp = SignUp();
+                    if (isSignUp) Login();
+                    else AskForChoice();
                     break;
                 case LogoutUserChoices.Exit:
                     break;
@@ -93,11 +94,27 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
         }
 
-        public static void SignUp()
+        public static bool SignUp()
         {
             GetSignUpDetails(out User user);
 
-            _userAuthenticationService.AddUser(user);
+            bool isSignUp = _userAuthenticationService.AddUser(user);
+
+            if (isSignUp)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("Sign up completed successfully");
+                Console.ResetColor();
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Some error occurred !");
+                Console.ResetColor();
+            }
+
+            return isSignUp;
+
         }
 
         public static void GetLoginDetails(out string userName, out string password)
@@ -124,7 +141,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
             else
             {
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Invalid user name or password! Please try again.");
+                Console.ResetColor();
                 return false;
             }
             return true;
