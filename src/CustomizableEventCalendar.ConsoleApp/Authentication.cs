@@ -10,18 +10,24 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
     {
         private readonly static UserAuthenticationService _userAuthenticationService = new();
 
-        public static void AskForChoice()
+        public static void AuthenticationChoice()
         {
 
-            if (GlobalData.user != null) AskForChoiceToLoginUser();
-            else AskForChoiceToLogoutUser();
+            if (GlobalData.user != null)
+            {
+                AskForChoiceToLoginUser();
+            }
+            else
+            {
+                AskForChoiceToLogoutUser();
+            }
 
         }
 
         public static void AskForChoiceToLoginUser()
         {
 
-            int choice = ValidatedInputProvider.GetValidatedInteger("\nChoose the option: \t1. Logout \t0. Exit :-");
+            int choice = ValidatedInputProvider.GetValidatedInteger("\nChoose the option: \n1. Logout \n0. Exit \nEnter Choice : ");
 
             LoginUserChoices option = (LoginUserChoices)choice;
 
@@ -29,13 +35,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             {
                 case LoginUserChoices.Logout:
                     Logout();
-                    AskForChoice();
+                    AuthenticationChoice();
                     break;
                 case LoginUserChoices.Exit:
                     break;
                 default:
                     Console.WriteLine("Please choose correct option");
-                    AskForChoice();
+                    AuthenticationChoice();
                     break;
             }
 
@@ -44,7 +50,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         public static void AskForChoiceToLogoutUser()
         {
 
-            int choice = ValidatedInputProvider.GetValidatedInteger("\nChoose the option: \n1. Login\t2. Sign up \t0. Exit :-");
+            int choice = ValidatedInputProvider.GetValidatedInteger("\nChoose the option: \n1. Login\n2. Sign up \n0. Exit \nEnter Choice :  ");
 
             LogoutUserChoices option = (LogoutUserChoices)choice;
 
@@ -52,18 +58,18 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             {
                 case LogoutUserChoices.Login:
                     bool isLoggedin = Login();
-                    if (!isLoggedin) AskForChoice();
+                    if (!isLoggedin) AuthenticationChoice();
                     break;
                 case LogoutUserChoices.Signup:
                     bool isSignUp = SignUp();
                     if (isSignUp) Login();
-                    else AskForChoice();
+                    else AuthenticationChoice();
                     break;
                 case LogoutUserChoices.Exit:
                     break;
                 default:
                     Console.WriteLine("Please choose correct option");
-                    AskForChoice();
+                    AuthenticationChoice();
                     break;
             }
 

@@ -34,7 +34,7 @@ public class Program
 
         try
         {
-            Authentication.AskForChoice();
+            Authentication.AuthenticationChoice();
         }
         catch (Exception ex)
         {

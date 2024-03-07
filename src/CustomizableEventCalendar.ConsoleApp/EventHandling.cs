@@ -88,7 +88,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                     break;
             }
 
-            if (option.Equals(EventOperationsEnum.Back)) Authentication.AskForChoice();
+            if (option.Equals(EventOperationsEnum.Back)) Authentication.AuthenticationChoice();
             else AskForChoice(); // Remove recursion
         }
 
