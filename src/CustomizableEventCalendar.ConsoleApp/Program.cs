@@ -34,7 +34,22 @@ public class Program
 
         try
         {
-            Authentication.AuthenticationChoice();
+            //Authentication.AuthenticationChoice();
+
+            List<List<string>> l = [
+                                      ["Solution No.","Frequency","Interval", "ByDaysOfWeek", "ByMonthDay", "ByDay", "ByMonth"],
+                                      ["1","Daily","2","-","-","-","-"],
+                                      ["2","Daily","-", "2,3,5,7", "-","-","-"],
+                                      ["3","Weekly","3","1,2,5","-","-","-"],
+                                      ["4","Monthly","3","-","25","-","-"],
+                                      ["5","Monthly", "4","-","-","1TH","-"],
+                                      ["6","Yearly","4","-","31","-","May"],
+                                      ["7","Yearly","1","-","-","-1FR","March"]
+                                   ];
+
+            PrintService printService = new PrintService();
+            Console.WriteLine(printService.GenerateTable(l));
+
         }
         catch (Exception ex)
         {
