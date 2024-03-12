@@ -6,11 +6,9 @@ using System.Threading.Tasks;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums
 {
-    internal enum RecurrencePatternFrequencyEnum
+    internal enum EventCollaboratorParticipantRole
     {
-        Daily = 1,
-        Weekly = 2,
-        Monthly = 3,
-        Yearly = 4
+        Organizer = 1,
+        Participant = 2
     }
 }

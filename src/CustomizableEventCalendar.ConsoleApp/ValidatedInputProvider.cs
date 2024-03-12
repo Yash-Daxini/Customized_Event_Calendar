@@ -9,7 +9,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {
     internal static class ValidatedInputProvider
     {
-        private readonly static ValidationService _validationService = new();
 
         public static DateTime GetValidatedDateTime(string inputMessage)
         {
@@ -19,7 +18,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             DateTime validatedDateTime;
 
-            while (!_validationService.ValidateInput(dateTime, out validatedDateTime, DateTime.TryParse))
+            while (!ValidationService.IsValidateInput(dateTime, out validatedDateTime, DateTime.TryParse))
             {
                 Console.Write(inputMessage);
                 dateTime = Console.ReadLine();
@@ -35,7 +34,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             DateOnly validatedDateTime;
 
-            while (!_validationService.ValidateInput(dateTime, out validatedDateTime, DateOnly.TryParse))
+            while (!ValidationService.IsValidateInput(dateTime, out validatedDateTime, DateOnly.TryParse))
             {
                 Console.Write(inputMessage);
                 dateTime = Console.ReadLine();
@@ -52,7 +51,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             int choice;
 
-            while (!_validationService.ValidateInput(inputFromConsole, out choice, int.TryParse))
+            while (!ValidationService.IsValidateInput(inputFromConsole, out choice, int.TryParse))
             {
                 Console.Write(inputMessage);
 
@@ -67,7 +66,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             Console.Write(inputMessage);
             string input = Console.ReadLine();
 
-            while (!_validationService.ValidateListOfCommaSeparatedIntegers(input))
+            while (!ValidationService.IsValidListOfCommaSeparatedIntegers(input))
             {
                 Console.Write(inputMessage);
                 input = Console.ReadLine();
@@ -79,23 +78,99 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         public static string GetValidateEmail(string email)
         {
 
-            while (!_validationService.ValidateEmail(email))
+            while (!ValidationService.IsValidEmail(email))
             {
-                Console.Write($"Enter value for Email: ");
+                Console.Write($"Enter Email: ");
                 email = Console.ReadLine();
             }
 
             return email;
         }
 
-        public static string GetValidatedTimeBlock(string timeBlock)
+        public static string GetValidatedWeekDays(string inputMessage)
         {
-            while (!_validationService.ValidateTimeBlock(timeBlock))
+
+            string weekDays = GetValidatedCommaSeparatedInput(inputMessage);
+
+            bool isValidWeekDays = true;
+
+            foreach (var weekDay in weekDays.Split(","))
             {
-                Console.Write($"Enter value for Time Block: ");
-                timeBlock = Console.ReadLine();
+                if (!ValidationService.IsValidWeekDay(Convert.ToInt32(weekDay)))
+                {
+                    isValidWeekDays = false;
+                    break;
+                }
             }
-            return timeBlock;
+
+            if (!isValidWeekDays) GetValidatedWeekDays(inputMessage);
+            return weekDays;
+
+        }
+
+        public static int GetValidatedMonthDay(string inputMessage)
+        {
+            int monthDay = GetValidatedInteger(inputMessage);
+
+            while (!ValidationService.IsValidMonthDay(monthDay))
+            {
+                monthDay = GetValidatedInteger(inputMessage);
+            }
+
+            return monthDay;
+        }
+
+        public static int GetValidatedMonth(string inputMessage)
+        {
+            int month = GetValidatedInteger(inputMessage);
+
+            while (!ValidationService.IsValidMonth(month))
+            {
+                month = GetValidatedInteger(inputMessage);
+            }
+
+            return month;
+        }
+
+        public static int GetValidated24HourFormatTime(string inputMessage)
+        {
+            int hour = GetValidatedInteger(inputMessage);
+
+            while (!ValidationService.IsValid24HourTime(hour))
+            {
+                hour = GetValidatedInteger(inputMessage);
+            }
+
+            return hour;
+        }
+
+        public static int GetValidated12HourFormatTime(string inputMessage)
+        {
+            int hour = GetValidatedInteger(inputMessage);
+
+            while (!ValidationService.IsValid24HourTime(hour))
+            {
+                hour = GetValidatedInteger(inputMessage);
+            }
+
+            return hour;
+        }
+
+        public static string GetValidatedAbbreviations()
+        {
+            string inputMessage = "Enter AM or PM";
+
+            Console.WriteLine();
+            string abbreviation = Console.ReadLine().ToUpper();
+
+            while (!ValidationService.IsValidAbbreviation(abbreviation))
+            {
+                Console.WriteLine(inputMessage);
+                abbreviation = Console.ReadLine().ToUpper();
+            }
+
+            return abbreviation;
+
         }
     }
 }

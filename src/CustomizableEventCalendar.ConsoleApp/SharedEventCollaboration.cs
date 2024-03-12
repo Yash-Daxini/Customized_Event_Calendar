@@ -12,16 +12,16 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         public void ShowSharedEvents()
         {
-            ShareCalendar shareCalendar = new();
+            //ShareCalendar shareCalendar = new();
 
-            shareCalendar.ViewSharedCalendars();
+            //shareCalendar.ViewSharedCalendars();
 
             int scheduleEventId = ValidatedInputProvider.GetValidatedInteger("Enter Sr.No of the event which you " +
                                                                              "want to collaborate :- ");
 
-            SharedEventCollaborationService sharedEventCollaborationService = new();
+            //SharedEventCollaborationService sharedEventCollaborationService = new();
 
-            sharedEventCollaborationService.AddCollaborator(scheduleEventId);
+            //sharedEventCollaborationService.AddCollaborator(scheduleEventId);
         }
     }
 }

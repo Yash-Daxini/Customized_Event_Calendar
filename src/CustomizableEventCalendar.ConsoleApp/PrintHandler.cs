@@ -97,5 +97,33 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             SetCursorToMiddle();
             Console.WriteLine("╚═══════════════════════════════╝");
         }
+
+        public static void PrintWithColor(string message, ConsoleColor consoleColor)
+        {
+            Console.ForegroundColor = consoleColor;
+            Console.WriteLine("\n" + message + "\n");
+            Console.ResetColor();
+        }
+
+        public static void PrintErrorMessage(string message)
+        {
+            PrintWithColor(message, ConsoleColor.Red);
+        }
+
+        public static void PrintSuccessMessage(string message)
+        {
+            PrintWithColor(message, ConsoleColor.Green);
+        }
+
+        public static void PrintNewLine()
+        {
+            Console.WriteLine("\n");
+        }
+
+        public static void PrintInfoMessage(string message)
+        {
+            PrintWithColor(message, ConsoleColor.Cyan);
+        }
+
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Data.SqlClient;
+using System.Globalization;
 using System.Text;
 using System.Transactions;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp;
@@ -11,157 +12,35 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
     {
         private readonly EventRepository _eventRepository = new();
 
-        private readonly RecurrencePatternRepository _recurrencePatternRepository = new();
-
-        public int InsertEventWithRecurrencePattern(Event eventObj, RecurrencePatternCustom recurrencePattern)
+        public int InsertEvent(Event eventObj)
         {
-            int eventId = 0;
-
-            OverlappingEventService overlappingEventService = new();
-
-            if (overlappingEventService.IsOverlappingEvent(recurrencePattern,eventObj.TimeBlock))
-            {
-                Console.WriteLine("This event overlaps with other event. Please enter valid event");
-                return 0;
-            }
-
-            using (TransactionScope transactionScope = new())
-            {
-                try
-                {
-                    int recurrenceId = _recurrencePatternRepository.Insert(recurrencePattern);
-
-                    eventObj.RecurrenceId = recurrenceId;
-
-                    eventId = _eventRepository.Insert(eventObj);
-
-                    eventObj.Id = eventId;
-
-                    recurrencePattern.Id = recurrenceId;
-
-                    EventCollaboratorsService eventCollaboratorsService = new();
-
-                    int eventCollaboratorId = eventCollaboratorsService.InsertEventCollaborators(new EventCollaborators
-                                                                                    (GlobalData.user.Id, eventObj.Id));
-
-                    if (!eventObj.IsProposed)
-                    {
-                        RecurrenceEngine engine = new();
-
-                        engine.AddEventToScheduler(eventObj, eventCollaboratorId);
-                    }
-                    transactionScope.Complete();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("An error occurred: " + ex.Message);
-                }
-            }
+            int eventId = _eventRepository.Insert(eventObj);
 
             return eventId;
         }
 
         public List<Event> GetAllEvents()
         {
-            List<Event> listOfEvents = [];
-
-            try
-            {
-                listOfEvents = [.. _eventRepository.GetAll<Event>(data => new Event(data))];
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Some error occurred! " + ex.Message);
-            }
+            List<Event> listOfEvents = [.. _eventRepository.GetAll<Event>(data => new Event(data))];
 
             return listOfEvents;
         }
 
         public Event GetEventsById(int eventId)
         {
-            Event listOfEvents = new();
-
-            try
-            {
-                listOfEvents = _eventRepository.GetById<Event>(data => new Event(data), eventId);
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Some error occurred ! " + ex.Message);
-            }
+            Event listOfEvents = _eventRepository.GetById<Event>(data => new Event(data), eventId);
 
             return listOfEvents;
         }
 
-        public void DeleteEventWithRecurrencePattern(int eventId)
+        public void DeleteEvent(int eventId)
         {
-            using (TransactionScope transactionScope = new())
-            {
-                try
-                {
-
-                    EventCollaboratorsService eventCollaboratorsService = new();
-
-                    ScheduleEventService scheduleEventService = new();
-
-                    Event? eventObj = _eventRepository.GetById(data => new Event(data), eventId);
-
-                    int recurrenceId = eventObj == null ? 0 : Convert.ToInt32(eventObj.RecurrenceId);
-
-                    scheduleEventService.DeleteByEventId(eventId);
-
-                    eventCollaboratorsService.DeletEventCollaboratorsByEventId(eventId);
-
-                    _eventRepository.Delete<Event>(eventId);
-
-                    _recurrencePatternRepository.Delete<RecurrencePatternCustom>(recurrenceId);
-
-                    transactionScope.Complete();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("An error occurred: " + ex.Message);
-                }
-            }
+            _eventRepository.Delete<Event>(eventId);
         }
 
-        public void UpdateEventWithRecurrencePattern(Event eventObj, RecurrencePatternCustom recurrencePattern, int eventId, int recurrenceId)
+        public void UpdateEvent(Event eventObj, int eventId)
         {
-            using (TransactionScope transactionScope = new())
-            {
-                try
-                {
-                    _recurrencePatternRepository.Update(recurrencePattern, recurrenceId);
-
-                    _eventRepository.Update(eventObj, eventId);
-
-                    ScheduleEventService scheduleEventService = new();
-
-                    scheduleEventService.DeleteByEventId(eventId);
-
-                    EventCollaboratorsService eventCollaboratorsService = new();
-
-                    List<EventCollaborators> eventCollaborators = eventCollaboratorsService.GetAllEventCollaborators();
-
-                    eventCollaborators = eventCollaborators.Where(eventCollaborator => eventCollaborator.EventId ==
-                                                                  eventId)
-                                                           .ToList();
-
-                    RecurrenceEngine engine = new();
-
-                    foreach (var eventCollaborator in eventCollaborators)
-                    {
-                        engine.AddEventToScheduler(eventObj, eventCollaborator.Id);
-                    }
-
-                    transactionScope.Complete();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("An error occurred: " + ex.Message);
-                }
-            }
+            _eventRepository.Update(eventObj, eventId);
         }
 
         public string GenerateEventTable()
@@ -169,12 +48,20 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             List<Event> events = GetAllEvents().Where(eventObj => eventObj.UserId == GlobalData.user.Id)
                                                .ToList();
 
-            List<List<string>> outputRows = [["Event NO.", "Title", "Description", "Location", "TimeBlock"]];
+            List<List<string>> outputRows = [["Event NO.", "Title", "Description", "Location", "StartHour", "EndHour", "StartDate",
+                                              "EndDate", "Frequency","Interval","Days","Month Days","Month","Year"]];
 
             foreach (var eventObj in events)
             {
                 outputRows.Add([eventObj.Id.ToString(), eventObj.Title, eventObj.Description, eventObj.Location,
-                                eventObj.TimeBlock]);
+                                eventObj.EventStartHour.ToString(), eventObj.EventEndHour.ToString(), eventObj.EventStartDate.ToString(),
+                                eventObj.EventEndDate.ToString(),
+                                eventObj.Frequency == null ? "-" : eventObj.Frequency ,
+                                eventObj.Interval == null ? "-" : eventObj.Interval.ToString(),
+                                eventObj.ByWeekDay == null ? "-" : GetWeekDaysFromNumbers(eventObj.ByWeekDay),
+                                eventObj.ByMonthDay == null ? "-" : eventObj.ByMonthDay.ToString(),
+                                eventObj.ByMonth == null ? "-" : GetMonthFromMonthNumber((int)eventObj.ByMonth),
+                                eventObj.ByYear == null ? "-" : eventObj.ByYear.ToString()]);
             }
 
             string eventTable = PrintHandler.GiveTable(outputRows);
@@ -189,14 +76,43 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public void ConvertProposedEventToScheduleEvent(int eventId)
         {
-            try
-            {
-                _eventRepository.ConvertProposedEventToScheduleEvent(eventId);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("An error occurred: " + ex.Message);
-            }
+            _eventRepository.ConvertProposedEventToScheduleEvent(eventId);
         }
+
+        public static string GetWeekDaysFromNumbers(string days)
+        {
+            List<string> listOfDays = [.. days.Split(",").Select(day => day.Trim())];
+
+            StringBuilder daysOfWeek = new();
+
+            foreach (string day in listOfDays)
+            {
+                if (day.Length == 0) continue;
+                daysOfWeek.Append(GetWeekDayFromWeekNumber(Convert.ToInt32(day)) + ",");
+            }
+
+            if (daysOfWeek.Length == 0) return "-";
+            return daysOfWeek.ToString().Substring(0, daysOfWeek.Length - 1);
+        }
+
+        public static string GetWeekDayFromWeekNumber(int dayNumber)
+        {
+            if (dayNumber < 1 || dayNumber > 7)
+            {
+                return "-";
+            }
+
+            DayOfWeek dayOfWeek = (DayOfWeek)(dayNumber - 1);
+
+            return dayOfWeek.ToString();
+        }
+
+        public static string GetMonthFromMonthNumber(int month)
+        {
+            if (month <= 0 || month > 12) return "-";
+
+            return CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(month);
+        }
+
     }
 }

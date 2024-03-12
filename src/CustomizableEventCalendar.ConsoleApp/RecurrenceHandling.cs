@@ -1,114 +1,100 @@
 ﻿using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Channels;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp.InputMessageStore;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums;
+using Ical.Net.DataTypes;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {
     internal static class RecurrenceHandling
     {
-        private readonly static RecurrenceService _recurrenceService = new();
-
-        public static RecurrencePatternCustom AskForRecurrenceChoice(int? Id)
+        public static void AskForRecurrenceChoice(Event eventObj)
         {
+            PrintHandler.PrintNewLine();
+
             int choice = ValidatedInputProvider.GetValidatedInteger("Are you want repeat this event ? \n 1. Yes 2. No :- ");
 
-            RecurrencePatternChoiceEnum isRepeative = (RecurrencePatternChoiceEnum)choice;
-
-            RecurrencePatternCustom recurrencePattern = new RecurrencePatternCustom();
+            RecurrencePatternChoice isRepeative = (RecurrencePatternChoice)choice;
 
             switch (isRepeative)
             {
-                case RecurrencePatternChoiceEnum.Yes:
-                    recurrencePattern = GetRecurrencePattern(Id);
+                case RecurrencePatternChoice.Yes:
+                    GetRecurrencePattern(eventObj);
                     break;
-                case RecurrencePatternChoiceEnum.No:
-                    recurrencePattern = GetRecurrenceForSingleEvent(Id);
+                case RecurrencePatternChoice.No:
+                    GetRecurrenceForSingleEvent(eventObj);
                     break;
                 default:
                     Console.WriteLine("Please enter correct value : ");
-                    AskForRecurrenceChoice(Id);
+                    AskForRecurrenceChoice(eventObj);
                     break;
             }
 
-            return recurrencePattern;
         }
 
-        public static void GetDates(ref RecurrencePatternCustom recurrencePattern)
+        public static void GetDates(Event eventObj)
         {
             Console.WriteLine("Enter dates for the event :- ");
 
-            recurrencePattern.DTSTART = ValidatedInputProvider.GetValidatedDateTime(RecurrencePatternMessages.StartDate);
+            PrintHandler.PrintNewLine();
 
-            recurrencePattern.UNTILL = ValidatedInputProvider.GetValidatedDateTime(RecurrencePatternMessages.EndDate);
+            eventObj.EventStartDate = DateOnly.FromDateTime(ValidatedInputProvider.GetValidatedDateTime(RecurrencePatternMessages.StartDate));
+
+            PrintHandler.PrintNewLine();
+
+            eventObj.EventEndDate = DateOnly.FromDateTime(ValidatedInputProvider.GetValidatedDateTime(RecurrencePatternMessages.EndDate));
+
+            if (!ValidationService.IsVallidStartAndEndDate(eventObj.EventStartDate, eventObj.EventEndDate)) GetDates(eventObj);
         }
 
-        public static RecurrencePatternCustom GetRecurrenceForSingleEvent(int? Id)
+        public static void GetRecurrenceForSingleEvent(Event eventObj)
         {
-            RecurrencePatternCustom recurrencePattern;
-
-            if (Id == null) recurrencePattern = new RecurrencePatternCustom();
-            else recurrencePattern = _recurrenceService.GetRecurrencePatternById(Convert.ToInt32(Id));
-
-            GetDates(ref recurrencePattern);
-
-            return recurrencePattern;
+            GetDates(eventObj);
         }
 
-        public static RecurrencePatternCustom GetRecurrencePattern(int? Id)
+        public static void GetRecurrencePattern(Event eventObj)
         {
-            RecurrencePatternCustom recurrencePattern;
 
-            if (Id == null) recurrencePattern = new RecurrencePatternCustom();
-            else recurrencePattern = _recurrenceService.GetRecurrencePatternById(Convert.ToInt32(Id));
+            PrintHandler.PrintNewLine();
 
             Console.WriteLine("Fill details to make event repetitive :- ");
 
-            GetDates(ref recurrencePattern);
+            GetDates(eventObj);
 
             int frequency = ValidatedInputProvider.GetValidatedInteger(RecurrencePatternMessages.Frequency);
 
-            RecurrencePatternFrequencyEnum choiceForFreq = (RecurrencePatternFrequencyEnum)frequency;
+            RecurrencePatternFrequency choiceForFreq = (RecurrencePatternFrequency)frequency;
 
-            HandleRecurrenceFrequency(choiceForFreq, ref recurrencePattern);
-
-            //recurrencePattern.INTERVAL = ValidatedInputProvider.GetValidatedInteger(RecurrencePatternMessages.Interval) + "";
-
-            return recurrencePattern;
+            HandleRecurrenceFrequency(choiceForFreq, eventObj);
         }
 
-        public static void HandleRecurrenceFrequency(RecurrencePatternFrequencyEnum choiceForFreq, ref RecurrencePatternCustom recurrencePattern)
+        public static void HandleRecurrenceFrequency(RecurrencePatternFrequency choiceForFreq, Event eventObj)
         {
             switch (choiceForFreq)
             {
 
-                case RecurrencePatternFrequencyEnum.Daily:
-                    recurrencePattern.FREQ = "daily";
-
-                    recurrencePattern.BYDAY = DailyRecurrence();
+                case RecurrencePatternFrequency.Daily:
+                    eventObj.Frequency = "daily";
+                    DailyRecurrence(eventObj);
                     break;
 
-                case RecurrencePatternFrequencyEnum.Weekly:
-                    recurrencePattern.FREQ = "weekly";
-
-                    recurrencePattern.BYDAY = WeeklyRecurrence();
+                case RecurrencePatternFrequency.Weekly:
+                    eventObj.Frequency = "weekly";
+                    WeeklyRecurrence(eventObj);
                     break;
 
-                case RecurrencePatternFrequencyEnum.Monthly:
-                    recurrencePattern.FREQ = "monthly";
-
-                    recurrencePattern.BYMONTHDAY = MonthlyRecurrence();
+                case RecurrencePatternFrequency.Monthly:
+                    eventObj.Frequency = "monthly";
+                    MonthlyRecurrence(eventObj);
                     break;
 
-                case RecurrencePatternFrequencyEnum.Yearly:
-                    recurrencePattern.FREQ = "yearly";
-
-                    string yearlyRecurrenceDetails = YearlyRecurrence();
-
-                    recurrencePattern.BYMONTH = yearlyRecurrenceDetails.Split("-")[0];
-                    recurrencePattern.BYMONTHDAY = yearlyRecurrenceDetails.Split("-")[1];
+                case RecurrencePatternFrequency.Yearly:
+                    eventObj.Frequency = "yearly";
+                    YearlyRecurrence(eventObj);
                     break;
 
                 default:
@@ -118,34 +104,240 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             }
         }
 
-        public static string DailyRecurrence()
+        public static void DailyRecurrence(Event eventObj)
         {
-            string days = ValidatedInputProvider.GetValidatedCommaSeparatedInput(RecurrencePatternMessages.Days);
+            PrintHandler.PrintNewLine();
+
+            Console.WriteLine("How often does this event occur? \n1.Every Weekday \n2.Every n days (You need to specify the value of n)");
+            int choice = ValidatedInputProvider.GetValidatedInteger("Enter choice : ");
+
+            string days;
+
+            switch (choice)
+            {
+                case 1:
+                    PrintHandler.PrintSuccessMessage("Great! You've selected to repeat the event every weekday.");
+                    eventObj.ByWeekDay = "1,2,3,4,5";
+                    eventObj.Interval = null;
+                    break;
+                case 2:
+                    int interval = ValidatedInputProvider.GetValidatedInteger("Please specify how often you'd like to repeat the event" +
+                                                                              "(in days) : ");
+                    eventObj.Interval = interval;
+                    eventObj.ByWeekDay = null;
+                    PrintHandler.PrintSuccessMessage($"You've chosen to repeat the event every {eventObj.Interval} days.");
+                    break;
+
+            }
+
+            eventObj.ByMonthDay = null;
+            eventObj.ByMonth = null;
+            eventObj.ByYear = null;
+            eventObj.WeekOrder = null;
+
+        }
+
+        public static void WeeklyRecurrence(Event eventObj)
+        {
+            PrintHandler.PrintNewLine();
+
+            int interval = ValidatedInputProvider.GetValidatedInteger("Please specify how often you'd like to repeat the event(in weeks).");
+
+            eventObj.Interval = interval;
+
+            string days = GetValidWeekDays();
+
+            eventObj.ByWeekDay = days;
+            eventObj.WeekOrder = null;
+            eventObj.ByMonthDay = null;
+            eventObj.ByMonth = null;
+            eventObj.ByYear = null;
+
+            PrintHandler.PrintSuccessMessage($"You've chosen to repeat the event every n weeks on the following weekdays: " +
+                $"{EventService.GetWeekDaysFromNumbers(days)}.");
+        }
+
+        public static string GetValidWeekDays()
+        {
+            PrintHandler.PrintNewLine();
+
+            string days = ValidatedInputProvider.GetValidatedWeekDays("Which weekdays would you like the event to occur on? "
+                                                                      + "(Please provide weekdays separated by commas)");
 
             return days;
+
         }
 
-        public static string WeeklyRecurrence()
+        public static void MonthlyRecurrence(Event eventObj)
         {
-            string days = ValidatedInputProvider.GetValidatedCommaSeparatedInput(RecurrencePatternMessages.Days);
+            PrintHandler.PrintNewLine();
 
-            return days;
+            int interval = ValidatedInputProvider.GetValidatedInteger("Please specify how often you'd like to repeat the" +
+                                                                      "event (in months).");
+
+            eventObj.Interval = interval;
+
+            GetMonthlyFrequencyChoices(eventObj);
+
         }
 
-        public static string MonthlyRecurrence()
+        public static void GetMonthlyFrequencyChoices(Event eventObj)
         {
-            string monthDays = ValidatedInputProvider.GetValidatedCommaSeparatedInput(RecurrencePatternMessages.MonthDays);
+            PrintHandler.PrintNewLine();
 
-            return monthDays;
+            Console.WriteLine("1.Select specific Day of the Month\n 2.Select day of the month and its position ");
+
+            int choice = ValidatedInputProvider.GetValidatedInteger("Enter your choice : ");
+
+            switch (choice)
+            {
+                case 1:
+                    GetSpecificMonthDay(eventObj);
+                    PrintHandler.PrintSuccessMessage($"You've chosen to repeat the event every {eventObj.Interval} months on the {eventObj.ByMonthDay} day of the month");
+                    eventObj.WeekOrder = null;
+                    eventObj.ByWeekDay = null;
+                    break;
+                case 2:
+                    GetDayOfWeekAndWeekOrderNumber(eventObj);
+                    PrintHandler.PrintSuccessMessage($"You've chosen to repeat the event every {eventObj.Interval} months on the {eventObj.WeekOrder} {EventService.GetWeekDaysFromNumbers(eventObj.ByWeekDay)} day of the month");
+                    eventObj.ByMonthDay = null;
+                    break;
+            }
+
+            eventObj.ByMonth = null;
+            eventObj.ByYear = null;
         }
 
-        public static string YearlyRecurrence()
+        public static void GetSpecificMonthDay(Event eventObj)
         {
-            string monthDays = ValidatedInputProvider.GetValidatedCommaSeparatedInput(RecurrencePatternMessages.MonthDays);
+            eventObj.ByMonthDay = ValidatedInputProvider.GetValidatedMonthDay("On which day of the month would you like the "
+                                                                               + "event to occur? (From 1 to 31) : ");
+        }
 
-            string month = ValidatedInputProvider.GetValidatedCommaSeparatedInput(RecurrencePatternMessages.Months);
+        public static void GetDayOfWeekAndWeekOrderNumber(Event eventObj)
+        {
 
-            return monthDays + "-" + month;
+            GetWeekOrder(eventObj);
+
+            GetWeekDay(eventObj);
+
+        }
+
+        public static void GetWeekDay(Event eventObj)
+        {
+            PrintHandler.PrintNewLine();
+
+            Console.WriteLine("Enter the day of the week (e.g., 'Monday' or 'Tuesday' or 'Wednesday' or 'Thursday' or" +
+                              "'Friday' or 'Saturday' or 'Sunday')");
+            Console.WriteLine("Enter \n1. Monday \n2. Tuesday \n3. Wednesday \n4. Thursday \n5. Friday \n6. Saturday \n7. " +
+                              "Sunday");
+
+            WeekDays choice = (WeekDays)ValidatedInputProvider.GetValidatedInteger("Enter choice :");
+            switch (choice)
+            {
+                case WeekDays.Monday:
+                    eventObj.ByWeekDay = "1";
+                    break;
+                case WeekDays.Tuesday:
+                    eventObj.ByWeekDay = "2";
+                    break;
+                case WeekDays.Wednesday:
+                    eventObj.ByWeekDay = "3";
+                    break;
+                case WeekDays.Thursday:
+                    eventObj.ByWeekDay = "4";
+                    break;
+                case WeekDays.Friday:
+                    eventObj.ByWeekDay = "5";
+                    break;
+                case WeekDays.Saturday:
+                    eventObj.ByWeekDay = "6";
+                    break;
+                case WeekDays.Sunday:
+                    eventObj.ByWeekDay = "7";
+                    break;
+                default:
+                    GetWeekDay(eventObj);
+                    PrintHandler.PrintErrorMessage("Invalid input !");
+                    break;
+            }
+
+        }
+
+        public static void GetWeekOrder(Event eventObj)
+        {
+            PrintHandler.PrintNewLine();
+
+            Console.WriteLine("Enter the order number (e.g., 'first' or 'second' or 'third' or 'fourth' or 'last')");
+            Console.WriteLine("Enter \n1. First \n2. Second \n3. Third \n4. Fourth \n5. Fifth");
+
+            WeekOrder choice = (WeekOrder)ValidatedInputProvider.GetValidatedInteger("Enter choice :");
+
+            switch (choice)
+            {
+                case WeekOrder.First:
+                    eventObj.WeekOrder = 1;
+                    break;
+                case WeekOrder.Second:
+                    eventObj.WeekOrder = 2;
+                    break;
+                case WeekOrder.Third:
+                    eventObj.WeekOrder = 3;
+                    break;
+                case WeekOrder.Fourth:
+                    eventObj.WeekOrder = 4;
+                    break;
+                case WeekOrder.Fifth:
+                    eventObj.WeekOrder = 5;
+                    break;
+                default:
+                    GetWeekOrder(eventObj);
+                    PrintHandler.PrintErrorMessage("Invalid input !");
+                    break;
+            }
+        }
+
+        public static void YearlyRecurrence(Event eventObj)
+        {
+            PrintHandler.PrintNewLine();
+
+            eventObj.Interval = ValidatedInputProvider.GetValidatedInteger("Please specify how often you'd like to repeat " +
+                                                                           "the event (in years) : ");
+
+            Console.WriteLine("1.Select specific Day of the Month \n2.Select day of the month and its position ");
+
+            int choice = ValidatedInputProvider.GetValidatedInteger("Enter your choice : ");
+
+            GetValidMonth(eventObj);
+
+            switch (choice)
+            {
+                case 1:
+                    GetSpecificMonthDay(eventObj);
+                    PrintHandler.PrintSuccessMessage($"You've chosen to repeat the event every {eventObj.Interval} years on the {eventObj.ByMonthDay} day of the month of {eventObj.ByMonth}");
+                    eventObj.WeekOrder = null;
+                    eventObj.ByWeekDay = null;
+                    break;
+                case 2:
+                    GetDayOfWeekAndWeekOrderNumber(eventObj);
+                    PrintHandler.PrintSuccessMessage($"You've chosen to repeat the event every {eventObj.Interval} years on the {eventObj.WeekOrder} {EventService.GetWeekDaysFromNumbers(eventObj.ByWeekDay)} day of the month of {eventObj.ByMonth}");
+                    eventObj.ByMonthDay = null;
+                    break;
+            }
+
+            eventObj.ByYear = null;
+
+        }
+
+        public static void GetValidMonth(Event eventObj)
+        {
+            PrintHandler.PrintNewLine();
+
+            Console.WriteLine("Enter Months \n1. January \n2. February \n3. March \n4. April \n5. May \n6. June \n7. July " +
+                              "\n8. August \n9. September \n10. October \n11. November \n12. December");
+
+            eventObj.ByMonth = ValidatedInputProvider.GetValidatedMonth("Enter the month :");
+
         }
     }
 }

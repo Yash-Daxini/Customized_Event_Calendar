@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities
 {
-    internal class User : BaseData
+    internal class User
     {
         public User() { }
 

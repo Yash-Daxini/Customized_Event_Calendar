@@ -8,22 +8,22 @@ using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
 {
-    internal class ValidationService
+    internal static class ValidationService
     {
         public delegate bool GenericTryParse<T>(string input, out T result);
 
-        public bool ValidateInput<T>(string inputFromConsole, out T choice,
+        public static bool IsValidateInput<T>(string inputFromConsole, out T choice,
                                      GenericTryParse<T> genericTryParse)
         {
             if (!genericTryParse(inputFromConsole, out choice))
             {
-                PrintHandler.PrintInvalidMessage("Invalid Input!");
+                PrintHandler.PrintErrorMessage("Invalid Input!");
                 return false;
             }
             return true;
         }
 
-        public bool ValidateListOfCommaSeparatedIntegers(string input)
+        public static bool IsValidListOfCommaSeparatedIntegers(string input)
         {
             string[] numbers = input.Split(',')
                                     .Select(number => number.Trim())
@@ -33,39 +33,66 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             {
                 if (!int.TryParse(number, out int validateNumber))
                 {
-                    PrintHandler.PrintInvalidMessage("Invalid Input!");
+                    PrintHandler.PrintErrorMessage("Invalid Input!");
                     return false;
                 }
             }
+
             return true;
         }
 
-        public bool ValidateTimeBlock(string input)
-        {
-            string pattern = @"^\s*(?:([1-9]|0[1-9]|1[0-2])\s*(AM|PM))\s*-\s*(?:([1-9]|0[1-9]|1[0-2])\s*(AM|PM))\s*$";
-
-            Regex regex = new Regex(pattern, RegexOptions.IgnoreCase);
-
-            if (!regex.IsMatch(input))
-            {
-                PrintHandler.PrintInvalidMessage("Invalid time block format ! Enter like this format :- 2AM-7PM");
-                return false;
-            }
-            return true;
-        }
-
-        public bool ValidateEmail(string input)
+        public static bool IsValidEmail(string input)
         {
             string pattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
 
-            Regex regex = new Regex(pattern, RegexOptions.IgnoreCase);
+            Regex regex = new(pattern, RegexOptions.IgnoreCase);
 
             if (!regex.IsMatch(input))
             {
-                PrintHandler.PrintInvalidMessage("Invalid email address! ");
+                PrintHandler.PrintErrorMessage("Invalid email address! ");
                 return false;
             }
             return true;
+        }
+
+        public static bool IsValidWeekDay(int weekDayNumber)
+        {
+            return weekDayNumber >= 1 && weekDayNumber <= 7;
+        }
+
+        public static bool IsValidMonthDay(int monthDayNumber)
+        {
+            return monthDayNumber >= 1 && monthDayNumber <= 31;
+        }
+
+        public static bool IsValidMonth(int month)
+        {
+            return month >= 1 && month <= 12;
+        }
+
+        public static bool IsValid24HourTime(int hour)
+        {
+            return hour >= 0 && hour <= 23;
+        }
+
+        public static bool IsValid12HourTime(int hour)
+        {
+            return hour >= 1 && hour <= 12;
+        }
+
+        public static bool IsValidStartAndEndHour(int start, int end)
+        {
+            return start < end;
+        }
+
+        public static bool IsValidAbbreviation(string abbreviation)
+        {
+            return abbreviation.Equals("AM") || abbreviation.Equals("PM");
+        }
+
+        public static bool IsVallidStartAndEndDate(DateOnly startDate,DateOnly endDate)
+        {
+            return startDate <= endDate;
         }
     }
 }

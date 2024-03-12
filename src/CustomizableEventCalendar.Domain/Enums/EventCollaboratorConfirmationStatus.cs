@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums
 {
-    internal enum RecurrencePatternChoiceEnum
+    internal enum EventCollaboratorConfirmationStatus
     {
-        Yes = 1,
-        No = 2
+        Accepted = 1,
+        Rejected = 2,
+        Pending = 3
     }
 }

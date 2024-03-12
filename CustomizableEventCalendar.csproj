@@ -8,13 +8,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Ical.Net" Version="4.2.0" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
+    <Compile Remove="src\CustomizableEventCalendar.Domain\Interfaces\**" />
+    <EmbeddedResource Remove="src\CustomizableEventCalendar.Domain\Interfaces\**" />
+    <None Remove="src\CustomizableEventCalendar.Domain\Interfaces\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="src\CustomizableEventCalendar.Domain\Interfaces\" />
+    <PackageReference Include="Ical.Net" Version="4.2.0" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
   </ItemGroup>
 
 </Project>

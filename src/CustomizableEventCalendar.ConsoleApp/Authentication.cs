@@ -29,15 +29,15 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             int choice = ValidatedInputProvider.GetValidatedInteger("\nChoose the option: \n1. Logout \n0. Exit \nEnter Choice : ");
 
-            LoginUserChoices option = (LoginUserChoices)choice;
+            LoggedinUserChoices option = (LoggedinUserChoices)choice;
 
             switch (option)
             {
-                case LoginUserChoices.Logout:
+                case LoggedinUserChoices.Logout:
                     Logout();
                     AuthenticationChoice();
                     break;
-                case LoginUserChoices.Exit:
+                case LoggedinUserChoices.Exit:
                     break;
                 default:
                     Console.WriteLine("Please choose correct option");
@@ -52,20 +52,20 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             int choice = ValidatedInputProvider.GetValidatedInteger("\nChoose the option: \n1. Login\n2. Sign up \n0. Exit \nEnter Choice :  ");
 
-            LogoutUserChoices option = (LogoutUserChoices)choice;
+            LoggedoutUserChoices option = (LoggedoutUserChoices)choice;
 
             switch (option)
             {
-                case LogoutUserChoices.Login:
+                case LoggedoutUserChoices.Login:
                     bool isLoggedin = Login();
                     if (!isLoggedin) AuthenticationChoice();
                     break;
-                case LogoutUserChoices.Signup:
+                case LoggedoutUserChoices.Signup:
                     bool isSignUp = SignUp();
                     if (isSignUp) Login();
                     else AuthenticationChoice();
                     break;
-                case LogoutUserChoices.Exit:
+                case LoggedoutUserChoices.Exit:
                     break;
                 default:
                     Console.WriteLine("Please choose correct option");
@@ -183,9 +183,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public static void ShowNotification()
         {
-            NotificationService notificationService = new NotificationService();
+            //NotificationService notificationService = new NotificationService();
 
-            Console.WriteLine(notificationService.GenerateNotification());
+            //Console.WriteLine(notificationService.GenerateNotification());
         }
 
         public static void Logout()

@@ -8,29 +8,53 @@ using System.Threading.Tasks;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities
 {
-    internal class Event : BaseData
+    internal class Event
     {
         public Event() { }
 
-        public Event(int Id, string Title, string Description, string Location, string TimeBlock, int UserId, int RecurrenceId)
+        public Event(int Id, string Title, string Description, string Location, int UserId, int EventStartHour, int EventEndHour,
+                        DateOnly EventStartDate, DateOnly EventEndDate, string Frequency, int Interval, string ByWeekDay,
+                        int WeekOrder, int ByMonthDay, int ByMonth, int ByYear)
         {
             this.Id = Id;
             this.Title = Title;
             this.Description = Description;
             this.Location = Location;
-            this.TimeBlock = TimeBlock;
             this.UserId = UserId;
-            this.RecurrenceId = RecurrenceId;
+            this.EventStartHour = EventStartHour;
+            this.EventEndHour = EventEndHour;
+            this.EventStartDate = EventStartDate;
+            this.EventEndDate = EventEndDate;
+            this.Frequency = Frequency;
+            this.Interval = Interval;
+            this.ByWeekDay = ByWeekDay;
+            this.WeekOrder = WeekOrder;
+            this.ByMonthDay = ByMonthDay;
+            this.ByMonth = ByMonth;
+            this.ByYear = ByYear;
+            this.IsProposed = IsProposed;
         }
 
-        public Event(string Title, string Description, string Location, int UserId, string TimeBlock, int RecurrenceId)
+        public Event(string Title, string Description, string Location, int UserId, int EventStartHour, int EventEndHour,
+                        DateOnly EventStartDate, DateOnly EventEndDate, string Frequency, int Interval, string ByWeekDay,
+                        int WeekOrder, int ByMonthDay, int ByMonth, int ByYear)
         {
             this.Title = Title;
             this.Description = Description;
             this.Location = Location;
-            this.TimeBlock = TimeBlock;
             this.UserId = UserId;
-            this.RecurrenceId = RecurrenceId;
+            this.EventStartHour = EventStartHour;
+            this.EventEndHour = EventEndHour;
+            this.EventStartDate = EventStartDate;
+            this.EventEndDate = EventEndDate;
+            this.Frequency = Frequency;
+            this.Interval = Interval;
+            this.ByWeekDay = ByWeekDay;
+            this.WeekOrder = WeekOrder;
+            this.ByMonthDay = ByMonthDay;
+            this.ByMonth = ByMonth;
+            this.ByYear = ByYear;
+            this.IsProposed = IsProposed;
         }
 
         public Event(SqlDataReader sqlDataReader)
@@ -39,25 +63,43 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
             this.Title = sqlDataReader["Title"].ToString();
             this.Description = sqlDataReader["Description"].ToString();
             this.Location = sqlDataReader["Location"].ToString();
-            this.TimeBlock = sqlDataReader["TimeBlock"].ToString();
             this.UserId = Convert.ToInt32(sqlDataReader["UserId"]);
-            this.RecurrenceId = Convert.ToInt32(sqlDataReader["RecurrenceId"]);
+            this.EventStartHour = Convert.ToInt32(sqlDataReader["EventStartHour"]);
+            this.EventEndHour = Convert.ToInt32(sqlDataReader["EventEndHour"]);
+            this.EventStartDate = DateOnly.FromDateTime(Convert.ToDateTime(sqlDataReader["EventStartDate"].ToString()));
+            this.EventEndDate = DateOnly.FromDateTime(Convert.ToDateTime(sqlDataReader["EventEndDate"].ToString()));
+            this.Frequency = sqlDataReader["Frequency"] == DBNull.Value ? null : sqlDataReader["Frequency"].ToString();
+            this.Interval = sqlDataReader["Interval"] == DBNull.Value ? null : Convert.ToInt32(sqlDataReader["Interval"]);
+            this.ByWeekDay = sqlDataReader["ByWeekDay"] == DBNull.Value ? null : sqlDataReader["ByWeekDay"].ToString();
+            this.WeekOrder = sqlDataReader["WeekOrder"] == DBNull.Value ? null : Convert.ToInt32(sqlDataReader["WeekOrder"]);
+            this.ByMonthDay = sqlDataReader["ByMonthDay"] == DBNull.Value ? null : Convert.ToInt32(sqlDataReader["ByMonthDay"]);
+            this.ByMonth = sqlDataReader["ByMonth"] == DBNull.Value ? null : Convert.ToInt32(sqlDataReader["ByMonth"]);
+            this.ByYear = sqlDataReader["ByYear"] == DBNull.Value ? null : Convert.ToInt32(sqlDataReader["ByYear"]);
             this.IsProposed = Convert.ToBoolean(sqlDataReader["IsProposed"]);
         }
 
         [NotMapped]
         public int Id { get; set; }
         public string Title { get; set; }
-        public string Description { get; set; }
         public string Location { get; set; }
-        public string TimeBlock { get; set; }
-        public bool IsProposed { get; set; }
+        public string Description { get; set; }
         public int UserId { get; set; }
-        public int RecurrenceId { get; set; }
+        public int EventStartHour { get; set; }
+        public int EventEndHour { get; set; }
+        public DateOnly EventStartDate { get; set; }
+        public DateOnly EventEndDate { get; set; }
+        public string? Frequency { get; set; }
+        public int? Interval { get; set; }
+        public string? ByWeekDay { get; set; }
+        public int? WeekOrder { get; set; }
+        public int? ByMonthDay { get; set; }
+        public int? ByMonth { get; set; }
+        public int? ByYear { get; set; }
+        public bool IsProposed { get; set; }
 
         public override string ToString()
         {
-            return $"{Id},\t{Title},\t{Description},\t{Location},\t{TimeBlock}";
+            return $"{Id},\t{Title},\t{Description},\t{Location}\t{UserId}\t{EventStartHour}\t{EventEndHour}\t{EventStartDate}\t{EventEndDate}\t{Frequency}\t{Interval}\t{ByWeekDay}\t{WeekOrder}\t{ByMonthDay}\t{ByMonth}\t{ByYear}\t{IsProposed}";
         }
 
     }

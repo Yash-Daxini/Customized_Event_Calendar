@@ -25,13 +25,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
             if (user != null)
             {
-                RecurrenceEngine recurrenceEngine = new();
+                //RecurrenceEngine recurrenceEngine = new();
 
-                recurrenceEngine.ScheduleEventsOfThisMonth();
+                //recurrenceEngine.ScheduleEventsOfThisMonth();
 
-                MultipleInviteesEventService multipleInviteesEventService = new();
+                //MultipleInviteesEventService multipleInviteesEventService = new();
 
-                multipleInviteesEventService.StartSchedulingProcessOfProposedEvent();
+                //multipleInviteesEventService.StartSchedulingProcessOfProposedEvent();
             }
             return user != null;
 

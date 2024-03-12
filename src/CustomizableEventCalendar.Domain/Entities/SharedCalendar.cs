@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities
 {
-    internal class SharedCalendar : BaseData
+    internal class SharedCalendar
     {
 
         public SharedCalendar(int Id, int UserId, int SharedByUserId, DateOnly FromDate, DateOnly ToDate)
