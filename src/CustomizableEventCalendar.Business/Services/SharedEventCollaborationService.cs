@@ -1,37 +1,30 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Text;
-//using System.Threading.Tasks;
-//using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 
-//namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
-//{
-//    internal class SharedEventCollaborationService
-//    {
+namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
+{
+    internal class SharedEventCollaborationService
+    {
 
-//        public void AddCollaborator(int scheduleEventId)
-//        {
-//            ScheduleEventService scheduleEventService = new();
+        public void AddCollaborator(int eventCollaboratorId)
+        {
+            EventCollaboratorsService eventCollaboratorsService = new();
 
-//            ScheduleEvent? scheduleEvent = scheduleEventService.GetScheduleEventById(scheduleEventId);
+            EventCollaborators? eventCollaborator = eventCollaboratorsService.GetEventCollaboratorsById(eventCollaboratorId);
 
-//            if (scheduleEvent == null) return;
+            if (eventCollaborator == null) return;
 
-//            int eventId = scheduleEventService.GetEventIdFromEventCollaborators(scheduleEvent.EventCollaboratorsId);
+            int eventId = eventCollaborator.EventId;
 
-//            EventCollaboratorsService eventCollaboratorsService = new();
+            EventCollaborators eventCollaborators = new(eventId, GlobalData.user.Id, "participant", "", null, null,
+                                                        eventCollaborator.EventDate);
 
-//            int? eventCollaboratorId = eventCollaboratorsService.GetEventCollaboratorIdFromEventId(eventId);
+            eventCollaboratorsService.InsertEventCollaborators(eventCollaborators);
 
-//            if (eventCollaboratorId == null)
-//            {
-//                EventCollaborators eventCollaborators = new(GlobalData.user.Id, eventId);
-//                eventCollaboratorId = eventCollaboratorsService.InsertEventCollaborators(eventCollaborators);
-//            }
-
-//            scheduleEvent.EventCollaboratorsId = Convert.ToInt32(eventCollaboratorId);
-//            scheduleEventService.Create(scheduleEvent);
-//        }
-//    }
-//}
+        }
+    }
+}

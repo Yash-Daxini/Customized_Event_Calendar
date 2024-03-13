@@ -183,9 +183,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public static void ShowNotification()
         {
-            //NotificationService notificationService = new NotificationService();
+            NotificationService notificationService = new NotificationService();
 
-            //Console.WriteLine(notificationService.GenerateNotification());
+            Console.WriteLine(notificationService.GenerateNotification());
         }
 
         public static void Logout()

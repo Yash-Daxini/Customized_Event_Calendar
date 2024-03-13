@@ -1,268 +1,330 @@
-﻿//using System.ComponentModel;
-//using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
-//using Ical.Net;
-//using Ical.Net.CalendarComponents;
-//using Ical.Net.DataTypes;
-//using Ical.Net.Evaluation;
-//using Ical.Net.Serialization;
-
-//namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
-//{
-//    internal class OverlappingEventService
-//    {
-//        private readonly RecurrenceService recurrenceService = new();
-
-//        private readonly EventCollaboratorsService eventCollaboratorsService = new();
-
-//        private readonly ScheduleEventService scheduleEventService = new();
-
-
-//        public bool IsOverlappingEvent(RecurrencePatternCustom recurrencePatternCustom, string TimeBlock)
-//        {
-
-//            List<DateTime> occurrences = [];
-
-//            FindOccurrencesOfEvents(recurrencePatternCustom, TimeBlock, ref occurrences);
-
-//            EventService eventService = new();
-
-//            RecurrenceService recurrenceService = new();
-
-//            List<Event> events = [.. eventService.GetAllEvents().Where(eventObj => eventObj.UserId == GlobalData.user.Id)];
-
-//            foreach (var eventObj in events)
-//            {
-//                List<DateTime> occurrences1 = [];
-
-//                RecurrencePatternCustom recurrencePatternCustom1 = recurrenceService.GetRecurrencePatternById(eventObj.RecurrenceId);
-
-//                FindOccurrencesOfEvents(recurrencePatternCustom1, eventObj.TimeBlock, ref occurrences1);
-
-//                foreach (var item in occurrences)
-//                {
-//                    DateTime matchedDate = occurrences1.Find(occurrence => occurrence == item);
-//                    if (matchedDate != new DateTime())
-//                    {
-//                        Console.WriteLine(item + " " + matchedDate);
-//                        return true;
-//                    }
-//                }
-
-//            }
-
-//            return false;
-//        }
-
-//        public void FindOccurrencesOfEvents(RecurrencePatternCustom recurrencePattern, string TimeBlock, ref List<DateTime> occurrences)
-//        {
-//            switch (recurrencePattern.FREQ)
-//            {
-//                case null:
-//                    OccurrencesOfNonRecurrenceEvents(recurrencePattern, TimeBlock, ref occurrences);
-//                    break;
-//                case "daily":
-//                    OccurrencesOfDailyEvents(recurrencePattern, TimeBlock, ref occurrences);
-//                    break;
-//                case "weekly":
-//                    OccurrencesOfWeeklyEvents(recurrencePattern, TimeBlock, ref occurrences);
-//                    break;
-//                case "monthly":
-//                    OccurrencesOfMonthlyEvents(recurrencePattern, TimeBlock, ref occurrences);
-//                    break;
-//                case "yearly":
-//                    OccurrencesOfYearlyEvents(recurrencePattern, TimeBlock, ref occurrences);
-//                    break;
-//            }
-
-//        }
-
-//        public void OccurrencesOfNonRecurrenceEvents(RecurrencePatternCustom recurrencePatternCustom, string TimeBlock, ref List<DateTime> occurrences)
-//        {
-
-//            string startTime = TimeBlock.Split("-")[0];
-//            int startHour = GetHourFromTimeBlock(startTime);
-
-//            string endTime = TimeBlock.Split("-")[1];
-//            int endHour = GetHourFromTimeBlock(startTime);
-
-//            OccurrencesForSpecificHour(startHour, endHour, recurrencePatternCustom.DTSTART, ref occurrences);
-//        }
-
-//        public void OccurrencesOfDailyEvents(RecurrencePatternCustom recurrencePattern, string TimeBlock, ref List<DateTime> occurrences)
-//        {
-//            HashSet<int> days = [.. recurrencePattern.BYDAY.Split(",").Select(day => Convert.ToInt32(day))];
-
-//            DateTime startDate = recurrencePattern.DTSTART;
-
-//            while (startDate < recurrencePattern.UNTILL)
-//            {
-//                int day = Convert.ToInt32(startDate.DayOfWeek.ToString("d"));
-
-//                if (day == 0) day = 7;
-
-//                if (days.Contains(day))
-//                {
-
-//                    string startTime = TimeBlock.Split("-")[0];
-//                    int startHour = GetHourFromTimeBlock(startTime);
-
-//                    string endTime = TimeBlock.Split("-")[1];
-//                    int endHour = GetHourFromTimeBlock(endTime);
-
-//                    OccurrencesForSpecificHour(startHour, endHour, startDate, ref occurrences);
-//                }
-//                startDate = startDate.AddDays(Convert.ToInt32(recurrencePattern.INTERVAL) + 1);
-//            }
-//        }
-
-//        public int GetHourFromTimeBlock(string timeBlock)
-//        {
-//            int hour = Convert.ToInt32(timeBlock.Substring(0, timeBlock.Length - 2));
-//            hour += (timeBlock.EndsWith("PM") || timeBlock.EndsWith("pm")) && hour != 12 ? 12 : 0;
-//            if (hour == 12 && timeBlock.EndsWith("AM")) hour = 0;
-//            return hour;
-//        }
-
-//        public void OccurrencesForSpecificHour(int startHour, int endHour, DateTime dateTime, ref List<DateTime> occurrences)
-//        {
-//            while (startHour <= endHour)
-//            {
-//                occurrences.Add(new DateTime(dateTime.Year, dateTime.Month, dateTime.Day, startHour, 0, 0));
-
-//                startHour++;
-//            }
-//        }
-
-//        public void OccurrencesOfWeeklyEvents(RecurrencePatternCustom recurrencePattern, string TimeBlock, ref List<DateTime> occurrences)
-//        {
-//            HashSet<int> weekDays = [.. recurrencePattern.BYDAY.Split(",").Select(weekDay => Convert.ToInt32(weekDay))];
-
-//            DateTime startDate = recurrencePattern.DTSTART;
-
-//            while (startDate < recurrencePattern.UNTILL)
-//            {
-//                int day = Convert.ToInt32(startDate.DayOfWeek.ToString("d"));
-
-//                if (day == 0) day = 7;
-
-//                if (weekDays.Contains(day))
-//                {
-
-//                    string startTime = TimeBlock.Split("-")[0];
-//                    int startHour = GetHourFromTimeBlock(startTime);
-
-//                    string endTime = TimeBlock.Split("-")[1];
-//                    int endHour = GetHourFromTimeBlock(endTime);
-
-//                    OccurrencesForSpecificHour(startHour, endHour, startDate, ref occurrences);
-//                }
-//                startDate = startDate.AddDays(Convert.ToInt32(recurrencePattern.INTERVAL) + 1);
-//            }
-//        }
-
-//        public HashSet<int> CalculateProcessingMonth(DateTime startDate, DateTime endDate, string interval)
-//        {
-//            HashSet<int> months = [];
-//            DateTime curDate = startDate;
-
-//            while (curDate <= endDate)
-//            {
-//                months.Add(Convert.ToInt32(curDate.Month.ToString()));
-//                curDate = curDate.AddMonths(Convert.ToInt32(interval) + 1);
-//            }
-
-//            return months;
-//        }
-
-//        public void OccurrencesOfMonthlyEvents(RecurrencePatternCustom recurrencePattern, string TimeBlock, ref List<DateTime> occurrences)
-//        {
-//            HashSet<int> monthDays = [.. recurrencePattern.BYMONTHDAY.Split(",").Select(monthDay => Convert.ToInt32(monthDay))];
-
-//            HashSet<int> months = CalculateProcessingMonth(recurrencePattern.DTSTART, recurrencePattern.UNTILL,
-//                                                              recurrencePattern.INTERVAL);
-
-//            DateTime startDate = new DateTime(recurrencePattern.DTSTART.Year, recurrencePattern.DTSTART.Month, 1);
-
-//            while (months.Contains(startDate.Month))
-//            {
-//                foreach (var day in monthDays)
-//                {
-//                    try
-//                    {
-//                        DateTime scheduleDate = new DateTime(startDate.Year, startDate.Month, Convert.ToInt32(day));
-
-//                        string startTime = TimeBlock.Split("-")[0];
-//                        int startHour = GetHourFromTimeBlock(startTime);
-
-//                        string endTime = TimeBlock.Split("-")[1];
-//                        int endHour = GetHourFromTimeBlock(endTime);
-
-//                        if (scheduleDate > recurrencePattern.UNTILL.Date) return;
-
-//                        OccurrencesForSpecificHour(startHour, endHour, scheduleDate, ref occurrences);
-//                    }
-//                    catch (Exception ex)
-//                    {
-//                        Console.WriteLine("Some error occurred ! " + ex.Message);
-//                    }
-//                }
-//                startDate = startDate.AddMonths(1);
-//            }
-//        }
-
-//        public HashSet<int> CalculateProcessingYear(DateTime startDate, DateTime endDate, string interval)
-//        {
-
-//            HashSet<int> years = [];
-//            DateTime curDate = startDate;
-
-//            while (curDate <= endDate)
-//            {
-//                years.Add(Convert.ToInt32(curDate.Year.ToString()));
-//                curDate = curDate.AddYears(Convert.ToInt32(interval) + 1);
-//            }
-
-//            return years;
-//        }
-
-//        public void OccurrencesOfYearlyEvents(RecurrencePatternCustom recurrencePattern, string TimeBlock, ref List<DateTime> occurrences)
-//        {
-//            HashSet<int> years = CalculateProcessingYear(recurrencePattern.DTSTART, recurrencePattern.UNTILL, recurrencePattern.INTERVAL);
-
-//            HashSet<int> months = [.. recurrencePattern.BYMONTH.Split(",").Select(month => Convert.ToInt32(month))];
-
-//            HashSet<int> monthDays = [.. recurrencePattern.BYMONTHDAY.Split(",").Select(monthDays => Convert.ToInt32(monthDays))];
-
-//            DateTime startDate = new DateTime(recurrencePattern.DTSTART.Year, recurrencePattern.DTSTART.Month, 1);
-
-//            while (years.Contains(Convert.ToInt32(startDate.Year.ToString())))
-//            {
-//                foreach (var day in monthDays)
-//                {
-//                    try
-//                    {
-//                        DateTime scheduleDate = new(startDate.Year, startDate.Month, Convert.ToInt32(day), startDate.Hour, startDate.Minute, startDate.Second);
-
-//                        string startTime = TimeBlock.Split("-")[0];
-//                        int startHour = GetHourFromTimeBlock(startTime);
-
-//                        string endTime = TimeBlock.Split("-")[1];
-//                        int endHour = GetHourFromTimeBlock(endTime);
-
-//                        if (scheduleDate >= recurrencePattern.DTSTART && scheduleDate <= recurrencePattern.UNTILL)
-//                        {
-//                            OccurrencesForSpecificHour(startHour, endHour, scheduleDate, ref occurrences);
-//                        }
-
-//                        if (scheduleDate > recurrencePattern.UNTILL) return;
-//                    }
-//                    catch (Exception e)
-//                    {
-//                        Console.WriteLine(e.Message);
-//                    }
-//                    startDate = startDate.AddYears(1);
-//                }
-//            }
-//        }
-//    }
-//}
+﻿using System.ComponentModel;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+using Ical.Net;
+using Ical.Net.CalendarComponents;
+using Ical.Net.DataTypes;
+using Ical.Net.Evaluation;
+using Ical.Net.Serialization;
+using Microsoft.VisualBasic;
+
+namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
+{
+    internal class OverlappingEventService
+    {
+        public bool IsOverlappingEvent(Event eventForVerify)
+        {
+
+            List<DateTime> occurrences = [];
+
+            FindOccurrencesOfEvents(eventForVerify, ref occurrences);
+
+            EventService eventService = new();
+
+            List<Event> events = [.. eventService.GetAllEvents().Where(eventObj => eventObj.UserId == GlobalData.user.Id)];
+
+            foreach (var eventObj in events)
+            {
+                List<DateTime> occurrences1 = [];
+
+                FindOccurrencesOfEvents(eventObj, ref occurrences1);
+
+                foreach (var item in occurrences)
+                {
+                    DateTime matchedDate = occurrences1.Find(occurrence => occurrence == item);
+                    if (matchedDate != new DateTime())
+                    {
+                        Console.WriteLine(item + " " + matchedDate);
+                        return true;
+                    }
+                }
+
+            }
+
+            return false;
+        }
+
+        public void FindOccurrencesOfEvents(Event eventObj, ref List<DateTime> occurrences)
+        {
+            switch (eventObj.Frequency)
+            {
+                case null:
+                    OccurrencesOfNonRecurrenceEvents(eventObj, ref occurrences);
+                    break;
+                case "daily":
+                    OccurrencesOfDailyEvents(eventObj, ref occurrences);
+                    break;
+                case "weekly":
+                    OccurrencesOfWeeklyEvents(eventObj, ref occurrences);
+                    break;
+                case "monthly":
+                    OccurrencesOfMonthlyEvents(eventObj, ref occurrences);
+                    break;
+                case "yearly":
+                    OccurrencesOfYearlyEvents(eventObj, ref occurrences);
+                    break;
+            }
+
+        }
+
+        public void OccurrencesOfNonRecurrenceEvents(Event eventObj, ref List<DateTime> occurrences)
+        {
+            OccurrencesForSpecificHour(eventObj.EventStartHour, eventObj.EventEndHour, eventObj.EventStartDate, ref occurrences);
+        }
+
+        public void OccurrencesOfDailyEvents(Event eventObj, ref List<DateTime> occurrences)
+        {
+            if (eventObj.Interval == null) OccurrencesOfDailyEventsWithoutInterval(eventObj, ref occurrences);
+            else OccurrencesOfDailyEventWithInterval(eventObj, ref occurrences);
+        }
+
+        public void OccurrencesOfDailyEventsWithoutInterval(Event eventObj, ref List<DateTime> occurrences)
+        {
+            HashSet<int> days = [.. eventObj.ByWeekDay.Split(",").Select(day => Convert.ToInt32(day))];
+
+            DateOnly startDate = eventObj.EventStartDate;
+
+            while (startDate < eventObj.EventEndDate)
+            {
+                int day = Convert.ToInt32(startDate.DayOfWeek.ToString("d"));
+
+                if (day == 0) day = 7;
+
+                if (days.Contains(day))
+                {
+                    OccurrencesForSpecificHour(eventObj.EventStartHour, eventObj.EventEndHour, startDate, ref occurrences);
+                }
+                startDate = startDate.AddDays(1);
+            }
+        }
+
+        public void OccurrencesOfDailyEventWithInterval(Event eventObj, ref List<DateTime> occurrences)
+        {
+            DateOnly startDate = eventObj.EventStartDate;
+
+            while (startDate < eventObj.EventEndDate)
+            {
+                OccurrencesForSpecificHour(eventObj.EventStartHour, eventObj.EventEndHour, startDate, ref occurrences);
+
+                startDate = startDate.AddDays(Convert.ToInt32(eventObj.Interval) + 1);
+            }
+        }
+
+        public void OccurrencesForSpecificHour(int startHour, int endHour, DateOnly date, ref List<DateTime> occurrences)
+        {
+            while (startHour <= endHour)
+            {
+                occurrences.Add(new DateTime(date.Year, date.Month, date.Day, startHour, 0, 0));
+
+                startHour++;
+            }
+        }
+
+        public void OccurrencesOfWeeklyEvents(Event eventObj, ref List<DateTime> occurrences)
+        {
+            HashSet<int> weekDays = [.. eventObj.ByWeekDay.Split(",").Select(weekDay => Convert.ToInt32(weekDay))];
+
+            DateOnly startDateOfEvent = eventObj.EventStartDate;
+            DateOnly endDateOfEvent = eventObj.EventEndDate;
+
+            DateOnly startDateOfWeek = GetStartDateOfWeek(startDateOfEvent);
+            DateOnly endDateOfWeek = GetEndDateOfWeek(startDateOfEvent);
+
+            DateOnly curDate = startDateOfWeek;
+
+            while (curDate < eventObj.EventEndDate)
+            {
+                int day = Convert.ToInt32(startDateOfEvent.DayOfWeek.ToString("d"));
+
+                if (weekDays.Contains(day) && IsDateInRange(startDateOfEvent, endDateOfEvent, curDate))
+                {
+                    OccurrencesForSpecificHour(eventObj.EventStartHour, eventObj.EventEndHour, startDateOfEvent, ref occurrences);
+                }
+                startDateOfEvent = startDateOfEvent.AddDays(Convert.ToInt32(eventObj.Interval) + 1);
+
+                if (curDate > endDateOfEvent)
+                {
+                    curDate = startDateOfWeek.AddDays(7 * (int)eventObj.Interval);
+                    startDateOfWeek = GetStartDateOfWeek(curDate);
+                    endDateOfWeek = GetEndDateOfWeek(curDate);
+                }
+            }
+        }
+
+        public bool IsDateInRange(DateOnly startDate, DateOnly endDate, DateOnly dateToCheck)
+        {
+            return dateToCheck >= startDate && dateToCheck <= endDate;
+        }
+
+        public DateOnly GetStartDateOfWeek(DateOnly todayDate)
+        {
+            return todayDate.AddDays(-(int)(todayDate.DayOfWeek - 1));
+        }
+
+        public DateOnly GetEndDateOfWeek(DateOnly todayDate)
+        {
+            return GetStartDateOfWeek(todayDate).AddDays(6);
+        }
+
+        public HashSet<int> CalculateProcessingMonth(DateTime startDate, DateTime endDate, string interval)
+        {
+            HashSet<int> months = [];
+            DateTime curDate = startDate;
+
+            while (curDate <= endDate)
+            {
+                months.Add(Convert.ToInt32(curDate.Month.ToString()));
+                curDate = curDate.AddMonths(Convert.ToInt32(interval) + 1);
+            }
+
+            return months;
+        }
+
+        public void OccurrencesOfMonthlyEvents(Event eventObj, ref List<DateTime> occurrences)
+        {
+
+            if (eventObj.ByMonthDay == null)
+            {
+                OccurrencesOfMonthlyEventsUsingWeekOrderAndWeekDay(eventObj, ref occurrences);
+            }
+            else
+            {
+                OccurrencesOfMonthlyEventsUsingMonthDay(eventObj, ref occurrences);
+            }
+
+        }
+
+        public void OccurrencesOfMonthlyEventsUsingMonthDay(Event eventObj, ref List<DateTime> occurrences)
+        {
+            int day = (int)eventObj.ByMonthDay;
+
+            DateOnly startDate = new(eventObj.EventStartDate.Year, eventObj.EventEndDate.Month, GetMinimumDateFromGivenMonthAndDay(day,
+                                     eventObj.EventStartDate));
+
+            while (true)
+            {
+                try
+                {
+                    if (startDate > eventObj.EventEndDate) break;
+
+                    OccurrencesForSpecificHour(eventObj.EventStartHour, eventObj.EventEndHour, startDate, ref occurrences);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Some error occurred ! " + ex.Message);
+                }
+
+                startDate = startDate.AddMonths(1 * (int)eventObj.Interval);
+                startDate = new DateOnly(startDate.Year, startDate.Month, GetMinimumDateFromGivenMonthAndDay(day, startDate));
+            }
+
+        }
+
+        public int GetMinimumDateFromGivenMonthAndDay(int day, DateOnly date)
+        {
+            int daysInMonth = DateTime.DaysInMonth(date.Year, date.Month);
+
+            return Math.Min(day, daysInMonth);
+        }
+
+        public void OccurrencesOfMonthlyEventsUsingWeekOrderAndWeekDay(Event eventObj, ref List<DateTime> occurrences)
+        {
+            int weekOrder = (int)eventObj.WeekOrder;
+
+            int weekDay = Convert.ToInt32(eventObj.ByWeekDay.Split(",")[0]);
+
+            DayOfWeek dayOfWeek = (DayOfWeek)weekDay;
+
+            DateOnly curDate = new(eventObj.EventStartDate.Year, eventObj.EventEndDate.Month, 1);
+
+            while (curDate <= eventObj.EventEndDate)
+            {
+                DateOnly firstWeekDayOfMonth = new DateOnly(curDate.Year, curDate.Month, 1);
+
+                while (firstWeekDayOfMonth.DayOfWeek != dayOfWeek)
+                {
+                    firstWeekDayOfMonth = firstWeekDayOfMonth.AddDays(1);
+                }
+
+                DateOnly nthWeekDay = firstWeekDayOfMonth.AddDays(7 * (weekOrder - 1));
+
+                if (nthWeekDay.Month == curDate.Month)
+                {
+                    OccurrencesForSpecificHour(eventObj.EventStartHour, eventObj.EventEndHour, nthWeekDay, ref occurrences);
+                }
+
+                curDate = curDate.AddMonths((int)eventObj.Interval);
+            }
+
+        }
+
+        public void OccurrencesOfYearlyEvents(Event eventObj, ref List<DateTime> occurrences)
+        {
+            if (eventObj.ByMonthDay == null)
+            {
+                OccurrencesOfYearlyEventsUsingWeekOrderAndWeekDay(eventObj, ref occurrences);
+            }
+            else
+            {
+                OccurrencesOfYearlyEventsUsingMonthDay(eventObj, ref occurrences);
+            }
+        }
+
+        public void OccurrencesOfYearlyEventsUsingMonthDay(Event eventObj, ref List<DateTime> occurrences)
+        {
+            int day = (int)eventObj.ByMonthDay;
+
+            int month = (int)eventObj.ByMonth;
+
+            DateOnly startDate = new(eventObj.EventStartDate.Year, month, GetMinimumDateFromGivenMonthAndDay(day,
+                                     eventObj.EventStartDate));
+
+            while (true)
+            {
+                try
+                {
+                    if (startDate > eventObj.EventEndDate) break;
+
+                    OccurrencesForSpecificHour(eventObj.EventStartHour, eventObj.EventEndHour, startDate, ref occurrences);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Some error occurred ! " + ex.Message);
+                }
+
+                startDate = startDate.AddYears(1 * (int)eventObj.Interval);
+            }
+        }
+
+        public void OccurrencesOfYearlyEventsUsingWeekOrderAndWeekDay(Event eventObj, ref List<DateTime> occurrences)
+        {
+            int weekOrder = (int)eventObj.WeekOrder;
+
+            int weekDay = Convert.ToInt32(eventObj.ByWeekDay.Split(",")[0]);
+
+            DayOfWeek dayOfWeek = (DayOfWeek)weekDay;
+
+            int month = (int)eventObj.ByMonth;
+
+            DateOnly curDate = new(eventObj.EventStartDate.Year, month, 1);
+
+            while (curDate <= eventObj.EventEndDate)
+            {
+                DateOnly firstWeekDayOfMonth = new DateOnly(curDate.Year, curDate.Month, 1);
+
+                while (firstWeekDayOfMonth.DayOfWeek != dayOfWeek)
+                {
+                    firstWeekDayOfMonth = firstWeekDayOfMonth.AddDays(1);
+                }
+
+                DateOnly nthWeekDay = firstWeekDayOfMonth.AddDays(7 * (weekOrder - 1));
+
+                if (nthWeekDay.Month == curDate.Month)
+                {
+                    OccurrencesForSpecificHour(eventObj.EventStartHour, eventObj.EventEndHour, nthWeekDay, ref occurrences);
+                }
+
+                curDate = curDate.AddMonths((int)eventObj.Interval);
+            }
+        }
+    }
+}

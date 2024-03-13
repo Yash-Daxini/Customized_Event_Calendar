@@ -114,11 +114,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             GetEventDetailsFromUser(eventObj);
 
-            DateTime propedDate = ValidatedInputProvider.GetValidatedDateTime("Enter date for the propose event (Enter " +
+            DateTime proposedDate = ValidatedInputProvider.GetValidatedDateTime("Enter date for the propose event (Enter " +
                                                                               "date in dd-MM-yyyy) :- ");
 
-            eventObj.EventStartDate = DateOnly.FromDateTime(propedDate);
-            eventObj.EventEndDate = DateOnly.FromDateTime(propedDate);
+            eventObj.EventStartDate = DateOnly.FromDateTime(proposedDate);
+            eventObj.EventEndDate = DateOnly.FromDateTime(proposedDate);
 
             eventObj.UserId = GlobalData.user.Id;
 
@@ -191,15 +191,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             Console.WriteLine("Enter Location : ");
             eventObj.Location = Console.ReadLine();
 
-            PrintHandler.PrintNewLine();
-
-            eventObj.EventStartHour = ValidatedInputProvider.GetValidatedInteger("Enter Start Hour for the event : ");
-
-            PrintHandler.PrintNewLine();
-
-            eventObj.EventEndHour = ValidatedInputProvider.GetValidatedInteger("Enter End Hour for the event : ");
-
-            PrintHandler.PrintNewLine();
+            TakeStartingAndEndingHourOfEvent(eventObj);
 
             eventObj.IsProposed = false;
         }
@@ -207,19 +199,19 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         public static void TakeStartingAndEndingHourOfEvent(Event eventObj)
         {
             Console.WriteLine("\nHow would you like to enter the time? : ");
-            Console.WriteLine("\n1.Choose 24-hour format (1 to 24 hours) \n2. Choose 12-hour format (1 to 12 hours and AM/PM)");
+            Console.WriteLine("\n1.Choose 24-hour format (1 to 24 hours) \n2.Choose 12-hour format (1 to 12 hours and AM/PM)");
 
             int choice = ValidatedInputProvider.GetValidatedInteger("Enter choice : ");
 
             switch (choice)
             {
                 case 1:
-                    TakeHourIn24HourFormat(eventObj);
                     PrintHandler.PrintInfoMessage("You've selected the 24-hour format.");
+                    TakeHourIn24HourFormat(eventObj);
                     break;
                 case 2:
-                    TakeHourIn12HourFormat(eventObj);
                     PrintHandler.PrintInfoMessage("You've selected the 12-hour format.");
+                    TakeHourIn12HourFormat(eventObj);
                     break;
                 default:
                     TakeStartingAndEndingHourOfEvent(eventObj);
@@ -240,7 +232,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             PrintHandler.PrintNewLine();
 
-            if (!ValidationService.IsValidStartAndEndHour(eventObj.EventStartHour, eventObj.EventEndHour)) TakeHourIn24HourFormat(eventObj);
+            if (!ValidationService.IsValidStartAndEndHour(eventObj.EventStartHour, eventObj.EventEndHour))
+            {
+                PrintHandler.PrintWarningMessage("Invalid input ! Start hour must less than the end hour.");
+                TakeHourIn24HourFormat(eventObj);
+            }
         }
 
         public static void TakeHourIn12HourFormat(Event eventObj)
@@ -257,13 +253,17 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             string endHourAbbreviation = ValidatedInputProvider.GetValidatedAbbreviations();
 
-            eventObj.EventStartHour += startHourAbbreviation.Equals("PM") ? 12 : 0;
+            eventObj.EventStartHour += startHourAbbreviation.Equals("PM") && eventObj.EventStartHour != 12 ? 12 : 0;
 
-            eventObj.EventEndHour += endHourAbbreviation.Equals("PM") ? 12 : 0;
+            eventObj.EventEndHour += endHourAbbreviation.Equals("PM") && eventObj.EventEndHour != 12 ? 12 : 0;
 
             PrintHandler.PrintNewLine();
 
-            if (!ValidationService.IsValidStartAndEndHour(eventObj.EventStartHour, eventObj.EventEndHour)) TakeHourIn12HourFormat(eventObj);
+            if (!ValidationService.IsValidStartAndEndHour(eventObj.EventStartHour, eventObj.EventEndHour))
+            {
+                PrintHandler.PrintWarningMessage("Invalid input ! Start hour must less than the end hour.");
+                TakeHourIn12HourFormat(eventObj);
+            }
         }
 
 
@@ -280,6 +280,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                 RecurrenceHandling.AskForRecurrenceChoice(eventObj);
 
                 _eventService.InsertEvent(eventObj);
+
+                PrintHandler.PrintSuccessMessage("Data Added Successfully");
             }
             catch
             {
@@ -310,6 +312,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                 int Id = TakeIdForUpdateOrDelete(true);
 
                 _eventService.DeleteEvent(Id);
+
+                PrintHandler.PrintSuccessMessage("Data deleted Successfully");
             }
             catch
             {
@@ -329,7 +333,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
                 int Id = TakeIdForUpdateOrDelete(false);
 
-                Event eventObj = _eventService.GetEventsById(Id);
+                Event eventObj = _eventService.GetEventsById(_eventService.GetEventIdFromSerialNumber(Id));
 
                 if (eventObj == null) return;
 
@@ -346,6 +350,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                 RecurrenceHandling.AskForRecurrenceChoice(eventObj);
 
                 _eventService.UpdateEvent(eventObj, Id);
+
+                PrintHandler.PrintSuccessMessage("Data Updated Successfully");
             }
             catch
             {
@@ -357,7 +363,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             string operation = isDelete ? "delete" : "update";
 
-            int Id = ValidatedInputProvider.GetValidatedInteger($"From Above events give event no. that you want to {operation} :- ");
+            int Id = ValidatedInputProvider.GetValidatedIntegerBetweenRange($"From Above events give event no. that you want to {operation} :- ", 1, _eventService.GetTotalEventCount());
 
             return Id;
         }

@@ -1,242 +1,233 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Text;
-//using System.Threading.Tasks;
-//using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp;
-//using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
-//using NodaTime;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+using NodaTime;
 
-//namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
-//{
-//    internal class CalendarViewService
-//    {
-//        private readonly EventService _eventService = new();
-//        private readonly ScheduleEventService _scheduleEventService = new();
+namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
+{
+    internal class CalendarViewService
+    {
+        private readonly EventService _eventService = new();
+        private readonly EventCollaboratorsService _eventCollaboratorsService = new();
 
-//        public string GenerateDailyView()
-//        {
-//            DateTime nextDay = DateTime.Today;
+        public string GenerateDailyView()
+        {
+            DateTime nextDay = DateTime.Today;
 
-//            List<ScheduleEvent> scheduleEvents = _scheduleEventService.ReadByUserId()
-//                                                                      .Where(scheduleEvent =>
-//                                                                       scheduleEvent.ScheduledDate.Date == nextDay.Date)
-//                                                                      .ToList();
+            List<EventCollaborators> eventCollaborators = _eventCollaboratorsService.GetAllEventCollaborators()
+                                                                      .Where(eventCollaborator =>
+                                                                       eventCollaborator.EventDate.Date == nextDay.Date
+                                                                       && eventCollaborator.UserId == GlobalData.user.Id)
+                                                                      .ToList();
 
-//            Dictionary<int, Event> timeWithEvent = [];
+            Dictionary<int, Event> timeWithEvent = [];
 
-//            foreach (var scheduleEvent in scheduleEvents)
-//            {
-//                Event eventObj = _eventService.GetEventsById(_scheduleEventService.GetEventIdFromEventCollaborators
-//                                                                          (scheduleEvent.EventCollaboratorsId));
+            foreach (var eventCollaborator in eventCollaborators)
+            {
+                Event eventObj = _eventService.GetEventsById(eventCollaborator.EventId);
 
-//                AssignEventToSpecificHour(ref timeWithEvent, eventObj);
-//            }
+                AssignEventToSpecificHour(ref timeWithEvent, eventObj);
+            }
 
-//            StringBuilder dailyView = new();
+            StringBuilder dailyView = new();
 
-//            dailyView.AppendLine(PrintHandler.PrintHorizontalLine());
+            dailyView.AppendLine(PrintHandler.PrintHorizontalLine());
 
-//            dailyView.AppendLine("Schedule of date :- " + GetDateFromDateTime(nextDay) + "\n");
+            dailyView.AppendLine("Schedule of date :- " + nextDay + "\n");
 
-//            List<List<string>> dailyViewTableContent = [["Date", "Event Title"]];
+            List<List<string>> dailyViewTableContent = [["Date", "Event Title"]];
 
-//            while (nextDay.Date <= DateTime.Today.Date)
-//            {
-//                int curHour = nextDay.Hour;
+            while (nextDay.Date <= DateTime.Today.Date)
+            {
+                int curHour = nextDay.Hour;
 
-//                if (timeWithEvent.ContainsKey(curHour))
-//                {
-//                    Event eventObj = timeWithEvent[curHour];
-//                    dailyViewTableContent.Add([GetDateWithAbbreviationFromDateTime(nextDay), eventObj.Title]);
-//                }
-//                else
-//                {
-//                    dailyViewTableContent.Add([GetDateWithAbbreviationFromDateTime(nextDay), "-"]);
-//                }
+                if (timeWithEvent.ContainsKey(curHour))
+                {
+                    Event eventObj = timeWithEvent[curHour];
+                    dailyViewTableContent.Add([GetDateWithAbbreviationFromDateTime(nextDay), eventObj.Title]);
+                }
+                else
+                {
+                    dailyViewTableContent.Add([GetDateWithAbbreviationFromDateTime(nextDay), "-"]);
+                }
 
-//                nextDay = nextDay.AddHours(1);
-//            }
+                nextDay = nextDay.AddHours(1);
+            }
 
-//            dailyView.AppendLine(PrintHandler.GiveTable(dailyViewTableContent));
+            dailyView.AppendLine(PrintHandler.GiveTable(dailyViewTableContent));
 
-//            return dailyView.ToString();
-//        }
+            return dailyView.ToString();
+        }
 
-//        public void AssignEventToSpecificHour(ref Dictionary<int, Event> eventRecordByHour, Event eventObj)
-//        {
-//            string TimeBlock = eventObj.TimeBlock;
+        public void AssignEventToSpecificHour(ref Dictionary<int, Event> eventRecordByHour, Event eventObj)
+        {
+            int startHour = eventObj.EventStartHour;
+            int endHour = eventObj.EventEndHour;
 
-//            string startTime = TimeBlock.Split("-")[0];
-//            int startHour = Convert.ToInt32(startTime.Substring(0, startTime.Length - 2)) +
-//                                           (startTime.EndsWith("PM") ? 12 : 0);
+            for (int i = startHour; i <= endHour; i++)
+            {
+                eventRecordByHour[i] = eventObj;
+            }
+        }
 
-//            string endTime = TimeBlock.Split("-")[1];
-//            int endHour = Convert.ToInt32(endTime.Substring(0, endTime.Length - 2)) + (endTime.EndsWith("PM") ? 12 : 0);
+        public Dictionary<DateTime, List<int>> GetCurrentWeekEvents(DateTime startDateOfWeek, DateTime endDateOfWeek)
+        {
+            List<EventCollaborators> eventCollaborators = _eventCollaboratorsService.GetAllEventCollaborators();
 
-//            for (int i = startHour; i <= endHour; i++)
-//            {
-//                eventRecordByHour[i] = eventObj;
-//            }
-//        }
+            Dictionary<DateTime, List<int>> currentWeekEvents = eventCollaborators
+                                           .Where(EventCollaborators => EventCollaborators.EventDate.Date >= startDateOfWeek.Date
+                                                  && EventCollaborators.EventDate.Date <= endDateOfWeek.Date)
+                                           .GroupBy(EventCollaborators => EventCollaborators.EventDate.Date)
+                                           .Select(eventCollaborators => new
+                                           {
+                                               ScheduleDate = eventCollaborators.Key,
+                                               EventCollaboratorIds = eventCollaborators
+                                                    .Select(eventCollaborators => eventCollaborators.EventId)
+                                           })
+                                           .ToDictionary(key => key.ScheduleDate, val => val.EventCollaboratorIds
+                                           .ToList());
+            return currentWeekEvents;
+        }
 
-//        public Dictionary<DateTime, List<int>> GetCurrentWeekEvents(DateTime startDateOfWeek, DateTime endDateOfWeek)
-//        {
-//            List<ScheduleEvent> scheduleEvents = _scheduleEventService.ReadByUserId();
+        public string GenerateWeeklyView()
+        {
+            StringBuilder weeklyView = new();
 
-//            Dictionary<DateTime, List<int>> currentWeekEvents = scheduleEvents
-//                                           .Where(scheduleEvent => scheduleEvent.ScheduledDate.Date >= startDateOfWeek.Date
-//                                                  && scheduleEvent.ScheduledDate.Date <= endDateOfWeek.Date)
-//                                           .GroupBy(scheduleEvent => scheduleEvent.ScheduledDate.Date)
-//                                           .Select(scheduleEvent => new
-//                                           {
-//                                               ScheduleDate = scheduleEvent.Key,
-//                                               EventCollaboratorIds = scheduleEvent
-//                                                    .Select(scheduleEvent => _scheduleEventService
-//                                                                            .GetEventIdFromEventCollaborators
-//                                                                             (scheduleEvent.EventCollaboratorsId))
-//                                           })
-//                                           .ToDictionary(key => key.ScheduleDate, val => val.EventCollaboratorIds
-//                                           .ToList());
-//            return currentWeekEvents;
-//        }
+            DayOfWeek dayOfWeek = DateTime.Now.DayOfWeek;
 
-//        public string GenerateWeeklyView()
-//        {
-//            StringBuilder weeklyView = new();
+            int dayTillCurrentDay = dayOfWeek - DayOfWeek.Monday;
 
-//            DayOfWeek dayOfWeek = DateTime.Now.DayOfWeek;
+            if (dayTillCurrentDay < 0) dayTillCurrentDay += 7;
 
-//            int dayTillCurrentDay = dayOfWeek - DayOfWeek.Monday;
+            DateTime startDateOfWeek = DateTime.Now.AddDays(-dayTillCurrentDay);
+            DateTime endDateOfWeek = startDateOfWeek.AddDays(7);
 
-//            if (dayTillCurrentDay < 0) dayTillCurrentDay += 7;
+            Dictionary<DateTime, List<int>> currentWeekEvents = GetCurrentWeekEvents(startDateOfWeek, endDateOfWeek);
 
-//            DateTime startDateOfWeek = DateTime.Now.AddDays(-dayTillCurrentDay);
-//            DateTime endDateOfWeek = startDateOfWeek.AddDays(7);
+            weeklyView.AppendLine(PrintHandler.PrintHorizontalLine());
 
-//            Dictionary<DateTime, List<int>> currentWeekEvents = GetCurrentWeekEvents(startDateOfWeek, endDateOfWeek);
+            weeklyView.AppendLine("Schedule from date :- " + GetDateFromDateTime(startDateOfWeek) + " to date :- " +
+                                   GetDateFromDateTime(endDateOfWeek) + "\n");
 
-//            weeklyView.AppendLine(PrintHandler.PrintHorizontalLine());
+            List<List<string>> weeklyViewTableContent = [["Date", "Day", "Event Title", "Start Time", "End Time"]];
 
-//            weeklyView.AppendLine("Schedule from date :- " + GetDateFromDateTime(startDateOfWeek) + " to date :- " +
-//                                   GetDateFromDateTime(endDateOfWeek) + "\n");
+            while (startDateOfWeek < endDateOfWeek)
+            {
 
-//            List<List<string>> weeklyViewTableContent = [["Date", "Day", "Event Title", "Time"]];
+                if (currentWeekEvents.ContainsKey(startDateOfWeek.Date))
+                {
+                    foreach (var eventId in currentWeekEvents[startDateOfWeek.Date])
+                    {
 
-//            while (startDateOfWeek < endDateOfWeek)
-//            {
+                        Event eventObj = _eventService.GetEventsById(eventId);
+                        weeklyViewTableContent.Add([ GetDateFromDateTime(startDateOfWeek) ,
+                                                     GetDayFromDateTime(startDateOfWeek) ,
+                                                     eventObj.Title,eventObj.EventStartHour.ToString(),eventObj.EventEndHour.ToString()]);
+                    }
+                }
+                else
+                {
+                    weeklyViewTableContent.Add([ GetDateFromDateTime(startDateOfWeek) ,
+                                                                       GetDayFromDateTime(startDateOfWeek) ,
+                                                                       "-",
+                                                                       "-" ]);
+                }
+                startDateOfWeek = startDateOfWeek.AddDays(1);
+            }
 
-//                if (currentWeekEvents.ContainsKey(startDateOfWeek.Date))
-//                {
-//                    foreach (var eventId in currentWeekEvents[startDateOfWeek.Date])
-//                    {
+            weeklyView.AppendLine(PrintHandler.GiveTable(weeklyViewTableContent));
 
-//                        Event eventObj = _eventService.GetEventsById(eventId);
-//                        weeklyViewTableContent.Add([ GetDateFromDateTime(startDateOfWeek) ,
-//                                                     GetDayFromDateTime(startDateOfWeek) ,
-//                                                     eventObj.Title,eventObj.TimeBlock]);
-//                    }
-//                }
-//                else
-//                {
-//                    weeklyViewTableContent.Add([ GetDateFromDateTime(startDateOfWeek) ,
-//                                                                       GetDayFromDateTime(startDateOfWeek) ,
-//                                                                       "-",
-//                                                                       "-" ]);
-//                }
-//                startDateOfWeek = startDateOfWeek.AddDays(1);
-//            }
+            return weeklyView.ToString();
+        }
 
-//            weeklyView.AppendLine(PrintHandler.GiveTable(weeklyViewTableContent));
+        public Dictionary<DateTime, List<int>> GetCurrentMonthEvents(DateTime startDateOfMonth, DateTime endDateOfMonth)
+        {
+            List<EventCollaborators> eventCollaborators = _eventCollaboratorsService.GetAllEventCollaborators();
 
-//            return weeklyView.ToString();
-//        }
+            Dictionary<DateTime, List<int>> currentMonthEvents = eventCollaborators
+                                           .Where(EventCollaborators => EventCollaborators.EventDate.Date >=
+                                                                                   startDateOfMonth.Date
+                                                  && EventCollaborators.EventDate.Date <= endDateOfMonth.Date)
+                                           .GroupBy(EventCollaborators => EventCollaborators.EventDate.Date)
+                                           .Select(EventCollaborators => new
+                                           {
+                                               ScheduleDate = EventCollaborators.Key,
+                                               EventCollaboratorIds = EventCollaborators
+                                                    .Select(eventCollaborator => eventCollaborator.EventId)
+                                           })
+                                           .ToDictionary(key => key.ScheduleDate, val => val.EventCollaboratorIds
+                                           .ToList());
 
-//        public Dictionary<DateTime, List<int>> GetCurrentMonthEvents(DateTime startDateOfMonth, DateTime endDateOfMonth)
-//        {
-//            List<ScheduleEvent> scheduleEvents = _scheduleEventService.ReadByUserId();
+            return currentMonthEvents;
+        }
 
-//            Dictionary<DateTime, List<int>> currentMonthEvents = scheduleEvents
-//                                           .Where(scheduleEvent => scheduleEvent.ScheduledDate.Date >=
-//                                                                                   startDateOfMonth.Date
-//                                                  && scheduleEvent.ScheduledDate.Date <= endDateOfMonth.Date)
-//                                           .GroupBy(scheduleEvent => scheduleEvent.ScheduledDate.Date)
-//                                           .Select(scheduleEvent => new
-//                                           {
-//                                               ScheduleDate = scheduleEvent.Key,
-//                                               EventCollaboratorIds = scheduleEvent
-//                                                    .Select(scheduleEvent => _scheduleEventService.
-//                                                            GetEventIdFromEventCollaborators
-//                                                            (scheduleEvent.EventCollaboratorsId))
-//                                           })
-//                                           .ToDictionary(key => key.ScheduleDate, val => val.EventCollaboratorIds
-//                                           .ToList());
+        public string GenerateMonthView()
+        {
+            StringBuilder monthlyView = new();
 
-//            return currentMonthEvents;
-//        }
+            DateTime nextDay = DateTime.Now;
 
-//        public string GenerateMonthView()
-//        {
-//            StringBuilder monthlyView = new();
+            DateTime startDateOfMonth = new(nextDay.Year, nextDay.Month, 1);
+            DateTime endDateOfMonth = new DateTime(nextDay.Year, nextDay.Month, DateTime.DaysInMonth(nextDay.Year,
+                                                    nextDay.Month));
 
-//            DateTime nextDay = DateTime.Now;
+            Dictionary<DateTime, List<int>> currentMonthEvents = GetCurrentMonthEvents(startDateOfMonth, endDateOfMonth);
 
-//            DateTime startDateOfMonth = new(nextDay.Year, nextDay.Month, 1);
-//            DateTime endDateOfMonth = new DateTime(nextDay.Year, nextDay.Month, DateTime.DaysInMonth(nextDay.Year,
-//                                                    nextDay.Month));
+            monthlyView.AppendLine(PrintHandler.PrintHorizontalLine());
 
-//            Dictionary<DateTime, List<int>> currentMonthEvents = GetCurrentMonthEvents(startDateOfMonth, endDateOfMonth);
+            monthlyView.AppendLine("Schedule from date :- " + GetDateFromDateTime(startDateOfMonth) + " to date :- " +
+                                    GetDateFromDateTime(endDateOfMonth) + "\n");
 
-//            monthlyView.AppendLine(PrintHandler.PrintHorizontalLine());
+            List<List<string>> monthlyViewTableContent = [["Date", "Day", "Event Title", "Start Time", "End Time"]];
 
-//            monthlyView.AppendLine("Schedule from date :- " + GetDateFromDateTime(startDateOfMonth) + " to date :- " +
-//                                    GetDateFromDateTime(endDateOfMonth) + "\n");
+            while (startDateOfMonth.Date <= endDateOfMonth.Date)
+            {
 
-//            List<List<string>> monthlyViewTableContent = [["Date", "Day", "Event Title", "Time"]];
+                if (currentMonthEvents.ContainsKey(startDateOfMonth.Date))
+                {
+                    foreach (var eventId in currentMonthEvents[startDateOfMonth.Date])
+                    {
 
-//            while (startDateOfMonth.Date <= endDateOfMonth.Date)
-//            {
+                        Event eventObj = _eventService.GetEventsById(eventId);
+                        monthlyViewTableContent.Add([GetDateFromDateTime(startDateOfMonth),
+                                                                      startDateOfMonth.DayOfWeek.ToString(),
+                                                                      eventObj.Title,eventObj.EventStartHour.ToString(),
+                                                                      eventObj.EventEndHour.ToString() ]);
+                    }
+                }
+                else
+                {
+                    monthlyViewTableContent.Add([GetDateFromDateTime(startDateOfMonth),
+                                                 startDateOfMonth.DayOfWeek.ToString(),
+                                                                      "-",
+                                                                      "-" ]);
+                }
 
-//                if (currentMonthEvents.ContainsKey(startDateOfMonth.Date))
-//                {
-//                    foreach (var eventId in currentMonthEvents[startDateOfMonth.Date])
-//                    {
+                startDateOfMonth = startDateOfMonth.AddDays(1);
+            }
 
-//                        Event eventObj = _eventService.GetEventsById(eventId);
-//                        monthlyViewTableContent.Add([GetDateFromDateTime(startDateOfMonth),
-//                                                                      startDateOfMonth.DayOfWeek.ToString(),
-//                                                                      eventObj.Title,eventObj.TimeBlock ]);
-//                    }
-//                }
-//                else
-//                {
-//                    monthlyViewTableContent.Add([GetDateFromDateTime(startDateOfMonth),
-//                                                 startDateOfMonth.DayOfWeek.ToString(),
-//                                                                      "-",
-//                                                                      "-" ]);
-//                }
+            monthlyView.Append(PrintHandler.GiveTable(monthlyViewTableContent));
 
-//                startDateOfMonth = startDateOfMonth.AddDays(1);
-//            }
+            return monthlyView.ToString();
+        }
 
-//            monthlyView.Append(PrintHandler.GiveTable(monthlyViewTableContent));
+        public string GetDateWithAbbreviationFromDateTime(DateTime dateTime)
+        {
+            return dateTime.ToString("hh:mm:ss tt");
+        }
 
-//            return monthlyView.ToString();
-//        }
+        public string GetDateFromDateTime(DateTime dateTime)
+        {
+            return dateTime.ToString("dd-MM-yyyy");
+        }
 
-//        public string GetDateWithAbbreviationFromDateTime(DateTime dateTime)
-//        {
-//            return dateTime.ToString("hh:mm:ss tt");
-//        }
-
-//        public string GetDateFromDateTime(DateTime dateTime)
-//        {
-//            return dateTime.ToString("dd-MM-yyyy");
-//        }
-
-//        public string GetDayFromDateTime(DateTime dateTime)
-//        {
-//            return dateTime.ToString("dddd");
-//        }
-//    }
-//}
+        public string GetDayFromDateTime(DateTime dateTime)
+        {
+            return dateTime.ToString("dddd");
+        }
+    }
+}

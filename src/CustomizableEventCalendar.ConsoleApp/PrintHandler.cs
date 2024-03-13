@@ -125,5 +125,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             PrintWithColor(message, ConsoleColor.Cyan);
         }
 
+        public static void PrintWarningMessage(string message)
+        {
+            PrintWithColor(message, ConsoleColor.Yellow);
+        }
+
     }
 }

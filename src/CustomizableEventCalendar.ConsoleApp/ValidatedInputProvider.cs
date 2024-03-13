@@ -20,6 +20,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             while (!ValidationService.IsValidateInput(dateTime, out validatedDateTime, DateTime.TryParse))
             {
+                PrintHandler.PrintWarningMessage("Invalid Input ! Please enter valid date format (dd-MM-yyyy hh:mm:ss)");
                 Console.Write(inputMessage);
                 dateTime = Console.ReadLine();
             }
@@ -36,6 +37,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             while (!ValidationService.IsValidateInput(dateTime, out validatedDateTime, DateOnly.TryParse))
             {
+                PrintHandler.PrintWarningMessage("Invalid Input ! Please enter valid date format (dd-MM-yyyy)");
                 Console.Write(inputMessage);
                 dateTime = Console.ReadLine();
             }
@@ -53,6 +55,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             while (!ValidationService.IsValidateInput(inputFromConsole, out choice, int.TryParse))
             {
+                PrintHandler.PrintWarningMessage("Invalid Input ! Please enter valid input");
+
                 Console.Write(inputMessage);
 
                 inputFromConsole = Console.ReadLine();
@@ -68,6 +72,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             while (!ValidationService.IsValidListOfCommaSeparatedIntegers(input))
             {
+                PrintHandler.PrintWarningMessage("Invalid Input ! Please enter valid comma separated values");
                 Console.Write(inputMessage);
                 input = Console.ReadLine();
             }
@@ -80,6 +85,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             while (!ValidationService.IsValidEmail(email))
             {
+                PrintHandler.PrintWarningMessage("Invalid Input ! Please enter valid email");
                 Console.Write($"Enter Email: ");
                 email = Console.ReadLine();
             }
@@ -99,6 +105,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                 if (!ValidationService.IsValidWeekDay(Convert.ToInt32(weekDay)))
                 {
                     isValidWeekDays = false;
+                    PrintHandler.PrintWarningMessage("Invalid Input ! Please enter week days between 1 to 7");
                     break;
                 }
             }
@@ -114,6 +121,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             while (!ValidationService.IsValidMonthDay(monthDay))
             {
+                PrintHandler.PrintWarningMessage("Invalid Input ! Please enter month day between 1 to 31");
                 monthDay = GetValidatedInteger(inputMessage);
             }
 
@@ -126,6 +134,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             while (!ValidationService.IsValidMonth(month))
             {
+                PrintHandler.PrintWarningMessage("Invalid Input ! Please enter month between 1 to 12");
                 month = GetValidatedInteger(inputMessage);
             }
 
@@ -138,6 +147,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             while (!ValidationService.IsValid24HourTime(hour))
             {
+                PrintHandler.PrintWarningMessage("Invalid Input ! Please enter hour between 0 to 24");
                 hour = GetValidatedInteger(inputMessage);
             }
 
@@ -148,8 +158,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             int hour = GetValidatedInteger(inputMessage);
 
-            while (!ValidationService.IsValid24HourTime(hour))
+            while (!ValidationService.IsValid12HourTime(hour))
             {
+                PrintHandler.PrintWarningMessage("Invalid Input ! Please enter Hour between 1 to 12");
                 hour = GetValidatedInteger(inputMessage);
             }
 
@@ -158,19 +169,31 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         public static string GetValidatedAbbreviations()
         {
-            string inputMessage = "Enter AM or PM";
+            string inputMessage = "Enter AM or PM : ";
 
-            Console.WriteLine();
+            Console.WriteLine(inputMessage);
             string abbreviation = Console.ReadLine().ToUpper();
 
             while (!ValidationService.IsValidAbbreviation(abbreviation))
             {
+                PrintHandler.PrintWarningMessage("Invalid Input ! Please enter AM or PM");
                 Console.WriteLine(inputMessage);
                 abbreviation = Console.ReadLine().ToUpper();
             }
 
             return abbreviation;
 
+        }
+
+        public static int GetValidatedIntegerBetweenRange(string inputMessage, int startRange, int endRange)
+        {
+            int number = GetValidatedInteger(inputMessage);
+            while (!ValidationService.IsNumberInRange(startRange, endRange, number))
+            {
+                PrintHandler.PrintWarningMessage($"Invalid Input ! Please enter number between {startRange} to {endRange}");
+                number = GetValidatedInteger(inputMessage);
+            }
+            return number;
         }
     }
 }

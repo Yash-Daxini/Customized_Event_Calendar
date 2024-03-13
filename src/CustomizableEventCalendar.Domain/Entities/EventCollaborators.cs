@@ -11,8 +11,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
     internal class EventCollaborators
     {
 
-        public EventCollaborators(int Id, int UserId, int EventId, string ParticipantRole, string ConfirmationStatus, int ProposedStartHour,
-                                  int ProposedEndHour, DateOnly EventDate)
+        public EventCollaborators(int Id, int EventId, int UserId, string? ParticipantRole, string? ConfirmationStatus, int? ProposedStartHour,
+                                  int? ProposedEndHour, DateTime EventDate)
         {
             this.Id = Id;
             this.UserId = UserId;
@@ -24,8 +24,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
             this.EventDate = EventDate;
         }
 
-        public EventCollaborators(int UserId, int EventId, string ParticipantRole, string ConfirmationStatus, int ProposedStartHour,
-                                  int ProposedEndHour, DateOnly EventDate)
+        public EventCollaborators(int EventId, int UserId, string? ParticipantRole, string? ConfirmationStatus, int? ProposedStartHour,
+                                  int? ProposedEndHour, DateTime EventDate)
         {
             this.UserId = UserId;
             this.EventId = EventId;
@@ -41,22 +41,24 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
             this.Id = Convert.ToInt32(sqlDataReader["Id"]);
             this.UserId = Convert.ToInt32(sqlDataReader["UserId"]);
             this.EventId = Convert.ToInt32(sqlDataReader["EventId"]);
-            this.ParticipantRole = sqlDataReader["ParticipantRole"].ToString();
-            this.ConfirmationStatus = sqlDataReader["ConfirmationStatus"].ToString();
-            this.ProposedStartHour = Convert.ToInt32(sqlDataReader["ProposedStartHour"]);
-            this.ProposedEndHour = Convert.ToInt32(sqlDataReader["ProposedEndHour"]);
-            this.EventDate = DateOnly.FromDateTime(Convert.ToDateTime(sqlDataReader["EventDate"].ToString()));
+            this.ParticipantRole = sqlDataReader["ParticipantRole"] == DBNull.Value ? null : sqlDataReader["ParticipantRole"].ToString();
+            this.ConfirmationStatus = sqlDataReader["ConfirmationStatus"] == DBNull.Value ? null :
+                                                                             sqlDataReader["ConfirmationStatus"].ToString();
+            this.ProposedStartHour = sqlDataReader["ProposedStartHour"] == DBNull.Value ? null :
+                                                                           Convert.ToInt32(sqlDataReader["ProposedStartHour"]);
+            this.ProposedEndHour = sqlDataReader["ProposedEndHour"] == DBNull.Value ? null : Convert.ToInt32(sqlDataReader["ProposedEndHour"]);
+            this.EventDate = Convert.ToDateTime(sqlDataReader["EventDate"].ToString());
         }
 
         [NotMapped]
         public int Id { get; }
         public int EventId { get; set; }
         public int UserId { get; set; }
-        public string ParticipantRole { get; set; }
-        public string ConfirmationStatus { get; set; }
-        public int ProposedStartHour { get; set; }
-        public int ProposedEndHour { get; set; }
-        public DateOnly EventDate { get; set; }
+        public string? ParticipantRole { get; set; }
+        public string? ConfirmationStatus { get; set; }
+        public int? ProposedStartHour { get; set; }
+        public int? ProposedEndHour { get; set; }
+        public DateTime EventDate { get; set; }
 
 
         public override string ToString()

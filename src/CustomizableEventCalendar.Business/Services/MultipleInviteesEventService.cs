@@ -21,18 +21,14 @@
 //                                              && eventObj.UserId == GlobalData.user.Id)
 //                                             .ToList();
 
-//            RecurrenceService recurrenceService = new();
-
 //            foreach (var eventObj in events)
 //            {
-//                RecurrencePatternCustom recurrencePattern = recurrenceService.GetRecurrencePatternById(eventObj.RecurrenceId);
-
-//                int remainingDays = (DateTime.Now - recurrencePattern.DTSTART).Days;
+//                int remainingDays = (DateTime.Now - Convert.ToDateTime(eventObj.EventStartDate)).Days;
 
 //                if (remainingDays <= 1)
 //                {
 //                    CalculateMutualTime(eventObj);
-//                    ScheduleProposedEvent(eventObj, recurrencePattern);
+//                    ScheduleProposedEvent(eventObj);
 //                }
 //            }
 //        }
@@ -81,7 +77,7 @@
 //                                                                        GetDateOnlyFromDateTime(recurrencePattern.DTSTART)
 //                                                                        && sharedCalendar.ToDate >= GetDateOnlyFromDateTime
 //                                                                                                (recurrencePattern.DTSTART))
-//                                                                     .Select(sharedCalendar =>                  
+//                                                                     .Select(sharedCalendar =>
 //                                                                             sharedCalendar.SharedByUserId)
 //                                                                     .ToHashSet();
 
@@ -160,17 +156,14 @@
 //            return timeBlock;
 //        }
 
-//        public void ScheduleProposedEvent(Event eventObj, RecurrencePatternCustom recurrencePatternCustom)
+//        public void ScheduleProposedEvent(Event eventObj)
 //        {
-//            RecurrenceEngine recurrenceEngine = new();
-
 //            HashSet<int> eventCollaboratorsIds = GetInviteesOfEvent(eventObj.Id);
 
 //            foreach (var eventCollaboratorsId in eventCollaboratorsIds)
 //            {
 
-//                recurrenceEngine.ScheduleNonRecurrenceEvents(eventObj, recurrencePatternCustom.DTSTART,
-//                                                            recurrencePatternCustom.UNTILL, eventCollaboratorsId);
+//                //recurrenceEngine.ScheduleNonRecurrenceEvents(eventObj);
 //            }
 
 //        }

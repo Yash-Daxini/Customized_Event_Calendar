@@ -17,7 +17,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             if (!genericTryParse(inputFromConsole, out choice))
             {
-                PrintHandler.PrintErrorMessage("Invalid Input!");
                 return false;
             }
             return true;
@@ -33,7 +32,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             {
                 if (!int.TryParse(number, out int validateNumber))
                 {
-                    PrintHandler.PrintErrorMessage("Invalid Input!");
                     return false;
                 }
             }
@@ -49,7 +47,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             if (!regex.IsMatch(input))
             {
-                PrintHandler.PrintErrorMessage("Invalid email address! ");
                 return false;
             }
             return true;
@@ -90,9 +87,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return abbreviation.Equals("AM") || abbreviation.Equals("PM");
         }
 
-        public static bool IsVallidStartAndEndDate(DateOnly startDate,DateOnly endDate)
+        public static bool IsVallidStartAndEndDate(DateOnly startDate, DateOnly endDate)
         {
             return startDate <= endDate;
+        }
+
+        public static bool IsNumberInRange(int start, int end, int number)
+        {
+            return number >= start && number <= end;
         }
     }
 }

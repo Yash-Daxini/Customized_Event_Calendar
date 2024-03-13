@@ -11,9 +11,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
     internal class EventService
     {
         private readonly EventRepository _eventRepository = new();
+        private readonly OverlappingEventService _overlappingEventService = new();
 
         public int InsertEvent(Event eventObj)
         {
+
+            if (_overlappingEventService.IsOverlappingEvent(eventObj)) return -1;
+
             int eventId = _eventRepository.Insert(eventObj);
 
             return eventId;
@@ -33,13 +37,19 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return listOfEvents;
         }
 
-        public void DeleteEvent(int eventId)
+        public void DeleteEvent(int srNo)
         {
+            int eventId = GetEventIdFromSerialNumber(srNo);
+
             _eventRepository.Delete<Event>(eventId);
         }
 
-        public void UpdateEvent(Event eventObj, int eventId)
+        public void UpdateEvent(Event eventObj, int srNo)
         {
+            if (_overlappingEventService.IsOverlappingEvent(eventObj)) return;
+
+            int eventId = GetEventIdFromSerialNumber(srNo);
+
             _eventRepository.Update(eventObj, eventId);
         }
 
@@ -51,12 +61,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             List<List<string>> outputRows = [["Event NO.", "Title", "Description", "Location", "StartHour", "EndHour", "StartDate",
                                               "EndDate", "Frequency","Interval","Days","Month Days","Month","Year"]];
 
-            foreach (var eventObj in events)
+            foreach (var (eventObj, index) in events.Select((value, index) => (value, index)))
             {
-                outputRows.Add([eventObj.Id.ToString(), eventObj.Title, eventObj.Description, eventObj.Location,
-                                eventObj.EventStartHour.ToString(), eventObj.EventEndHour.ToString(), eventObj.EventStartDate.ToString(),
-                                eventObj.EventEndDate.ToString(),
-                                eventObj.Frequency == null ? "-" : eventObj.Frequency ,
+                outputRows.Add([(index+1).ToString(), eventObj.Title, eventObj.Description, eventObj.Location,
+                                ConvertTo12HourFormat(eventObj.EventStartHour), ConvertTo12HourFormat(eventObj.EventEndHour),
+                                eventObj.EventStartDate.ToString(),eventObj.EventEndDate.ToString(),
+                                eventObj.Frequency ?? "-" ,
                                 eventObj.Interval == null ? "-" : eventObj.Interval.ToString(),
                                 eventObj.ByWeekDay == null ? "-" : GetWeekDaysFromNumbers(eventObj.ByWeekDay),
                                 eventObj.ByMonthDay == null ? "-" : eventObj.ByMonthDay.ToString(),
@@ -112,6 +122,40 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             if (month <= 0 || month > 12) return "-";
 
             return CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(month);
+        }
+
+        public int GetTotalEventCount()
+        {
+            return GetAllEvents().Count;
+        }
+
+        public int GetEventIdFromSerialNumber(int srNo)
+        {
+            return GetAllEvents()[srNo - 1].Id;
+        }
+
+        public string ConvertTo12HourFormat(int hour)
+        {
+            string abbreviation;
+
+            if (hour >= 12)
+            {
+                abbreviation = "PM";
+                if (hour > 12)
+                {
+                    hour -= 12;
+                }
+            }
+            else
+            {
+                abbreviation = "AM";
+                if (hour == 0)
+                {
+                    hour = 12;
+                }
+            }
+
+            return $"{hour} {abbreviation}";
         }
 
     }

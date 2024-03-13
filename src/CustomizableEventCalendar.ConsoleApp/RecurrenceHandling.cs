@@ -48,7 +48,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             eventObj.EventEndDate = DateOnly.FromDateTime(ValidatedInputProvider.GetValidatedDateTime(RecurrencePatternMessages.EndDate));
 
-            if (!ValidationService.IsVallidStartAndEndDate(eventObj.EventStartDate, eventObj.EventEndDate)) GetDates(eventObj);
+            if (!ValidationService.IsVallidStartAndEndDate(eventObj.EventStartDate, eventObj.EventEndDate))
+            {
+                PrintHandler.PrintWarningMessage("Invalid input ! Start date must less than or equal to the end date ");
+                GetDates(eventObj);
+            }
         }
 
         public static void GetRecurrenceForSingleEvent(Event eventObj)
@@ -109,14 +113,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             PrintHandler.PrintNewLine();
 
             Console.WriteLine("How often does this event occur? \n1.Every Weekday \n2.Every n days (You need to specify the value of n)");
-            int choice = ValidatedInputProvider.GetValidatedInteger("Enter choice : ");
+            int choice = ValidatedInputProvider.GetValidatedInteger("\nEnter choice : ");
 
             string days;
 
             switch (choice)
             {
                 case 1:
-                    PrintHandler.PrintSuccessMessage("Great! You've selected to repeat the event every weekday.");
+                    PrintHandler.PrintInfoMessage("Great! You've selected to repeat the event every weekday.");
                     eventObj.ByWeekDay = "1,2,3,4,5";
                     eventObj.Interval = null;
                     break;
@@ -125,7 +129,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                                                                               "(in days) : ");
                     eventObj.Interval = interval;
                     eventObj.ByWeekDay = null;
-                    PrintHandler.PrintSuccessMessage($"You've chosen to repeat the event every {eventObj.Interval} days.");
+                    PrintHandler.PrintInfoMessage($"You've chosen to repeat the event every {eventObj.Interval} days.");
                     break;
 
             }
@@ -141,7 +145,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             PrintHandler.PrintNewLine();
 
-            int interval = ValidatedInputProvider.GetValidatedInteger("Please specify how often you'd like to repeat the event(in weeks).");
+            int interval = ValidatedInputProvider.GetValidatedInteger("Please specify how often you'd like to repeat the event(in weeks) : ");
 
             eventObj.Interval = interval;
 
@@ -153,7 +157,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             eventObj.ByMonth = null;
             eventObj.ByYear = null;
 
-            PrintHandler.PrintSuccessMessage($"You've chosen to repeat the event every n weeks on the following weekdays: " +
+            PrintHandler.PrintInfoMessage($"You've chosen to repeat the event every n weeks on the following weekdays: " +
                 $"{EventService.GetWeekDaysFromNumbers(days)}.");
         }
 
@@ -162,7 +166,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             PrintHandler.PrintNewLine();
 
             string days = ValidatedInputProvider.GetValidatedWeekDays("Which weekdays would you like the event to occur on? "
-                                                                      + "(Please provide weekdays separated by commas)");
+                                                                      + "(Please provide weekdays separated by commas) : ");
 
             return days;
 
@@ -173,7 +177,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             PrintHandler.PrintNewLine();
 
             int interval = ValidatedInputProvider.GetValidatedInteger("Please specify how often you'd like to repeat the" +
-                                                                      "event (in months).");
+                                                                      "event (in months) : ");
 
             eventObj.Interval = interval;
 
@@ -185,21 +189,21 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             PrintHandler.PrintNewLine();
 
-            Console.WriteLine("1.Select specific Day of the Month\n 2.Select day of the month and its position ");
+            Console.WriteLine("1.Select specific Day of the Month\n2.Select day of the month and its position ");
 
-            int choice = ValidatedInputProvider.GetValidatedInteger("Enter your choice : ");
+            int choice = ValidatedInputProvider.GetValidatedInteger("\nEnter your choice : ");
 
             switch (choice)
             {
                 case 1:
                     GetSpecificMonthDay(eventObj);
-                    PrintHandler.PrintSuccessMessage($"You've chosen to repeat the event every {eventObj.Interval} months on the {eventObj.ByMonthDay} day of the month");
+                    PrintHandler.PrintInfoMessage($"You've chosen to repeat the event every {eventObj.Interval} months on the {eventObj.ByMonthDay} day of the month");
                     eventObj.WeekOrder = null;
                     eventObj.ByWeekDay = null;
                     break;
                 case 2:
                     GetDayOfWeekAndWeekOrderNumber(eventObj);
-                    PrintHandler.PrintSuccessMessage($"You've chosen to repeat the event every {eventObj.Interval} months on the {eventObj.WeekOrder} {EventService.GetWeekDaysFromNumbers(eventObj.ByWeekDay)} day of the month");
+                    PrintHandler.PrintInfoMessage($"You've chosen to repeat the event every {eventObj.Interval} months on the {eventObj.WeekOrder} {EventService.GetWeekDaysFromNumbers(eventObj.ByWeekDay)} day of the month");
                     eventObj.ByMonthDay = null;
                     break;
             }
@@ -229,10 +233,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             Console.WriteLine("Enter the day of the week (e.g., 'Monday' or 'Tuesday' or 'Wednesday' or 'Thursday' or" +
                               "'Friday' or 'Saturday' or 'Sunday')");
-            Console.WriteLine("Enter \n1. Monday \n2. Tuesday \n3. Wednesday \n4. Thursday \n5. Friday \n6. Saturday \n7. " +
+            Console.WriteLine("\n1. Monday \n2. Tuesday \n3. Wednesday \n4. Thursday \n5. Friday \n6. Saturday \n7. " +
                               "Sunday");
 
-            WeekDays choice = (WeekDays)ValidatedInputProvider.GetValidatedInteger("Enter choice :");
+            WeekDays choice = (WeekDays)ValidatedInputProvider.GetValidatedInteger("\nEnter choice :");
             switch (choice)
             {
                 case WeekDays.Monday:
@@ -269,9 +273,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             PrintHandler.PrintNewLine();
 
             Console.WriteLine("Enter the order number (e.g., 'first' or 'second' or 'third' or 'fourth' or 'last')");
-            Console.WriteLine("Enter \n1. First \n2. Second \n3. Third \n4. Fourth \n5. Fifth");
+            Console.WriteLine("\n1. First \n2. Second \n3. Third \n4. Fourth \n5. Fifth");
 
-            WeekOrder choice = (WeekOrder)ValidatedInputProvider.GetValidatedInteger("Enter choice :");
+            WeekOrder choice = (WeekOrder)ValidatedInputProvider.GetValidatedInteger("\nEnter choice :");
 
             switch (choice)
             {
@@ -306,7 +310,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             Console.WriteLine("1.Select specific Day of the Month \n2.Select day of the month and its position ");
 
-            int choice = ValidatedInputProvider.GetValidatedInteger("Enter your choice : ");
+            int choice = ValidatedInputProvider.GetValidatedInteger("\nEnter your choice : ");
 
             GetValidMonth(eventObj);
 
