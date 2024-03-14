@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 
@@ -20,9 +21,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             {
                 eventCollaborators = _eventCollaboratorsRepository.GetAll(data => new EventCollaborators(data));
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine("Some error occurred ! " + ex.Message);
+                PrintHandler.PrintErrorMessage("Some error occurred ! ");
             }
 
             return eventCollaborators;
@@ -36,9 +37,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             {
                 eventCollaborators = _eventCollaboratorsRepository.GetById(data => new EventCollaborators(data), eventCollaboratorId);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine("Some error occurred ! " + ex.Message);
+                PrintHandler.PrintErrorMessage("Some error occurred ! ");
             }
 
             return eventCollaborators;
@@ -47,14 +48,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         public int InsertEventCollaborators(EventCollaborators eventCollaborators)
         {
             int eventCollaboratorsId = 0;
-
             try
             {
                 eventCollaboratorsId = _eventCollaboratorsRepository.Insert(eventCollaborators);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine("Some error occurred ! " + ex.Message);
+                PrintHandler.PrintErrorMessage("Some error occurred ! ");
             }
 
             return eventCollaboratorsId;
@@ -66,23 +66,22 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             {
                 _eventCollaboratorsRepository.DeleteByEventId(eventId);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine("Some error occurred ! " + ex.Message);
+                PrintHandler.PrintErrorMessage("Some error occurred ! ");
             }
         }
 
         public EventCollaborators GetEventCollaboratorsByEventId(int eventId)
         {
             EventCollaborators eventCollaborator = null;
-
             try
             {
                 eventCollaborator = _eventCollaboratorsRepository.ReadByEventId(eventId);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine("Some error occurred ! " + ex.Message);
+                PrintHandler.PrintErrorMessage("Some error occurred ! ");
             }
 
             return eventCollaborator;
@@ -103,7 +102,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                                                                     eventCollaborator.UserId == GlobalData.user.Id
                                                                     && eventCollaborator.EventId == eventId);
 
-            return eventCollaborators == null ? null : eventCollaborators.Id;
+            return eventCollaborators?.Id;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+﻿using System.Security.Cryptography;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 using Ical.Net.DataTypes;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
@@ -7,44 +8,43 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
     {
         private readonly EventCollaboratorsService eventCollaboratorsService = new();
 
-        public void ScheduleEventsOfThisMonth()
-        {
-            EventService eventService = new();
+        //public void ScheduleEventsOfThisMonth()
+        //{
+        //    EventService eventService = new();
 
-            List<Event> events = eventService.GetAllEvents()
-                                             .Where(eventObj => eventObj.UserId == GlobalData.user.Id)
-                                             .ToList();
+        //    List<Event> events = eventService.GetAllEvents()
+        //                                     .Where(eventObj => eventObj.UserId == GlobalData.user.Id)
+        //                                     .ToList();
 
-            foreach (var eventObj in events)
-            {
-                ScheduleEvents(eventObj);
-            }
-        }
-
-        public void AddEventToScheduler(Event eventObj)
-        {
-            ScheduleEvents(eventObj);
-        }
+        //    foreach (var eventObj in events)
+        //    {
+        //        ScheduleEvents(eventObj);
+        //    }
+        //}
 
         public void ScheduleEvents(Event eventObj)
         {
-            List<EventCollaborators> lastScheduledEvents = eventCollaboratorsService.GetAllEventCollaborators()
-                                                                          .Where(data => data.EventId == eventObj.Id
-                                                                                 && data.UserId == GlobalData.user.Id)
-                                                                          .ToList();
+            List<EventCollaborators> lastScheduledEvents = GetAllPreviousScheduledEvents(eventObj);
 
-            EventCollaborators? lastScheduledEvent = lastScheduledEvents.FirstOrDefault(data => data.EventDate ==
-                                                                    (lastScheduledEvents.Max(data => data.EventDate)));
+            EventCollaborators? lastScheduledEvent = FindLastScheduledEvent(lastScheduledEvents);
 
-            DateTime startDate = lastScheduledEvent == null ? DateTime.Parse(eventObj.EventStartDate.ToString()) : lastScheduledEvent.EventDate;
+            DateTime startDateForScheduling = lastScheduledEvent == null ? DateTime.Parse(eventObj.EventStartDate.ToString()) :
+                                         lastScheduledEvent.EventDate;
 
+            if (eventObj.Frequency == null && lastScheduledEvent == null)
+            {
+                ScheduleNonRecurrenceEvents(eventObj, DateTime.Parse(eventObj.EventStartDate.ToString()), DateTime.Parse
+                                           (eventObj.EventEndDate.ToString()));
+            }
+
+            ScheduleEventsUsingFrequency(eventObj, startDateForScheduling);
+
+        }
+
+        public void ScheduleEventsUsingFrequency(Event eventObj, DateTime startDate)
+        {
             switch (eventObj.Frequency)
             {
-                case null:
-                    if (lastScheduledEvent == null)
-                        ScheduleNonRecurrenceEvents(eventObj, DateTime.Parse(eventObj.EventStartDate.ToString()), DateTime.Parse
-                                                                                                            (eventObj.EventEndDate.ToString()));
-                    break;
                 case "daily":
                     ScheduleDailyEvents(eventObj, startDate);
                     break;
@@ -58,7 +58,24 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                     ScheduleYearlyEvents(eventObj, startDate);
                     break;
             }
+        }
 
+        public List<EventCollaborators> GetAllPreviousScheduledEvents(Event eventObj)
+        {
+            List<EventCollaborators> lastScheduledEvents = eventCollaboratorsService.GetAllEventCollaborators()
+                                                                          .Where(data => data.EventId == eventObj.Id
+                                                                                 && data.UserId == GlobalData.user.Id)
+                                                                          .ToList();
+
+            return lastScheduledEvents;
+        }
+
+        public static EventCollaborators? FindLastScheduledEvent(List<EventCollaborators> eventCollaborators)
+        {
+            EventCollaborators? lastScheduledEvent = eventCollaborators.FirstOrDefault(data => data.EventDate ==
+                                                                   (eventCollaborators.Max(data => data.EventDate)));
+
+            return lastScheduledEvent;
         }
 
         public void ScheduleNonRecurrenceEvents(Event eventObj, DateTime startDate, DateTime endDate)
@@ -103,8 +120,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             while (startDate < eventObj.EventEndDate)
             {
-                EventCollaborators eventCollaborator = new(eventObj.Id, GlobalData.user.Id, "organizer", null, null, null, DateTime.Parse
-                                                                                                                            (startDate.ToString()));
+                EventCollaborators eventCollaborator = new(eventObj.Id, GlobalData.user.Id, "organizer", null, null, null,
+                                                           DateTime.Parse(startDate.ToString()));
 
                 ScheduleForSpecificHour(eventObj.EventStartHour, eventObj.EventEndHour, ref eventCollaborator);
 
@@ -118,9 +135,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             while (startHour < endHour)
             {
                 DateTime eventDate = eventCollaborators.EventDate;
-                eventCollaborators.EventDate = new DateTime(eventDate.Year, eventDate.Month
-                                                          , eventDate.Day, startHour, 0, 0);
+
+                eventCollaborators.EventDate = new DateTime(eventDate.Year, eventDate.Month, eventDate.Day, startHour, 0, 0);
+
                 eventCollaboratorsService.InsertEventCollaborators(eventCollaborators);
+
                 startHour++;
             }
 
@@ -133,61 +152,38 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             DateOnly startDateOfEvent = eventObj.EventStartDate;
             DateOnly endDateOfEvent = eventObj.EventEndDate;
 
-            DateOnly startDateOfWeek = GetStartDateOfWeek(startDateOfEvent);
-            DateOnly endDateOfWeek = GetEndDateOfWeek(startDateOfEvent);
+            DateOnly startDateOfWeek = DateTimeManager.GetStartDateOfWeek(startDateOfEvent);
+            DateOnly endDateOfWeek = DateTimeManager.GetEndDateOfWeek(startDateOfEvent);
 
             DateOnly curDate = startDateOfWeek;
 
             while (curDate < eventObj.EventEndDate)
             {
-                int day = Convert.ToInt32(startDateOfEvent.DayOfWeek.ToString("d"));
+                int day = Convert.ToInt32(curDate.DayOfWeek.ToString("d"));
+
+                if (day == 0) day = 7;
 
                 if (weekDays.Contains(day) && IsDateInRange(startDateOfEvent, endDateOfEvent, curDate))
                 {
                     EventCollaborators eventCollaborator = new(eventObj.Id, GlobalData.user.Id, "organizer", null, null, null,
-                                                                            DateTime.Parse(startDate.ToString()));
+                                                                            DateTime.Parse(curDate.ToString()));
 
                     ScheduleForSpecificHour(eventObj.EventStartHour, eventObj.EventEndHour, ref eventCollaborator);
                 }
+                curDate = curDate.AddDays(1);
 
-                startDateOfEvent = startDateOfEvent.AddDays(Convert.ToInt32(eventObj.Interval) + 1);
-
-                if (curDate > endDateOfEvent)
+                if (curDate > endDateOfWeek)
                 {
                     curDate = startDateOfWeek.AddDays(7 * (int)eventObj.Interval);
-                    startDateOfWeek = GetStartDateOfWeek(curDate);
-                    endDateOfWeek = GetEndDateOfWeek(curDate);
+                    startDateOfWeek = curDate;
+                    endDateOfWeek = DateTimeManager.GetEndDateOfWeek(curDate);
                 }
             }
         }
 
-        public bool IsDateInRange(DateOnly startDate, DateOnly endDate, DateOnly dateToCheck)
+        public static bool IsDateInRange(DateOnly startDate, DateOnly endDate, DateOnly dateToCheck)
         {
             return dateToCheck >= startDate && dateToCheck <= endDate;
-        }
-
-        public DateOnly GetStartDateOfWeek(DateOnly todayDate)
-        {
-            return todayDate.AddDays(-(int)(todayDate.DayOfWeek - 1));
-        }
-
-        public DateOnly GetEndDateOfWeek(DateOnly todayDate)
-        {
-            return GetStartDateOfWeek(todayDate).AddDays(6);
-        }
-
-        public HashSet<int> CalculateProcessingMonth(DateTime startDate, DateTime endDate, string interval)
-        {
-            HashSet<int> months = [];
-            DateTime curDate = startDate;
-
-            while (curDate <= endDate)
-            {
-                months.Add(Convert.ToInt32(curDate.Month.ToString()));
-                curDate = curDate.AddMonths(Convert.ToInt32(interval) + 1);
-            }
-
-            return months;
         }
 
         public void ScheduleMonthlyEvents(Event eventObj, DateTime startDate)
@@ -208,33 +204,25 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             int day = (int)eventObj.ByMonthDay;
 
-            DateOnly startDate = new(startDateOfEvent.Year, startDateOfEvent.Month, GetMinimumDateFromGivenMonthAndDay(day,
+            DateOnly curDate = new(startDateOfEvent.Year, startDateOfEvent.Month, GetMinimumDateFromGivenMonthAndDay(day,
                                      DateOnly.FromDateTime(startDateOfEvent)));
 
             while (true)
             {
-                try
-                {
-                    if (startDate > eventObj.EventEndDate) break;
+                if (curDate > eventObj.EventEndDate) break;
 
-                    EventCollaborators eventCollaborator = new(eventObj.Id, GlobalData.user.Id, "organizer", null, null, null,
-                                                                            DateTime.Parse(startDate.ToString()));
+                EventCollaborators eventCollaborator = new(eventObj.Id, GlobalData.user.Id, "organizer", null, null, null,
+                                                                        DateTime.Parse(curDate.ToString()));
 
-                    ScheduleForSpecificHour(eventObj.EventStartHour, eventObj.EventEndHour, ref eventCollaborator);
+                ScheduleForSpecificHour(eventObj.EventStartHour, eventObj.EventEndHour, ref eventCollaborator);
 
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Some error occurred ! " + ex.Message);
-                }
-
-                startDate = startDate.AddMonths(1 * (int)eventObj.Interval);
-                startDate = new DateOnly(startDate.Year, startDate.Month, GetMinimumDateFromGivenMonthAndDay(day, startDate));
+                curDate = curDate.AddMonths(1 * (int)eventObj.Interval);
+                curDate = new DateOnly(curDate.Year, curDate.Month, GetMinimumDateFromGivenMonthAndDay(day, curDate));
             }
 
         }
 
-        public int GetMinimumDateFromGivenMonthAndDay(int day, DateOnly date)
+        public static int GetMinimumDateFromGivenMonthAndDay(int day, DateOnly date)
         {
             int daysInMonth = DateTime.DaysInMonth(date.Year, date.Month);
 
@@ -251,11 +239,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             DayOfWeek dayOfWeek = (DayOfWeek)weekDay;
 
-            DateOnly curDate = new(eventObj.EventStartDate.Year, eventObj.EventEndDate.Month, 1);
+            DateOnly curDate = new(startDateOfEvent.Year, startDateOfEvent.Month, 1);
 
             while (curDate <= eventObj.EventEndDate)
             {
-                DateOnly firstWeekDayOfMonth = new DateOnly(curDate.Year, curDate.Month, 1);
+                DateOnly firstWeekDayOfMonth = new(curDate.Year, curDate.Month, 1);
 
                 while (firstWeekDayOfMonth.DayOfWeek != dayOfWeek)
                 {
@@ -264,32 +252,16 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                 DateOnly nthWeekDay = firstWeekDayOfMonth.AddDays(7 * (weekOrder - 1));
 
-                if (nthWeekDay.Month == curDate.Month)
+                if (nthWeekDay.Month == curDate.Month && nthWeekDay <= eventObj.EventEndDate)
                 {
                     EventCollaborators eventCollaborator = new(eventObj.Id, GlobalData.user.Id, "organizer", null, null, null,
-                                                        DateTime.Parse(curDate.ToString()));
+                                                        DateTime.Parse(nthWeekDay.ToString()));
 
                     ScheduleForSpecificHour(eventObj.EventStartHour, eventObj.EventEndHour, ref eventCollaborator);
                 }
 
                 curDate = curDate.AddMonths((int)eventObj.Interval);
             }
-
-        }
-
-        public HashSet<int> CalculateProcessingYear(DateTime startDate, DateTime endDate, string interval)
-        {
-
-            HashSet<int> years = [];
-            DateTime curDate = startDate;
-
-            while (curDate <= endDate)
-            {
-                years.Add(Convert.ToInt32(curDate.Year.ToString()));
-                curDate = curDate.AddYears(Convert.ToInt32(interval) + 1);
-            }
-
-            return years;
 
         }
 
@@ -330,7 +302,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                     Console.WriteLine("Some error occurred ! " + ex.Message);
                 }
 
-                startDate = startDate.AddYears(1 * (int)eventObj.Interval);
+                startDate = startDate.AddYears((int)eventObj.Interval);
             }
         }
 
@@ -357,15 +329,15 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                 DateOnly nthWeekDay = firstWeekDayOfMonth.AddDays(7 * (weekOrder - 1));
 
-                if (nthWeekDay.Month == startDate.Month)
+                if (nthWeekDay.Month == startDate.Month && nthWeekDay <= eventObj.EventEndDate)
                 {
                     EventCollaborators eventCollaborator = new(eventObj.Id, GlobalData.user.Id, "organizer", null, null, null,
-                                                        DateTime.Parse(startDate.ToString()));
+                                                        DateTime.Parse(nthWeekDay.ToString()));
 
                     ScheduleForSpecificHour(eventObj.EventStartHour, eventObj.EventEndHour, ref eventCollaborator);
                 }
 
-                startDate = startDate.AddMonths((int)eventObj.Interval);
+                startDate = startDate.AddYears((int)eventObj.Interval);
             }
         }
     }

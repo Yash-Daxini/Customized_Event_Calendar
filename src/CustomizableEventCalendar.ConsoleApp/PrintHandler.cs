@@ -58,18 +58,16 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         public static string GiveTable(List<List<string>> data)
         {
-            PrintService printService = new PrintService();
 
-            string table = printService.GenerateTable(data);
+            string table = PrintService.GenerateTable(data);
 
             return table.ToString();
         }
 
         public static string GiveTableForNotification(List<List<string>> data)
         {
-            PrintService printService = new PrintService();
 
-            string table = printService.GenerateTableForNotification(data);
+            string table = PrintService.GenerateTableForNotification(data);
 
             return table.ToString();
         }

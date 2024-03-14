@@ -46,14 +46,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return notification.ToString();
         }
 
-        public string GetCompletedEvents(List<EventCollaborators> eventCollaborators, List<Event> events)
+        public static string GetCompletedEvents(List<EventCollaborators> eventCollaborators, List<Event> events)
         {
             StringBuilder completedEvents = new();
 
             DateTime todayDate = DateTime.Now;
 
             List<EventCollaborators> missedEvents = eventCollaborators.Where(scheduleEvent =>
-                                                                             scheduleEvent.EventDate.Date <= todayDate.Date)
+                                                                             scheduleEvent.EventDate.Date < todayDate.Date)
                                                                       .ToList();
 
             if (missedEvents.Count == 0) return "";
@@ -77,7 +77,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return completedEvents.ToString();
         }
 
-        public string GetUpcomingEvents(List<EventCollaborators> scheduleEvents, List<Event> events)
+        public static string GetUpcomingEvents(List<EventCollaborators> scheduleEvents, List<Event> events)
         {
             StringBuilder upcommingEvents = new();
 
@@ -101,7 +101,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 Event? eventObj = events.FirstOrDefault(eventObj => eventObj.Id == eventCollaborators.EventId);
 
                 upcommingEventNotificationsTableContent.Add([eventObj.Title,eventObj.Description,eventCollaborators.EventDate.ToString(),
-                                                             eventObj.EventStartHour.ToString(),eventObj.EventEndHour.ToString()]);
+                                                             DateTimeManager.ConvertTo12HourFormat(eventObj.EventStartHour),
+                                                             DateTimeManager.ConvertTo12HourFormat(eventObj.EventEndHour)]);
             }
 
             upcommingEvents.AppendLine(PrintHandler.GiveTableForNotification(upcommingEventNotificationsTableContent));
@@ -150,8 +151,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                 propsedEventNotificationsTableContent.Add([ eventProposer.Name,
                                                                              eventObj.EventStartDate.ToString(),
-                                                                             eventObj.EventStartHour.ToString(),
-                                                                             eventObj.EventEndHour.ToString(),
+                                                                             DateTimeManager.ConvertTo12HourFormat(eventObj.EventStartHour),
+                                                                             DateTimeManager.ConvertTo12HourFormat(eventObj.EventEndHour),
                                                                              eventObj.Title,eventObj.Description
                                                                            ]
                                                          );

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 using Ical.Net;
 using Ical.Net.CalendarComponents;
@@ -28,12 +29,17 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                 FindOccurrencesOfEvents(eventObj, ref occurrences1);
 
-                foreach (var item in occurrences)
+                foreach (var occurrence in occurrences)
                 {
-                    DateTime matchedDate = occurrences1.Find(occurrence => occurrence == item);
+                    DateTime matchedDate = occurrences1.Find(singlOccurrence => singlOccurrence == occurrence);
                     if (matchedDate != new DateTime())
                     {
-                        Console.WriteLine(item + " " + matchedDate);
+                        PrintHandler.PrintWarningMessage($"{eventForVerify.Title} overlaps with {eventObj.Title} at following date and time.\n"
+                                                       + $"{occurrence.Date} from {DateTimeManager.ConvertTo12HourFormat(eventForVerify.EventStartHour)} " +
+                                                         $" to {DateTimeManager.ConvertTo12HourFormat(eventForVerify.EventEndHour)} overlaps with " +
+                                                         $"{matchedDate.Date} from {DateTimeManager.ConvertTo12HourFormat(eventObj.EventStartHour)}" +
+                                                         $" to {DateTimeManager.ConvertTo12HourFormat(eventObj.EventEndHour)}" +
+                                                         $"\nPlease choose another date time !");
                         return true;
                     }
                 }
@@ -111,7 +117,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public void OccurrencesForSpecificHour(int startHour, int endHour, DateOnly date, ref List<DateTime> occurrences)
         {
-            while (startHour <= endHour)
+            while (startHour < endHour)
             {
                 occurrences.Add(new DateTime(date.Year, date.Month, date.Day, startHour, 0, 0));
 
@@ -126,43 +132,35 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             DateOnly startDateOfEvent = eventObj.EventStartDate;
             DateOnly endDateOfEvent = eventObj.EventEndDate;
 
-            DateOnly startDateOfWeek = GetStartDateOfWeek(startDateOfEvent);
-            DateOnly endDateOfWeek = GetEndDateOfWeek(startDateOfEvent);
+            DateOnly startDateOfWeek = DateTimeManager.GetStartDateOfWeek(startDateOfEvent);
+            DateOnly endDateOfWeek = DateTimeManager.GetEndDateOfWeek(startDateOfEvent);
 
             DateOnly curDate = startDateOfWeek;
 
             while (curDate < eventObj.EventEndDate)
             {
-                int day = Convert.ToInt32(startDateOfEvent.DayOfWeek.ToString("d"));
+                int day = Convert.ToInt32(curDate.DayOfWeek.ToString("d"));
+
+                if (day == 0) day = 7;
 
                 if (weekDays.Contains(day) && IsDateInRange(startDateOfEvent, endDateOfEvent, curDate))
                 {
                     OccurrencesForSpecificHour(eventObj.EventStartHour, eventObj.EventEndHour, startDateOfEvent, ref occurrences);
                 }
-                startDateOfEvent = startDateOfEvent.AddDays(Convert.ToInt32(eventObj.Interval) + 1);
+                curDate = curDate.AddDays(1);
 
-                if (curDate > endDateOfEvent)
+                if (curDate > endDateOfWeek)
                 {
                     curDate = startDateOfWeek.AddDays(7 * (int)eventObj.Interval);
-                    startDateOfWeek = GetStartDateOfWeek(curDate);
-                    endDateOfWeek = GetEndDateOfWeek(curDate);
+                    startDateOfWeek = curDate;
+                    endDateOfWeek = DateTimeManager.GetEndDateOfWeek(curDate);
                 }
             }
         }
 
-        public bool IsDateInRange(DateOnly startDate, DateOnly endDate, DateOnly dateToCheck)
+        public static bool IsDateInRange(DateOnly startDate, DateOnly endDate, DateOnly dateToCheck)
         {
             return dateToCheck >= startDate && dateToCheck <= endDate;
-        }
-
-        public DateOnly GetStartDateOfWeek(DateOnly todayDate)
-        {
-            return todayDate.AddDays(-(int)(todayDate.DayOfWeek - 1));
-        }
-
-        public DateOnly GetEndDateOfWeek(DateOnly todayDate)
-        {
-            return GetStartDateOfWeek(todayDate).AddDays(6);
         }
 
         public HashSet<int> CalculateProcessingMonth(DateTime startDate, DateTime endDate, string interval)
@@ -197,8 +195,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             int day = (int)eventObj.ByMonthDay;
 
-            DateOnly startDate = new(eventObj.EventStartDate.Year, eventObj.EventEndDate.Month, GetMinimumDateFromGivenMonthAndDay(day,
+            DateOnly startDate = new();
+
+            startDate = new(eventObj.EventStartDate.Year, eventObj.EventStartDate.Month, GetMinimumDateFromGivenMonthAndDay(day,
                                      eventObj.EventStartDate));
+
 
             while (true)
             {
@@ -234,11 +235,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             DayOfWeek dayOfWeek = (DayOfWeek)weekDay;
 
-            DateOnly curDate = new(eventObj.EventStartDate.Year, eventObj.EventEndDate.Month, 1);
+            DateOnly curDate = new(eventObj.EventStartDate.Year, eventObj.EventStartDate.Month, 1);
 
             while (curDate <= eventObj.EventEndDate)
             {
-                DateOnly firstWeekDayOfMonth = new DateOnly(curDate.Year, curDate.Month, 1);
+                DateOnly firstWeekDayOfMonth = new(curDate.Year, curDate.Month, 1);
 
                 while (firstWeekDayOfMonth.DayOfWeek != dayOfWeek)
                 {
@@ -247,7 +248,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                 DateOnly nthWeekDay = firstWeekDayOfMonth.AddDays(7 * (weekOrder - 1));
 
-                if (nthWeekDay.Month == curDate.Month)
+                if (nthWeekDay.Month == curDate.Month && nthWeekDay <= eventObj.EventEndDate)
                 {
                     OccurrencesForSpecificHour(eventObj.EventStartHour, eventObj.EventEndHour, nthWeekDay, ref occurrences);
                 }
@@ -318,12 +319,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                 DateOnly nthWeekDay = firstWeekDayOfMonth.AddDays(7 * (weekOrder - 1));
 
-                if (nthWeekDay.Month == curDate.Month)
+                if (nthWeekDay.Month == curDate.Month && nthWeekDay <= eventObj.EventEndDate)
                 {
                     OccurrencesForSpecificHour(eventObj.EventStartHour, eventObj.EventEndHour, nthWeekDay, ref occurrences);
                 }
 
-                curDate = curDate.AddMonths((int)eventObj.Interval);
+                curDate = curDate.AddYears((int)eventObj.Interval);
             }
         }
     }

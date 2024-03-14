@@ -8,7 +8,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 {
     internal class PrintService
     {
-        public string GenerateTable(List<List<string>> data)
+        public static string GenerateTable(List<List<string>> data)
         {
             StringBuilder table = new();
 
@@ -17,10 +17,17 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             for (int col = 0; col < data[0].Count; col++)
             {
                 int maxWidth = 0;
-
-                foreach (var row in data)
+                try
                 {
-                    maxWidth = Math.Max(maxWidth, row[col].Length);
+                    foreach (var row in data)
+                    {
+                        maxWidth = Math.Max(maxWidth, row[col].Length);
+                    }
+
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
                 }
 
                 columnWidths.Add(maxWidth);
@@ -86,7 +93,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             return table.ToString();
         }
-        public string GenerateTableForNotification(List<List<string>> data)
+        public static string GenerateTableForNotification(List<List<string>> data)
         {
             StringBuilder table = new();
 

@@ -28,9 +28,9 @@ public class Program
     {
         IntPtr handle = GetConsoleWindow();
 
-        SetWindowPos(handle, HWND_TOP, 0, 0, 0, 0, SWP_SHOWWINDOW);
+        SetWindowPos(handle, HWND_TOP, -5, -5, 0, 0, SWP_SHOWWINDOW);
 
-        Console.SetWindowSize(Console.LargestWindowWidth, Console.LargestWindowHeight);
+        Console.SetWindowSize(Console.LargestWindowWidth,Console.LargestWindowHeight);
 
         try
         {

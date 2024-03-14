@@ -19,7 +19,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
     {
         private readonly static EventService _eventService = new();
 
-        //private readonly static ShareCalendar _shareCalendar = new();
+        private readonly static ShareCalendar _shareCalendar = new();
 
         public static void PrintColorMessage(string message, ConsoleColor color)
         {
@@ -65,17 +65,16 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                     TakeInputToUpdateEvent();
                     break;
                 case EventOperations.View:
-                    //CalendarView.ViewSelection();
+                    CalendarView.ViewSelection();
                     break;
                 case EventOperations.ShareCalendar:
-                    //_shareCalendar.GetDetailsToShareCalendar();
+                    _shareCalendar.GetDetailsToShareCalendar();
                     break;
                 case EventOperations.ViewSharedCalendar:
-                    //_shareCalendar.ViewSharedCalendars();
+                    _shareCalendar.ViewSharedCalendars();
                     break;
                 case EventOperations.SharedEventCollaboration:
-                    SharedEventCollaboration sharedEventCollaboration = new SharedEventCollaboration();
-                    sharedEventCollaboration.ShowSharedEvents();
+                    SharedEventCollaboration.ShowSharedEvents();
                     break;
                 case EventOperations.EventWithMultipleInvitees:
                     TakeInputForProposedEvent();
@@ -178,17 +177,17 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             Console.WriteLine("\nFill Details Related to Event : ");
 
-            Console.WriteLine("Enter title : ");
+            Console.Write("Enter title : ");
             eventObj.Title = Console.ReadLine();
 
             PrintHandler.PrintNewLine();
 
-            Console.WriteLine("Enter description : ");
+            Console.Write("Enter description : ");
             eventObj.Description = Console.ReadLine();
 
             PrintHandler.PrintNewLine();
 
-            Console.WriteLine("Enter Location : ");
+            Console.Write("Enter Location : ");
             eventObj.Location = Console.ReadLine();
 
             TakeStartingAndEndingHourOfEvent(eventObj);
@@ -279,9 +278,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
                 RecurrenceHandling.AskForRecurrenceChoice(eventObj);
 
-                _eventService.InsertEvent(eventObj);
+                int eventId = _eventService.InsertEvent(eventObj);
 
-                PrintHandler.PrintSuccessMessage("Data Added Successfully");
+                if (eventId != -1)
+                {
+                    PrintHandler.PrintSuccessMessage("Data Added Successfully");
+                }
+
             }
             catch
             {
@@ -349,9 +352,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
                 RecurrenceHandling.AskForRecurrenceChoice(eventObj);
 
-                _eventService.UpdateEvent(eventObj, Id);
+                bool isUpdated = _eventService.UpdateEvent(eventObj, Id);
 
-                PrintHandler.PrintSuccessMessage("Data Updated Successfully");
+                if (isUpdated) PrintHandler.PrintSuccessMessage("Data Updated Successfully");
             }
             catch
             {
