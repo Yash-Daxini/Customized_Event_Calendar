@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities
 {
-    internal class EventCollaborators
+    internal class EventCollaborator
     {
 
-        public EventCollaborators(int Id, int EventId, int UserId, string? ParticipantRole, string? ConfirmationStatus, int? ProposedStartHour,
+        public EventCollaborator(int Id, int EventId, int UserId, string? ParticipantRole, string? ConfirmationStatus, int? ProposedStartHour,
                                   int? ProposedEndHour, DateTime EventDate)
         {
             this.Id = Id;
@@ -24,7 +24,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
             this.EventDate = EventDate;
         }
 
-        public EventCollaborators(int EventId, int UserId, string? ParticipantRole, string? ConfirmationStatus, int? ProposedStartHour,
+        public EventCollaborator(int EventId, int UserId, string? ParticipantRole, string? ConfirmationStatus, int? ProposedStartHour,
                                   int? ProposedEndHour, DateTime EventDate)
         {
             this.UserId = UserId;
@@ -36,7 +36,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
             this.EventDate = EventDate;
         }
 
-        public EventCollaborators(SqlDataReader sqlDataReader)
+        public EventCollaborator(SqlDataReader sqlDataReader)
         {
             this.Id = Convert.ToInt32(sqlDataReader["Id"]);
             this.UserId = Convert.ToInt32(sqlDataReader["UserId"]);

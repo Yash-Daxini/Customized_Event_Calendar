@@ -10,7 +10,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 {
     internal class NotificationService
     {
-        private readonly EventCollaboratorsService _eventCollaboratorsService = new();
+        private readonly EventCollaboratorService _eventCollaboratorsService = new();
 
         public string GenerateNotification()
         {
@@ -23,8 +23,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             HashSet<int> eventIds = events.Select(eventObj => eventObj.Id)
                                           .ToHashSet();
 
-            List<EventCollaborators> eventCollaborators = _eventCollaboratorsService.GetAllEventCollaborators()
-                                                          .Where(eventCollaborator => eventCollaborator.UserId == GlobalData.user.Id)
+            List<EventCollaborator> eventCollaborators = _eventCollaboratorsService.GetAllEventCollaborators()
+                                                          .Where(eventCollaborator => eventCollaborator.UserId == GlobalData.user.Id &&
+                                                           eventCollaborator.ProposedStartHour == null &&
+                                                           eventCollaborator.ProposedEndHour == null)
                                                           .ToList();
 
             notification.AppendLine(new string('═', Console.WindowWidth));
@@ -46,13 +48,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return notification.ToString();
         }
 
-        public static string GetCompletedEvents(List<EventCollaborators> eventCollaborators, List<Event> events)
+        public static string GetCompletedEvents(List<EventCollaborator> eventCollaborators, List<Event> events)
         {
             StringBuilder completedEvents = new();
 
             DateTime todayDate = DateTime.Now;
 
-            List<EventCollaborators> missedEvents = eventCollaborators.Where(scheduleEvent =>
+            List<EventCollaborator> missedEvents = eventCollaborators.Where(scheduleEvent =>
                                                                              scheduleEvent.EventDate.Date < todayDate.Date)
                                                                       .ToList();
 
@@ -63,7 +65,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             List<List<string>> completedEventNotificationsTableContent = [["Event", "Description", "Date"]];
 
-            foreach (EventCollaborators eventCollaborator in missedEvents)
+            foreach (EventCollaborator eventCollaborator in missedEvents)
             {
 
                 Event? eventObj = events.FirstOrDefault(eventObj => eventObj.Id == eventCollaborator.EventId);
@@ -77,13 +79,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return completedEvents.ToString();
         }
 
-        public static string GetUpcomingEvents(List<EventCollaborators> scheduleEvents, List<Event> events)
+        public static string GetUpcomingEvents(List<EventCollaborator> scheduleEvents, List<Event> events)
         {
             StringBuilder upcommingEvents = new();
 
             DateTime todayDate = DateTime.Now;
 
-            List<EventCollaborators> upcommingEventsList = scheduleEvents.Where(eventCollaborators =>
+            List<EventCollaborator> upcommingEventsList = scheduleEvents.Where(eventCollaborators =>
                                                                             eventCollaborators.EventDate.Date == todayDate.Date)
                                                                          .ToList();
 
@@ -94,9 +96,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             List<List<string>> upcommingEventNotificationsTableContent = [["Event", "Description", "Date", "Start Time", "End Time"]];
 
-            EventCollaboratorsService eventCollaboratorsService = new();
+            EventCollaboratorService eventCollaboratorsService = new();
 
-            foreach (EventCollaborators eventCollaborators in upcommingEventsList)
+            foreach (EventCollaborator eventCollaborators in upcommingEventsList)
             {
                 Event? eventObj = events.FirstOrDefault(eventObj => eventObj.Id == eventCollaborators.EventId);
 
@@ -118,18 +120,15 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                                                   .Select(eventObj => eventObj.Id)
                                                   .ToHashSet();
 
-            List<EventCollaborators> eventCollaborators = _eventCollaboratorsService.GetAllEventCollaborators();
+            List<EventCollaborator> eventCollaborators = _eventCollaboratorsService.GetAllEventCollaborators();
 
             eventCollaborators = eventCollaborators.Where(eventCollaborator => proposedEventIds
                                                           .Contains(eventCollaborator.EventId) &&
                                                            eventCollaborator.UserId == GlobalData.user.Id)
                                                    .ToList();
 
-            bool isUserHasProposedEvent = eventCollaborators.Exists(eventCollaborator =>
-                                                             eventCollaborator.UserId == GlobalData.user.Id);
 
-
-            if (events.Count == 0 || !isUserHasProposedEvent) return "";
+            if (events.Count == 0 || eventCollaborators.Count == 0) return "";
 
             proposedEvents.AppendLine("Proposed Events");
             proposedEvents.AppendLine($"{PrintHandler.PrintHorizontalLine()}");
@@ -144,8 +143,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             foreach (var eventCollaborator in eventCollaborators)
             {
                 Event eventObj = eventService.GetEventsById(eventCollaborator.EventId);
-
-                if (eventObj.UserId == GlobalData.user.Id) continue;
 
                 User? eventProposer = userService.Read(eventObj.UserId);
 

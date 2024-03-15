@@ -9,17 +9,17 @@ using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
 {
-    internal class EventCollaboratorsService
+    internal class EventCollaboratorService
     {
-        private readonly EventCollaboratorsRepository _eventCollaboratorsRepository = new();
+        private readonly EventCollaboratorRepository _eventCollaboratorsRepository = new();
 
-        public List<EventCollaborators> GetAllEventCollaborators()
+        public List<EventCollaborator> GetAllEventCollaborators()
         {
-            List<EventCollaborators> eventCollaborators = [];
+            List<EventCollaborator> eventCollaborators = [];
 
             try
             {
-                eventCollaborators = _eventCollaboratorsRepository.GetAll(data => new EventCollaborators(data));
+                eventCollaborators = _eventCollaboratorsRepository.GetAll(data => new EventCollaborator(data));
             }
             catch
             {
@@ -29,13 +29,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return eventCollaborators;
         }
 
-        public EventCollaborators? GetEventCollaboratorsById(int eventCollaboratorId)
+        public EventCollaborator? GetEventCollaboratorsById(int eventCollaboratorId)
         {
-            EventCollaborators? eventCollaborators = null;
+            EventCollaborator? eventCollaborators = null;
 
             try
             {
-                eventCollaborators = _eventCollaboratorsRepository.GetById(data => new EventCollaborators(data), eventCollaboratorId);
+                eventCollaborators = _eventCollaboratorsRepository.GetById(data => new EventCollaborator(data), eventCollaboratorId);
             }
             catch (Exception)
             {
@@ -45,7 +45,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return eventCollaborators;
         }
 
-        public int InsertEventCollaborators(EventCollaborators eventCollaborators)
+        public int InsertEventCollaborators(EventCollaborator eventCollaborators)
         {
             int eventCollaboratorsId = 0;
             try
@@ -60,7 +60,19 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return eventCollaboratorsId;
         }
 
-        public void DeletEventCollaboratorsByEventId(int eventId)
+        public void UpdateEventCollaborators(EventCollaborator eventCollaborator, int eventCollaboratorId)
+        {
+            try
+            {
+                _eventCollaboratorsRepository.Update(eventCollaborator, eventCollaboratorId);
+            }
+            catch
+            {
+                PrintHandler.PrintErrorMessage("Some error occurred ! ");
+            }
+        }
+
+        public void DeleteEventCollaboratorsByEventId(int eventId)
         {
             try
             {
@@ -72,9 +84,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
         }
 
-        public EventCollaborators GetEventCollaboratorsByEventId(int eventId)
+        public EventCollaborator GetEventCollaboratorsByEventId(int eventId)
         {
-            EventCollaborators eventCollaborator = null;
+            EventCollaborator eventCollaborator = null;
             try
             {
                 eventCollaborator = _eventCollaboratorsRepository.ReadByEventId(eventId);
@@ -89,20 +101,27 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public int GetUserIdFromEventCollaborationId(int eventCollaborationId)
         {
-            EventCollaborators? eventCollaborator = GetEventCollaboratorsById(eventCollaborationId);
+            EventCollaborator? eventCollaborator = GetEventCollaboratorsById(eventCollaborationId);
 
             if (eventCollaborator == null) return 0;
 
             return eventCollaborator.UserId;
         }
 
-        public int? GetEventCollaboratorIdFromEventId(int eventId)
+        public int? GetEventCollaboratorIdFromEventIdAndUserId(int eventId)
         {
-            EventCollaborators? eventCollaborators = GetAllEventCollaborators().FirstOrDefault(eventCollaborator =>
+            EventCollaborator? eventCollaborator = GetEventCollaboratorFromEventIdAndUserId(eventId);
+
+            return eventCollaborator?.Id;
+        }
+
+        public EventCollaborator? GetEventCollaboratorFromEventIdAndUserId(int eventId)
+        {
+            EventCollaborator? eventCollaborator = GetAllEventCollaborators().FirstOrDefault(eventCollaborator =>
                                                                     eventCollaborator.UserId == GlobalData.user.Id
                                                                     && eventCollaborator.EventId == eventId);
 
-            return eventCollaborators?.Id;
+            return eventCollaborator;
         }
     }
 }

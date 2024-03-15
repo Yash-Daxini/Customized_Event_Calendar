@@ -8,6 +8,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
     internal class CalendarSharingService
     {
         private readonly SharedCalendarRepository _sharedEventsRepository = new();
+
+        public static List<EventCollaborator> availableEventsToCollaborate = [];
         public void AddSharedCalendar(SharedCalendar sharedEvent)
         {
             try
@@ -28,7 +30,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             {
                 sharedEvents = _sharedEventsRepository.GetAll(data => new SharedCalendar(data))
                                                                         .Where(sharedEvent =>
-                                                                         sharedEvent.UserId == GlobalData.user.Id)
+                                                                         sharedEvent.ReceiverUserId == GlobalData.user.Id)
                                                                         .ToList();
             }
             catch (Exception ex)
@@ -37,6 +39,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
 
             return sharedEvents;
+        }
+
+        public int GetSharedEventsCount()
+        {
+            return GetSharedEvents().Count();
         }
 
         public string GenerateDisplayFormatForSharedEvents()
@@ -49,10 +56,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             List<List<string>> sharedEventsTableContent = [["Sr. NO", "Shared by", "From", "To"]];
 
-            foreach (var sharedEvent in sharedEvents)
+            foreach (var (sharedEvent, index) in sharedEvents.Select((sharedEvent, index) => (sharedEvent, index)))
             {
-                User? user = userService.GetById(data => new User(data), sharedEvent.SharedByUserId);
-                sharedEventsTableContent.Add([sharedEvent.Id.ToString(),user.Name,sharedEvent.FromDate+""
+                User? user = userService.GetById(data => new User(data), sharedEvent.SenderUserId);
+                sharedEventsTableContent.Add([(index+1).ToString(),user.Name,sharedEvent.FromDate+""
                                               ,sharedEvent.ToDate+"" ]);
             }
 
@@ -61,11 +68,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return sharedEventsDisplayString.ToString();
         }
 
-        public List<EventCollaborators> GetSharedScheduleEvents(SharedCalendar sharedEvent, HashSet<int> sharedEventIds)
+        public List<EventCollaborator> GetSharedScheduleEvents(SharedCalendar sharedEvent, HashSet<int> sharedEventIds)
         {
-            EventCollaboratorsRepository eventCollaboratorsRepository = new();
+            EventCollaboratorRepository eventCollaboratorsRepository = new();
 
-            List<EventCollaborators> eventCollaborators = eventCollaboratorsRepository.GetAll(data => new EventCollaborators(data))
+            List<EventCollaborator> eventCollaborators = eventCollaboratorsRepository.GetAll(data => new EventCollaborator(data))
                                                                     .Where(scheduleEvent =>
                                                                         DateOnly.FromDateTime(scheduleEvent.EventDate) >=
                                                                         sharedEvent.FromDate &&
@@ -86,38 +93,48 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             if (sharedEvent == null) return "";
 
             EventRepository eventRepository = new();
+
             List<Event> events = eventRepository.GetAll(data => new Event(data));
 
-            HashSet<int> sharedEventIds = events.Where(eventObj => eventObj.UserId == sharedEvent.SharedByUserId)
+            HashSet<int> sharedEventIds = events.Where(eventObj => eventObj.UserId == sharedEvent.SenderUserId)
                                                 .Select(eventObj => eventObj.Id)
                                                 .ToHashSet();
 
-            List<EventCollaborators> eventCollaborators = GetSharedScheduleEvents(sharedEvent, sharedEventIds);
+            List<EventCollaborator> eventCollaborators = GetSharedScheduleEvents(sharedEvent, sharedEventIds);
 
             StringBuilder sharedEventInfo = new();
 
             DateOnly startDate = sharedEvent.FromDate;
             DateOnly endDate = sharedEvent.ToDate;
 
-            EventCollaboratorsService eventCollaboratorsService = new();
+            EventCollaboratorService eventCollaboratorsService = new();
 
             List<List<string>> sharedEventTableContent = [[ "Sr No.", "Event No.","Event Title","Event Description",
                                                             "Event Timing"]];
 
-            while (startDate <= endDate)
-            {
-                EventCollaborators? eventCollaborator = eventCollaborators.Find(eventCollaborator =>
-                                                                                DateOnly.FromDateTime(eventCollaborator.EventDate) ==
-                                                                                                      startDate);
+            Dictionary<DateOnly, EventCollaborator> dateAndEvent = GenerateListOfAvailableCollaborationEvents(startDate, endDate, eventCollaborators);
 
+            availableEventsToCollaborate = [];
+
+
+            int index = 0;
+            foreach (var (date, eventCollaborator) in dateAndEvent.Select(x => (x.Key, x.Value)))
+            {
                 if (eventCollaborator != null)
                 {
                     Event? eventObj = events.Find(eventObj => eventObj.Id == eventCollaborator.EventId);
 
-                    sharedEventTableContent.Add([eventCollaborator.Id.ToString() , eventObj.Id.ToString(),
+                    sharedEventTableContent.Add([(index+1).ToString() , eventObj.Id.ToString(),
                                                  eventObj.Title,eventObj.Description,
                                                  eventCollaborator.EventDate.ToString()
                                                 ]);
+
+                    availableEventsToCollaborate.Add(eventCollaborator);
+                    index++;
+                }
+                else
+                {
+                    sharedEventTableContent.Add(["-", "-", "-", "-", date.ToString()]);
                 }
 
                 startDate = startDate.AddDays(1);
@@ -126,6 +143,37 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             sharedEventInfo.AppendLine(PrintHandler.GiveTable(sharedEventTableContent));
 
             return sharedEventInfo.ToString();
+        }
+
+        public static Dictionary<DateOnly, EventCollaborator> GenerateListOfAvailableCollaborationEvents(DateOnly startDate, DateOnly endDate, List<EventCollaborator> eventCollaborators)
+        {
+            Dictionary<DateOnly, EventCollaborator?> availableEventCollaboratorsonSpecificDate = [];
+
+            while (startDate <= endDate)
+            {
+                EventCollaborator? eventCollaborator = eventCollaborators.Find(eventCollaborator =>
+                                                                                DateOnly.FromDateTime(eventCollaborator.EventDate) ==
+                                                                                                      startDate);
+
+                if (eventCollaborator != null)
+                {
+                    availableEventCollaboratorsonSpecificDate.Add(startDate, eventCollaborator);
+                }
+                else
+                {
+                    availableEventCollaboratorsonSpecificDate.Add(startDate, null); 
+                }
+
+                startDate = startDate.AddDays(1);
+            }
+
+            return availableEventCollaboratorsonSpecificDate;
+        }
+
+        public List<EventCollaborator> GetAvailableEventCollaborations()
+        {
+            
+            return availableEventsToCollaborate;
         }
     }
 }

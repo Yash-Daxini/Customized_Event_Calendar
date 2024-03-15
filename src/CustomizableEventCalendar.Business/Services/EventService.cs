@@ -14,7 +14,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         private readonly EventRepository _eventRepository = new();
         private readonly OverlappingEventService _overlappingEventService = new();
         private readonly RecurrenceEngine _recurrenceEngine = new();
-        private readonly EventCollaboratorsService _eventCollaboratorsService = new();
+        private readonly EventCollaboratorService _eventCollaboratorsService = new();
 
         public int InsertEvent(Event eventObj)
         {
@@ -53,7 +53,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             {
                 int eventId = GetEventIdFromSerialNumber(srNo);
 
-                _eventCollaboratorsService.DeletEventCollaboratorsByEventId(eventId);
+                _eventCollaboratorsService.DeleteEventCollaboratorsByEventId(eventId);
 
                 _eventRepository.Delete<Event>(eventId);
 
@@ -61,7 +61,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
             catch
             {
-                PrintHandler.PrintErrorMessage("Some error occurred ! Update operation failed.");
+                PrintHandler.PrintErrorMessage("Some error occurred ! Delete operation failed.");
             }
         }
 
@@ -78,7 +78,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                 _eventRepository.Update(eventObj, eventId);
 
-                _eventCollaboratorsService.DeletEventCollaboratorsByEventId(eventId);
+                _eventCollaboratorsService.DeleteEventCollaboratorsByEventId(eventId);
 
                 eventObj.Id = eventId;
 
@@ -94,6 +94,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
 
             return false;
+        }
+
+        public List<Event> GetProposedEvents()
+        {
+            return [.. GetAllEvents().Where(eventObj => eventObj.IsProposed)];
         }
 
         public string GenerateEventTable()

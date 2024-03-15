@@ -1,186 +1,157 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Data;
-//using System.Linq;
-//using System.Text;
-//using System.Threading.Tasks;
-//using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp;
-//using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 
-//namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
-//{
-//    internal class MultipleInviteesEventService
-//    {
-//        public void StartSchedulingProcessOfProposedEvent()
-//        {
+namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
+{
+    internal class MultipleInviteesEventService
+    {
+        public void StartSchedulingProcessOfProposedEvent()
+        {
 
-//            EventService eventService = new();
+            EventService eventService = new();
 
-//            List<Event> events = eventService.GetAllEvents()
-//                                             .Where(eventObj => eventObj.IsProposed
-//                                              && eventObj.UserId == GlobalData.user.Id)
-//                                             .ToList();
+            List<Event> events = eventService.GetAllEvents()
+                                             .Where(eventObj => eventObj.IsProposed
+                                              && eventObj.UserId == GlobalData.user.Id)
+                                             .ToList();
 
-//            foreach (var eventObj in events)
-//            {
-//                int remainingDays = (DateTime.Now - Convert.ToDateTime(eventObj.EventStartDate)).Days;
+            foreach (var eventObj in events)
+            {
+                int remainingDays = (DateTime.Now - DateTime.Parse(eventObj.EventStartDate.ToString())).Days;
 
-//                if (remainingDays <= 1)
-//                {
-//                    CalculateMutualTime(eventObj);
-//                    ScheduleProposedEvent(eventObj);
-//                }
-//            }
-//        }
+                if (remainingDays <= 1)
+                {
+                    CalculateMutualTime(eventObj);
+                    ScheduleProposedEvent(eventObj);
+                }
+            }
+        }
 
-//        public void AddInviteesInProposedEvent(int eventId, string invitees)
-//        {
-//            HashSet<int> invitedUsers = invitees.Split(",")
-//                                                .Select(invitedUser => Convert.ToInt32(invitedUser))
-//                                                .ToHashSet();
+        public static void AddInviteesInProposedEvent(Event eventObj, string invitees)
+        {
+            HashSet<int> invitedUsers = invitees.Split(",")
+                                                .Select(invitedUser => Convert.ToInt32(invitedUser))
+                                                .ToHashSet();
 
-//            EventCollaboratorsService eventCollaboratorsService = new();
+            EventCollaboratorService eventCollaboratorService = new();
 
-//            foreach (int userId in invitedUsers)
-//            {
-//                eventCollaboratorsService.InsertEventCollaborators(new EventCollaborators(userId, eventId));
-//            }
+            foreach (int userId in invitedUsers)
+            {
+                eventCollaboratorService.InsertEventCollaborators(new EventCollaborator(eventObj.Id, userId, "participant", "pending",
+                                                                  null, null,
+                                                                  DateTime.Parse(eventObj.EventStartDate.ToString())));
+            }
 
-//        }
+        }
 
-//        public DateOnly GetDateOnlyFromDateTime(DateTime date)
-//        {
-//            return DateOnly.FromDateTime(date);
-//        }
+        public static DateOnly GetDateOnlyFromDateTime(DateTime date)
+        {
+            return DateOnly.FromDateTime(date);
+        }
 
-//        public void CalculateMutualTime(Event eventObj)
-//        {
-//            EventCollaboratorsService eventCollaboratorsService = new();
+        public void CalculateMutualTime(Event eventObj)
+        {
+            List<EventCollaborator> eventCollaborators = GetInviteesOfEvent(eventObj.Id);
 
-//            HashSet<int> eventCollaborationIds = GetInviteesOfEvent(eventObj.Id);
+            int[] proposedHours = new int[23];
 
-//            HashSet<int> eventInviteesUserIds = eventCollaborationIds.Select(eventCollaboratorsService
-//                                                                        .GetUserIdFromEventCollaborationId)
-//                                                                     .ToHashSet();
+            foreach (var eventCollaborator in eventCollaborators)
+            {
+                if (IsNeedToConsiderProposedTime(eventCollaborator))
+                {
+                    CountProposeHours((int)eventCollaborator.ProposedStartHour, (int)eventCollaborator.ProposedEndHour, ref proposedHours);
+                }
 
-//            RecurrenceService recurrenceService = new();
+            }
 
-//            RecurrencePatternCustom recurrencePattern = recurrenceService.GetRecurrencePatternById(eventObj.RecurrenceId);
+            FindMaximumMutualTimeBlock(proposedHours, eventObj);
 
-//            CalendarSharingService calendarSharingService = new();
+            eventObj.IsProposed = false;
 
-//            List<SharedCalendar> sharedCalendars = calendarSharingService.GetSharedEvents().ToList();
+            EventService eventService = new();
 
-//            HashSet<int> inviteesThatSharedCalendar = sharedCalendars.Where(sharedCalendar => eventInviteesUserIds.Contains
-//                                                                                            (sharedCalendar.SharedByUserId)
-//                                                                        && sharedCalendar.FromDate <=
-//                                                                        GetDateOnlyFromDateTime(recurrencePattern.DTSTART)
-//                                                                        && sharedCalendar.ToDate >= GetDateOnlyFromDateTime
-//                                                                                                (recurrencePattern.DTSTART))
-//                                                                     .Select(sharedCalendar =>
-//                                                                             sharedCalendar.SharedByUserId)
-//                                                                     .ToHashSet();
+            eventService.ConvertProposedEventToScheduleEvent(eventObj.Id);
 
-//            int[] nonFreeHours = new int[23];
+        }
 
-//            foreach (var inviteeId in inviteesThatSharedCalendar)
-//            {
-//                CountNonFreeHours(recurrencePattern.DTSTART, inviteeId, ref nonFreeHours);
-//            }
+        public static bool IsNeedToConsiderProposedTime(EventCollaborator eventCollaborator)
+        {
+            return eventCollaborator.ParticipantRole.Equals("participant") &&
+                   eventCollaborator.ConfirmationStatus.Equals("reject") &&
+                   eventCollaborator.ProposedStartHour != null &&
+                   eventCollaborator.ProposedEndHour != null;
+        }
 
-//            string timeBlock = FindMaximumMutualTimeBlock(nonFreeHours);
+        public static void CountProposeHours(int startHour, int endHour, ref int[] proposedHours)
+        {
+            while (startHour < endHour)
+            {
+                proposedHours[startHour]++;
+                startHour++;
+            }
 
-//            if (!timeBlock.Equals("")) eventObj.TimeBlock = timeBlock;
+        }
 
-//            eventObj.IsProposed = false;
+        public static void FindMaximumMutualTimeBlock(int[] proposedHours, Event eventObj)
+        {
 
-//            EventService eventService = new();
+            int max = 0;
 
-//            eventService.ConvertProposedEventToScheduleEvent(eventObj.Id);
+            int maxHour = 0;
 
-//        }
+            for (int i = 0; i < proposedHours.Length; i++)
+            {
+                if (proposedHours[i] > max)
+                {
+                    max = proposedHours[i];
+                    maxHour = i;
+                }
+            }
 
-//        public void CountNonFreeHours(DateTime proposedEventDate, int inviteeId, ref int[] nonFreeHours)
-//        {
-//            ScheduleEventService scheduleEventService = new();
+            eventObj.EventStartHour = maxHour;
+            eventObj.EventEndHour = maxHour + 1;
 
-//            List<ScheduleEvent> scheduleEvents = scheduleEventService.GetAllScheduleEvents()
-//                                                                     .Where(scheduleEvent => scheduleEventService
-//                                                                     .GetUserIdFromEventCollaborators
-//                                                                        (scheduleEvent.EventCollaboratorsId)
-//                                                                        == inviteeId
-//                                                                        && scheduleEvent.ScheduledDate.Date ==
-//                                                                            proposedEventDate.Date)
-//                                                                     .ToList();
+        }
 
+        public static void ScheduleProposedEvent(Event eventObj)
+        {
+            List<EventCollaborator> eventCollaborators = [..GetInviteesOfEvent(eventObj.Id)
+                                                           .Where(eventCollaborator=>ConsiderableInvitees(eventCollaborator))];
 
-//            foreach (var scheduleDate in scheduleEvents.Select(scheduleEvent => scheduleEvent.ScheduledDate))
-//            {
-//                nonFreeHours[scheduleDate.Hour]++;
-//            }
+            DateTime date = new DateTime(eventObj.EventStartDate.Year, eventObj.EventStartDate.Month, eventObj.EventStartDate.Day,
+                            (int)eventObj.EventStartHour, 0, 0);
 
-//        }
+            EventCollaboratorService eventCollaboratorService = new();
 
-//        public string FindMaximumMutualTimeBlock(int[] nonFreeHours)
-//        {
-//            int mininumBusyUsers = nonFreeHours.Min();
+            foreach (var eventCollaborator in eventCollaborators)
+            {
+                eventCollaborator.EventDate = date;
+                eventCollaboratorService.UpdateEventCollaborators(eventCollaborator, eventCollaborator.Id);
+            }
 
-//            int maxHourBlock = -1, curHourBlock = 0;
+        }
 
-//            string timeBlock = "";
+        public static bool ConsiderableInvitees(EventCollaborator eventCollaborator)
+        {
+            if (eventCollaborator.ParticipantRole.Equals("organizer")) return true;
+            return eventCollaborator.ConfirmationStatus.Equals("accept") || (eventCollaborator.ConfirmationStatus.Equals("reject")
+                   && eventCollaborator.ProposedStartHour != null && eventCollaborator.ProposedEndHour != null)
+                   || eventCollaborator.ConfirmationStatus.Equals("maybe");
+        }
 
-//            for (int i = 0; i < nonFreeHours.Length; i++)
-//            {
-//                if (nonFreeHours[i] == mininumBusyUsers)
-//                {
-//                    curHourBlock++;
-//                }
-//                else
-//                {
-//                    if (maxHourBlock < curHourBlock)
-//                    {
-//                        maxHourBlock = curHourBlock;
+        public static List<EventCollaborator> GetInviteesOfEvent(int eventId)
+        {
+            EventCollaboratorService eventCollaboratorService = new();
 
-//                        int startHour = (i - curHourBlock);
-//                        int endHour = i - 1;
-
-//                        timeBlock = startHour + (startHour > 12 ? "PM" : "AM") + "-" +
-//                                                endHour + (endHour > 12 ? "PM" : "AM");
-
-//                        timeBlock = timeBlock.Replace("0AM", "12AM");
-//                    }
-//                    curHourBlock = 0;
-//                }
-//            }
-
-//            return timeBlock;
-//        }
-
-//        public void ScheduleProposedEvent(Event eventObj)
-//        {
-//            HashSet<int> eventCollaboratorsIds = GetInviteesOfEvent(eventObj.Id);
-
-//            foreach (var eventCollaboratorsId in eventCollaboratorsIds)
-//            {
-
-//                //recurrenceEngine.ScheduleNonRecurrenceEvents(eventObj);
-//            }
-
-//        }
-
-//        public HashSet<int> GetInviteesOfEvent(int eventId)
-//        {
-//            EventCollaboratorsService eventCollaboratorsService = new();
-
-//            HashSet<int> eventCollaboratorsId = eventCollaboratorsService.GetAllEventCollaborators()
-//                                                                      .Where(eventCollaborator =>
-//                                                                             eventCollaborator.EventId == eventId
-//                                                                             && eventCollaborator.UserId !=
-//                                                                             GlobalData.user.Id)
-//                                                                      .Select(eventCollaborator =>
-//                                                                             eventCollaborator.Id)
-//                                                                      .ToHashSet();
-//            return eventCollaboratorsId;
-//        }
-//    }
-//}
+            List<EventCollaborator> eventCollaborators = [..eventCollaboratorService.GetAllEventCollaborators()
+                                                                       .Where(eventCollaborator => eventCollaborator.EventId == eventId)];
+            return eventCollaborators;
+        }
+    }
+}

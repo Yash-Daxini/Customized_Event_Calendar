@@ -8,12 +8,12 @@ using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories
 {
 
-    internal class EventCollaboratorsRepository : GenericRepository<EventCollaborators>
+    internal class EventCollaboratorRepository : GenericRepository<EventCollaborator>
     {
 
         public void DeleteByEventId(int eventId)
         {
-            string query = @$"Delete from [dbo].[EventCollaborators]
+            string query = @$"Delete from [dbo].[EventCollaborator]
                               where EventId = {eventId}";
             Connect();
 
@@ -22,19 +22,19 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
             Disconnect();
         }
 
-        public EventCollaborators? ReadByEventId(int eventId)
+        public EventCollaborator? ReadByEventId(int eventId)
         {
-            string query = @$"Select * from [dbo].[EventCollaborators]
+            string query = @$"Select * from [dbo].[EventCollaborator]
                               where EventId = {eventId} and UserId = {GlobalData.user.Id}";
             Connect();
 
             ExecuteQuery(query);
 
-            EventCollaborators eventCollaborators = null;
+            EventCollaborator eventCollaborators = null;
 
             if (sqlDataReader.Read())
             {
-                eventCollaborators = new EventCollaborators(sqlDataReader);
+                eventCollaborators = new EventCollaborator(sqlDataReader);
             }
 
             Disconnect();

@@ -39,6 +39,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             PrintColorMessage("7. View Shared calendar", ConsoleColor.Magenta);
             PrintColorMessage("8. Collaborate from shared calendar", ConsoleColor.DarkGreen);
             PrintColorMessage("9. Add event with multiple invitees", ConsoleColor.DarkGray);
+            PrintColorMessage("10. Give response to proposed events", ConsoleColor.DarkCyan);
             PrintColorMessage("0. Back", ConsoleColor.Gray);
 
             Console.Write("\nSelect Any Option :- ");
@@ -79,6 +80,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                 case EventOperations.EventWithMultipleInvitees:
                     TakeInputForProposedEvent();
                     break;
+                case EventOperations.GiveResponseToProposedEvent:
+                    ProposedEventResponseHandler.ShowProposedEvents();
+                    break;
                 case EventOperations.Back:
                     Console.WriteLine("Going Back ...");
                     break;
@@ -88,7 +92,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             }
 
             if (option.Equals(EventOperations.Back)) Authentication.AuthenticationChoice();
-            else AskForChoice(); // Remove recursion
+            else AskForChoice();
         }
 
         public static int GetValidatedChoice()
@@ -109,28 +113,36 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         public static void TakeInputForProposedEvent()
         {
-            Event eventObj = new();
+            try
+            {
+                Event eventObj = new();
 
-            GetEventDetailsFromUser(eventObj);
+                GetEventDetailsFromUser(eventObj);
 
-            DateTime proposedDate = ValidatedInputProvider.GetValidatedDateTime("Enter date for the propose event (Enter " +
-                                                                              "date in dd-MM-yyyy) :- ");
+                DateTime proposedDate = ValidatedInputProvider.GetValidatedDateTime("Enter date for the proposed event (Enter " +
+                                                                                  "date in dd-MM-yyyy) :- ");
 
-            eventObj.EventStartDate = DateOnly.FromDateTime(proposedDate);
-            eventObj.EventEndDate = DateOnly.FromDateTime(proposedDate);
+                eventObj.EventStartDate = DateOnly.FromDateTime(proposedDate);
+                eventObj.EventEndDate = DateOnly.FromDateTime(proposedDate);
 
-            eventObj.UserId = GlobalData.user.Id;
+                eventObj.UserId = GlobalData.user.Id;
 
-            eventObj.IsProposed = true;
+                eventObj.IsProposed = true;
 
-            int eventId = _eventService.InsertEvent(eventObj);
+                int eventId = _eventService.InsertEvent(eventObj);
 
-            string invitees = GetInviteesFromUser();
+                string invitees = GetInviteesFromUser();
 
-            if (invitees.Length == 0) return;
+                if (invitees.Length == 0) return;
 
-            //MultipleInviteesEventService multipleInviteesEventService = new();
-            //multipleInviteesEventService.AddInviteesInProposedEvent(eventId, invitees);
+                MultipleInviteesEventService.AddInviteesInProposedEvent(eventObj, invitees);
+
+                PrintHandler.PrintSuccessMessage("Proposed event added successfully.");
+            }
+            catch
+            {
+                PrintHandler.PrintErrorMessage("Some error occurred ! Proposed event addition failed");
+            }
         }
 
         public static bool ShowAllUser()

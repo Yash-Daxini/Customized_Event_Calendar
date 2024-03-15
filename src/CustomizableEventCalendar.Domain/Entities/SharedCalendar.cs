@@ -11,19 +11,19 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
     internal class SharedCalendar
     {
 
-        public SharedCalendar(int Id, int UserId, int SharedByUserId, DateOnly FromDate, DateOnly ToDate)
+        public SharedCalendar(int Id, int ReceiverUserId, int SenderUserId, DateOnly FromDate, DateOnly ToDate)
         {
             this.Id = Id;
-            this.UserId = UserId;
-            this.SharedByUserId = SharedByUserId;
+            this.ReceiverUserId = ReceiverUserId;
+            this.SenderUserId = SenderUserId;
             this.FromDate = FromDate;
             this.ToDate = ToDate;
         }
 
-        public SharedCalendar(int UserId, int SharedByUserId, DateOnly FromDate, DateOnly ToDate)
+        public SharedCalendar(int ReceiverUserId, int SenderUserId, DateOnly FromDate, DateOnly ToDate)
         {
-            this.UserId = UserId;
-            this.SharedByUserId = SharedByUserId;
+            this.ReceiverUserId = ReceiverUserId;
+            this.SenderUserId = SenderUserId;
             this.FromDate = FromDate;
             this.ToDate = ToDate;
         }
@@ -31,22 +31,22 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
         public SharedCalendar(SqlDataReader sqlDataReader)
         {
             this.Id = Convert.ToInt32(sqlDataReader["Id"]);
-            this.UserId = Convert.ToInt32(sqlDataReader["UserId"]);
-            this.SharedByUserId = Convert.ToInt32(sqlDataReader["SharedByUserId"]);
+            this.ReceiverUserId = Convert.ToInt32(sqlDataReader["ReceiverUserId"]);
+            this.SenderUserId = Convert.ToInt32(sqlDataReader["SenderUserId"]);
             this.FromDate = DateOnly.FromDateTime(Convert.ToDateTime(sqlDataReader["FromDate"].ToString()));
             this.ToDate = DateOnly.FromDateTime(Convert.ToDateTime(sqlDataReader["ToDate"].ToString()));
         }
 
         [NotMapped]
         public int Id { get; }
-        public int SharedByUserId { get; set; }
-        public int UserId { get; set; }
+        public int SenderUserId { get; set; }
+        public int ReceiverUserId { get; set; }
         public DateOnly FromDate { get; set; }
         public DateOnly ToDate { get; set; }
 
         public override string ToString()
         {
-            return $"{SharedByUserId} , {UserId} , {FromDate} , {ToDate}";
+            return $"{SenderUserId} , {ReceiverUserId} , {FromDate} , {ToDate}";
         }
     }
 }

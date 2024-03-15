@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,68 +15,60 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
     internal class ShareCalendar
     {
         private readonly CalendarSharingService _calendarSharingService = new();
+        private readonly static UserService _userService = new();
 
         public void GetDetailsToShareCalendar()
         {
-            bool isUsersAvailble = ShowAllUser();
+            int availableUsersToShareCaledar = ShowAllUser();
 
-            if (!isUsersAvailble) return;
+            if (availableUsersToShareCaledar <= 0) return;
 
-            int UserId = ValidatedInputProvider.GetValidatedInteger("Enter User No. whom you want to share calendar :- ");
+            int serialNumberOfTableRow = ValidatedInputProvider.GetValidatedIntegerBetweenRange("Enter Sr No. whom you want to share calendar :- ", 1,
+                                         availableUsersToShareCaledar);
 
+            User user = GetUserFromSerialNumber(serialNumberOfTableRow);
+
+            SharedCalendar sharedCalendar = new(user.Id, GlobalData.user == null ? 0 : GlobalData.user.Id, new DateOnly(), new DateOnly());
+
+            GetDatesFromUser(sharedCalendar);
+
+            _calendarSharingService.AddSharedCalendar(sharedCalendar);
+
+            PrintHandler.PrintNewLine();
+
+            PrintHandler.PrintSuccessMessage($"Your Calendar shared with {user.Name} from {sharedCalendar.FromDate} to {sharedCalendar.ToDate}");
+
+        }
+
+        public static void GetDatesFromUser(SharedCalendar sharedCalendar)
+        {
             Console.WriteLine("Enter Time Range for which you want to share events");
 
-            DateOnly startDate = ValidatedInputProvider.GetValidatedDateOnly("Enter start date in dd-MM-yyyy format :-  ");
+            PrintHandler.PrintNewLine();
 
-            DateOnly endDate = ValidatedInputProvider.GetValidatedDateOnly("Enter end date in dd-MM-yyyy format :-  ");
+            sharedCalendar.FromDate = ValidatedInputProvider.GetValidatedDateOnly("Enter start date in dd-MM-yyyy format :-  ");
 
-            UserRepository userRepository = new();
+            PrintHandler.PrintNewLine();
 
-            User user = userRepository.GetById<User>(data => new User(data), UserId);
-
-            SharedCalendar sharedEvents = new(UserId, GlobalData.user == null ? 0 : GlobalData.user.Id, startDate, endDate);
-
-            _calendarSharingService.AddSharedCalendar(sharedEvents);
-
-            Console.WriteLine($"Your Calendar shared with {user.Name} from {startDate} to {endDate}");
-
+            sharedCalendar.ToDate = ValidatedInputProvider.GetValidatedDateOnly("Enter end date in dd-MM-yyyy format :-  ");
         }
 
-        public int GetValidatedInteger(string inputMessage)
+        public static User GetUserFromSerialNumber(int serialNumber)
         {
+            List<User> users = _userService.GetInsensitiveInformationOfUser();
 
-            Console.Write(inputMessage);
-            string inputFromConsole = Console.ReadLine();
-
-            int Id;
-
-            while (!ValidationService.IsValidateInput(inputFromConsole, out Id, int.TryParse))
-            {
-                Console.Write(inputMessage);
-                inputFromConsole = Console.ReadLine();
-            }
-
-            return Id;
+            return users[serialNumber - 1];
         }
 
-        public bool ShowAllUser()
+        public static int ShowAllUser()
         {
-            UserService userService = new();
-
-            List<User> users = userService.GetInsensitiveInformationOfUser();
+            List<User> users = _userService.GetInsensitiveInformationOfUser();
 
             if (users.Count > 0)
             {
                 StringBuilder userInformation = new();
 
-                List<List<string>> userTableContent = [["User Sr. No", "Name", "Email"]];
-
-                foreach (var user in users)
-                {
-                    userTableContent.Add([user.Id.ToString(), user.Name, user.Email]);
-                }
-
-                userInformation.AppendLine(PrintHandler.GiveTable(userTableContent));
+                userInformation.AppendLine(PrintHandler.GiveTable(Get2DListToGenerateTable(users)));
 
                 Console.WriteLine(userInformation);
             }
@@ -83,22 +76,46 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             {
                 Console.WriteLine("No users are available !");
             }
-            return users.Count > 0;
+            return users.Count;
+
+        }
+
+        public static List<List<string>> Get2DListToGenerateTable(List<User> users)
+        {
+            List<List<string>> userTableContent = [["Sr. No", "Name", "Email"]];
+
+            foreach (var (user, index) in users.Select((user, index) => (user, index)))
+            {
+                userTableContent.Add([(index + 1).ToString(), user.Name, user.Email]);
+            }
+
+            return userTableContent;
 
         }
 
         public void ViewSharedCalendars()
 
         {
-            Console.WriteLine("Calendars shared to you !");
+            List<SharedCalendar> sharedCalendarsList = _calendarSharingService.GetSharedEvents();
 
             string sharedEvents = _calendarSharingService.GenerateDisplayFormatForSharedEvents();
 
-            Console.WriteLine(sharedEvents);
+            if (_calendarSharingService.GetSharedEventsCount() > 0)
+            {
+                Console.WriteLine("Calendars shared to you !");
+                Console.WriteLine(sharedEvents);
+            }
+            else
+            {
+                Console.WriteLine("No calendars available !");
+                return;
+            }
 
-            int sharedCalendarId = ValidatedInputProvider.GetValidatedInteger("Select Sr No. which calendar you want to see :- ");
 
-            ViewSpecificCalendar(sharedCalendarId);
+            int serialNumberOfSharedCalendar = ValidatedInputProvider.GetValidatedIntegerBetweenRange("Select Sr No. which calendar you want to see :- "
+                                                , 1, sharedCalendarsList.Count);
+
+            ViewSpecificCalendar(sharedCalendarsList[serialNumberOfSharedCalendar - 1].Id);
         }
 
         public void ViewSpecificCalendar(int sharedCalendarId)

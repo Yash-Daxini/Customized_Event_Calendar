@@ -12,13 +12,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
     internal class CalendarViewService
     {
         private readonly EventService _eventService = new();
-        private readonly EventCollaboratorsService _eventCollaboratorsService = new();
+        private readonly EventCollaboratorService _eventCollaboratorsService = new();
 
         public string GenerateDailyView()
         {
             DateTime nextDay = DateTime.Today;
 
-            List<EventCollaborators> eventCollaborators = _eventCollaboratorsService.GetAllEventCollaborators()
+            List<EventCollaborator> eventCollaborators = _eventCollaboratorsService.GetAllEventCollaborators()
                                                                       .Where(eventCollaborator =>
                                                                        eventCollaborator.EventDate.Date == nextDay.Date
                                                                        && eventCollaborator.UserId == GlobalData.user.Id)
@@ -76,17 +76,17 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public Dictionary<DateTime, List<int>> GetCurrentWeekEvents(DateTime startDateOfWeek, DateTime endDateOfWeek)
         {
-            List<EventCollaborators> eventCollaborators = _eventCollaboratorsService.GetAllEventCollaborators();
+            List<EventCollaborator> eventCollaborators = _eventCollaboratorsService.GetAllEventCollaborators();
 
             Dictionary<DateTime, List<int>> currentWeekEvents = eventCollaborators
-                                           .Where(EventCollaborators => EventCollaborators.EventDate.Date >= startDateOfWeek.Date
-                                                  && EventCollaborators.EventDate.Date <= endDateOfWeek.Date)
-                                           .GroupBy(EventCollaborators => EventCollaborators.EventDate.Date)
-                                           .Select(eventCollaborators => new
+                                           .Where(eventCollaborator => eventCollaborator.EventDate.Date >= startDateOfWeek.Date
+                                                  && eventCollaborator.EventDate.Date <= endDateOfWeek.Date && eventCollaborator.UserId == GlobalData.user.Id)
+                                           .GroupBy(eventCollaborator => eventCollaborator.EventDate.Date)
+                                           .Select(eventCollaborator => new
                                            {
-                                               ScheduleDate = eventCollaborators.Key,
-                                               EventCollaboratorIds = eventCollaborators
-                                                    .Select(eventCollaborators => eventCollaborators.EventId)
+                                               ScheduleDate = eventCollaborator.Key,
+                                               EventCollaboratorIds = eventCollaborator
+                                                    .Select(eventCollaborator => eventCollaborator.EventId)
                                            })
                                            .ToDictionary(key => key.ScheduleDate, val => val.EventCollaboratorIds
                                            .ToList());
@@ -148,17 +148,17 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public Dictionary<DateTime, List<int>> GetCurrentMonthEvents(DateTime startDateOfMonth, DateTime endDateOfMonth)
         {
-            List<EventCollaborators> eventCollaborators = _eventCollaboratorsService.GetAllEventCollaborators();
+            List<EventCollaborator> eventCollaborators = _eventCollaboratorsService.GetAllEventCollaborators();
 
             Dictionary<DateTime, List<int>> currentMonthEvents = eventCollaborators
-                                           .Where(EventCollaborators => EventCollaborators.EventDate.Date >=
+                                           .Where(eventCollaborator => eventCollaborator.EventDate.Date >=
                                                                                    startDateOfMonth.Date
-                                                  && EventCollaborators.EventDate.Date <= endDateOfMonth.Date)
-                                           .GroupBy(EventCollaborators => EventCollaborators.EventDate.Date)
-                                           .Select(EventCollaborators => new
+                                                  && eventCollaborator.EventDate.Date <= endDateOfMonth.Date && eventCollaborator.UserId == GlobalData.user.Id)
+                                           .GroupBy(eventCollaborator => eventCollaborator.EventDate.Date)
+                                           .Select(eventCollaborator => new
                                            {
-                                               ScheduleDate = EventCollaborators.Key,
-                                               EventCollaboratorIds = EventCollaborators
+                                               ScheduleDate = eventCollaborator.Key,
+                                               EventCollaboratorIds = eventCollaborator
                                                     .Select(eventCollaborator => eventCollaborator.EventId)
                                            })
                                            .ToDictionary(key => key.ScheduleDate, val => val.EventCollaboratorIds

@@ -6,7 +6,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 {
     internal class RecurrenceEngine
     {
-        private readonly EventCollaboratorsService eventCollaboratorsService = new();
+        private readonly EventCollaboratorService eventCollaboratorsService = new();
 
         //public void ScheduleEventsOfThisMonth()
         //{
@@ -24,9 +24,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public void ScheduleEvents(Event eventObj)
         {
-            List<EventCollaborators> lastScheduledEvents = GetAllPreviousScheduledEvents(eventObj);
+            List<EventCollaborator> lastScheduledEvents = GetAllPreviousScheduledEvents(eventObj);
 
-            EventCollaborators? lastScheduledEvent = FindLastScheduledEvent(lastScheduledEvents);
+            EventCollaborator? lastScheduledEvent = FindLastScheduledEvent(lastScheduledEvents);
 
             DateTime startDateForScheduling = lastScheduledEvent == null ? DateTime.Parse(eventObj.EventStartDate.ToString()) :
                                          lastScheduledEvent.EventDate;
@@ -60,9 +60,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
         }
 
-        public List<EventCollaborators> GetAllPreviousScheduledEvents(Event eventObj)
+        public List<EventCollaborator> GetAllPreviousScheduledEvents(Event eventObj)
         {
-            List<EventCollaborators> lastScheduledEvents = eventCollaboratorsService.GetAllEventCollaborators()
+            List<EventCollaborator> lastScheduledEvents = eventCollaboratorsService.GetAllEventCollaborators()
                                                                           .Where(data => data.EventId == eventObj.Id
                                                                                  && data.UserId == GlobalData.user.Id)
                                                                           .ToList();
@@ -70,9 +70,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return lastScheduledEvents;
         }
 
-        public static EventCollaborators? FindLastScheduledEvent(List<EventCollaborators> eventCollaborators)
+        public static EventCollaborator? FindLastScheduledEvent(List<EventCollaborator> eventCollaborators)
         {
-            EventCollaborators? lastScheduledEvent = eventCollaborators.FirstOrDefault(data => data.EventDate ==
+            EventCollaborator? lastScheduledEvent = eventCollaborators.FirstOrDefault(data => data.EventDate ==
                                                                    (eventCollaborators.Max(data => data.EventDate)));
 
             return lastScheduledEvent;
@@ -80,7 +80,18 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public void ScheduleNonRecurrenceEvents(Event eventObj, DateTime startDate, DateTime endDate)
         {
-            EventCollaborators eventCollaborator = new(eventObj.Id, GlobalData.user.Id, "organizer", null, null, null, startDate);
+            EventCollaborator eventCollaborator;
+
+            if (eventObj.IsProposed)
+            {
+                eventCollaborator = new(eventObj.Id, GlobalData.user.Id, "organizer", null, eventObj.EventStartHour, eventObj.EventEndHour,
+                                    startDate);
+            }
+            else
+            {
+                eventCollaborator = new(eventObj.Id, GlobalData.user.Id, "organizer", null, null, null, startDate);
+            }
+
 
             ScheduleForSpecificHour(eventObj.EventStartHour, eventObj.EventEndHour, ref eventCollaborator);
         }
@@ -105,7 +116,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                 if (days.Contains(day))
                 {
-                    EventCollaborators eventCollaborator = new(eventObj.Id, GlobalData.user.Id, "organizer", null, null, null,
+                    EventCollaborator eventCollaborator = new(eventObj.Id, GlobalData.user.Id, "organizer", null, null, null,
                                                                                                 DateTime.Parse(startDate.ToString()));
 
                     ScheduleForSpecificHour(eventObj.EventStartHour, eventObj.EventEndHour, ref eventCollaborator);
@@ -120,7 +131,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             while (startDate < eventObj.EventEndDate)
             {
-                EventCollaborators eventCollaborator = new(eventObj.Id, GlobalData.user.Id, "organizer", null, null, null,
+                EventCollaborator eventCollaborator = new(eventObj.Id, GlobalData.user.Id, "organizer", null, null, null,
                                                            DateTime.Parse(startDate.ToString()));
 
                 ScheduleForSpecificHour(eventObj.EventStartHour, eventObj.EventEndHour, ref eventCollaborator);
@@ -129,7 +140,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
         }
 
-        public void ScheduleForSpecificHour(int startHour, int endHour, ref EventCollaborators eventCollaborators)
+        public void ScheduleForSpecificHour(int startHour, int endHour, ref EventCollaborator eventCollaborators)
         {
 
             while (startHour < endHour)
@@ -165,7 +176,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                 if (weekDays.Contains(day) && IsDateInRange(startDateOfEvent, endDateOfEvent, curDate))
                 {
-                    EventCollaborators eventCollaborator = new(eventObj.Id, GlobalData.user.Id, "organizer", null, null, null,
+                    EventCollaborator eventCollaborator = new(eventObj.Id, GlobalData.user.Id, "organizer", null, null, null,
                                                                             DateTime.Parse(curDate.ToString()));
 
                     ScheduleForSpecificHour(eventObj.EventStartHour, eventObj.EventEndHour, ref eventCollaborator);
@@ -211,7 +222,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             {
                 if (curDate > eventObj.EventEndDate) break;
 
-                EventCollaborators eventCollaborator = new(eventObj.Id, GlobalData.user.Id, "organizer", null, null, null,
+                EventCollaborator eventCollaborator = new(eventObj.Id, GlobalData.user.Id, "organizer", null, null, null,
                                                                         DateTime.Parse(curDate.ToString()));
 
                 ScheduleForSpecificHour(eventObj.EventStartHour, eventObj.EventEndHour, ref eventCollaborator);
@@ -254,7 +265,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                 if (nthWeekDay.Month == curDate.Month && nthWeekDay <= eventObj.EventEndDate)
                 {
-                    EventCollaborators eventCollaborator = new(eventObj.Id, GlobalData.user.Id, "organizer", null, null, null,
+                    EventCollaborator eventCollaborator = new(eventObj.Id, GlobalData.user.Id, "organizer", null, null, null,
                                                         DateTime.Parse(nthWeekDay.ToString()));
 
                     ScheduleForSpecificHour(eventObj.EventStartHour, eventObj.EventEndHour, ref eventCollaborator);
@@ -292,7 +303,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 {
                     if (startDate > eventObj.EventEndDate) break;
 
-                    EventCollaborators eventCollaborator = new(eventObj.Id, GlobalData.user.Id, "organizer", null, null, null,
+                    EventCollaborator eventCollaborator = new(eventObj.Id, GlobalData.user.Id, "organizer", null, null, null,
                                                         DateTime.Parse(startDate.ToString()));
 
                     ScheduleForSpecificHour(eventObj.EventStartHour, eventObj.EventEndHour, ref eventCollaborator);
@@ -331,7 +342,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                 if (nthWeekDay.Month == startDate.Month && nthWeekDay <= eventObj.EventEndDate)
                 {
-                    EventCollaborators eventCollaborator = new(eventObj.Id, GlobalData.user.Id, "organizer", null, null, null,
+                    EventCollaborator eventCollaborator = new(eventObj.Id, GlobalData.user.Id, "organizer", null, null, null,
                                                         DateTime.Parse(nthWeekDay.ToString()));
 
                     ScheduleForSpecificHour(eventObj.EventStartHour, eventObj.EventEndHour, ref eventCollaborator);
