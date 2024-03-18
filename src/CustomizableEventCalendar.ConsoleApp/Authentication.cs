@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.SqlClient;
 using System.Reflection;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
@@ -102,25 +103,32 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public static bool SignUp()
         {
-            GetSignUpDetails(out User user);
-
-            bool isSignUp = _userAuthenticationService.AddUser(user);
-
-            if (isSignUp)
+            try
             {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("Sign up completed successfully");
-                Console.ResetColor();
+                GetSignUpDetails(out User user);
+
+                _userAuthenticationService.AddUser(user);
+
+                PrintHandler.PrintSuccessMessage("Sign up completed successfully");
+
+                return true;
             }
-            else
+            catch (SqlException ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Some error occurred !");
-                Console.ResetColor();
+                if (ex.Number == 2627 || ex.Number == 2601) //Check the unique key constraint
+                {
+                    PrintHandler.PrintErrorMessage("The user name you've entered is not available. Please choose another name.");
+                }
+                else
+                {
+                    PrintHandler.PrintErrorMessage("Some error occurred!" + " " + ex.Message);
+                }
             }
-
-            return isSignUp;
-
+            catch (Exception ex)
+            {
+                PrintHandler.PrintErrorMessage("Some error occurred! " + ex.Message);
+            }
+            return false;
         }
 
         public static void GetLoginDetails(out string userName, out string password)
@@ -136,23 +144,33 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public static bool Login()
         {
-            GetLoginDetails(out string usrename, out string password);
-
-            bool isAuthencticate = _userAuthenticationService.Authenticate(usrename, password);
-
-            if (isAuthencticate)
+            try
             {
-                ShowUserInfo();
-                EventHandling.AskForChoice();
+                GetLoginDetails(out string usrename, out string password);
+
+                bool isAuthencticate = _userAuthenticationService.Authenticate(usrename, password);
+
+                if (isAuthencticate)
+                {
+                    ShowUserInfo();
+                    EventHandling.AskForChoice();
+                }
+                else
+                {
+                    PrintHandler.PrintErrorMessage("Invalid user name or password! Please try again.");
+                    return false;
+                }
+                return true;
+
             }
-            else
+            catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Invalid user name or password! Please try again.");
-                Console.ResetColor();
-                return false;
+                PrintHandler.PrintErrorMessage("Some error occurred! " + ex.Message);
             }
-            return true;
+
+            return false;
+
+
         }
 
         public static void ShowUserInfo()
@@ -161,15 +179,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             PrintHandler.ShowLoadingAnimation();
 
-            Console.ForegroundColor = ConsoleColor.Green;
-
             Console.SetCursorPosition(0, Console.CursorTop);
 
-            Console.WriteLine($"{PrintHandler.CenterText()}Welcome {GlobalData.user.Name}");
+            PrintHandler.PrintSuccessMessage($"{PrintHandler.CenterText()}Welcome {GlobalData.user.Name}");
 
             Thread.Sleep(1000);
-
-            Console.ResetColor();
 
             Console.Clear();
 
@@ -178,21 +192,20 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             Console.WriteLine();
 
             ShowNotification();
-
         }
 
         public static void ShowNotification()
         {
-            NotificationService notificationService = new NotificationService();
+            NotificationService notificationService = new();
 
-            Console.WriteLine(notificationService.GenerateNotification());
+            PrintHandler.PrintNotification(notificationService.GenerateNotification());
         }
 
         public static void Logout()
         {
             GlobalData.user = null;
 
-            Console.WriteLine("Successfully Logout!");
+            PrintHandler.PrintSuccessMessage("Successfully Logout!");
         }
     }
 }

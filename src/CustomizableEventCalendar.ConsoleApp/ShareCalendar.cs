@@ -19,24 +19,34 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         public void GetDetailsToShareCalendar()
         {
-            int availableUsersToShareCaledar = ShowAllUser();
+            try
+            {
+                int availableUsersToShareCaledar = ShowAllUser();
 
-            if (availableUsersToShareCaledar <= 0) return;
+                if (availableUsersToShareCaledar <= 0) return;
 
-            int serialNumberOfTableRow = ValidatedInputProvider.GetValidatedIntegerBetweenRange("Enter Sr No. whom you want to share calendar :- ", 1,
-                                         availableUsersToShareCaledar);
+                string inputMessage = "Enter Sr No. whom you want to share calendar :- ";
 
-            User user = GetUserFromSerialNumber(serialNumberOfTableRow);
+                int serialNumberOfTableRow = ValidatedInputProvider.GetValidatedIntegerBetweenRange(inputMessage, 1,
+                                             availableUsersToShareCaledar);
 
-            SharedCalendar sharedCalendar = new(user.Id, GlobalData.user == null ? 0 : GlobalData.user.Id, new DateOnly(), new DateOnly());
+                User user = GetUserFromSerialNumber(serialNumberOfTableRow);
 
-            GetDatesFromUser(sharedCalendar);
+                SharedCalendar sharedCalendar = new(user.Id, GlobalData.user == null ? 0 : GlobalData.user.Id, new DateOnly(), new DateOnly());
 
-            _calendarSharingService.AddSharedCalendar(sharedCalendar);
+                GetDatesFromUser(sharedCalendar);
 
-            PrintHandler.PrintNewLine();
+                _calendarSharingService.AddSharedCalendar(sharedCalendar);
 
-            PrintHandler.PrintSuccessMessage($"Your Calendar shared with {user.Name} from {sharedCalendar.FromDate} to {sharedCalendar.ToDate}");
+                PrintHandler.PrintNewLine();
+
+                PrintHandler.PrintSuccessMessage($"Your Calendar shared with {user.Name} from {sharedCalendar.FromDate} to {sharedCalendar.ToDate}");
+
+            }
+            catch
+            {
+                PrintHandler.PrintErrorMessage("Some error occurred !");
+            }
 
         }
 
@@ -96,26 +106,35 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         public void ViewSharedCalendars()
 
         {
-            List<SharedCalendar> sharedCalendarsList = _calendarSharingService.GetSharedEvents();
-
-            string sharedEvents = _calendarSharingService.GenerateDisplayFormatForSharedEvents();
-
-            if (_calendarSharingService.GetSharedEventsCount() > 0)
+            try
             {
-                Console.WriteLine("Calendars shared to you !");
-                Console.WriteLine(sharedEvents);
+                List<SharedCalendar> sharedCalendarsList = _calendarSharingService.GetSharedEvents();
+
+                string sharedEvents = _calendarSharingService.DesignSharedEventDisplayFormat();
+
+                if (_calendarSharingService.GetSharedEventsCount() > 0)
+                {
+                    Console.WriteLine("Calendars shared to you !");
+                    Console.WriteLine(sharedEvents);
+                }
+                else
+                {
+                    Console.WriteLine("No calendars available !");
+                    return;
+                }
+
+                string inputMessage = "Select Sr No. which calendar you want to see :- ";
+
+                int serialNumberOfSharedCalendar = ValidatedInputProvider.GetValidatedIntegerBetweenRange(inputMessage
+                                                    , 1, sharedCalendarsList.Count);
+
+                ViewSpecificCalendar(sharedCalendarsList[serialNumberOfSharedCalendar - 1].Id);
+
             }
-            else
+            catch
             {
-                Console.WriteLine("No calendars available !");
-                return;
+                PrintHandler.PrintErrorMessage("Some error occurred !");
             }
-
-
-            int serialNumberOfSharedCalendar = ValidatedInputProvider.GetValidatedIntegerBetweenRange("Select Sr No. which calendar you want to see :- "
-                                                , 1, sharedCalendarsList.Count);
-
-            ViewSpecificCalendar(sharedCalendarsList[serialNumberOfSharedCalendar - 1].Id);
         }
 
         public void ViewSpecificCalendar(int sharedCalendarId)

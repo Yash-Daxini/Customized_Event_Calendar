@@ -48,6 +48,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         public int InsertEventCollaborators(EventCollaborator eventCollaborators)
         {
             int eventCollaboratorsId = 0;
+
             try
             {
                 eventCollaboratorsId = _eventCollaboratorsRepository.Insert(eventCollaborators);
@@ -84,42 +85,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
         }
 
-        public EventCollaborator GetEventCollaboratorsByEventId(int eventId)
-        {
-            EventCollaborator eventCollaborator = null;
-            try
-            {
-                eventCollaborator = _eventCollaboratorsRepository.ReadByEventId(eventId);
-            }
-            catch (Exception)
-            {
-                PrintHandler.PrintErrorMessage("Some error occurred ! ");
-            }
-
-            return eventCollaborator;
-        }
-
-        public int GetUserIdFromEventCollaborationId(int eventCollaborationId)
-        {
-            EventCollaborator? eventCollaborator = GetEventCollaboratorsById(eventCollaborationId);
-
-            if (eventCollaborator == null) return 0;
-
-            return eventCollaborator.UserId;
-        }
-
-        public int? GetEventCollaboratorIdFromEventIdAndUserId(int eventId)
-        {
-            EventCollaborator? eventCollaborator = GetEventCollaboratorFromEventIdAndUserId(eventId);
-
-            return eventCollaborator?.Id;
-        }
-
         public EventCollaborator? GetEventCollaboratorFromEventIdAndUserId(int eventId)
         {
-            EventCollaborator? eventCollaborator = GetAllEventCollaborators().FirstOrDefault(eventCollaborator =>
-                                                                    eventCollaborator.UserId == GlobalData.user.Id
-                                                                    && eventCollaborator.EventId == eventId);
+            EventCollaborator? eventCollaborator = GetAllEventCollaborators()
+                                                   .FirstOrDefault(eventCollaborator =>
+                                                                   eventCollaborator.UserId == GlobalData.user.Id
+                                                                   && eventCollaborator.EventId == eventId);
 
             return eventCollaborator;
         }

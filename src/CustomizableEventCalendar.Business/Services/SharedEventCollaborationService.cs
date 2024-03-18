@@ -24,54 +24,61 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             EventCollaborator newEventCollaborator = new(eventId, GlobalData.user.Id, "participant", null, null, null,
                                                         eventCollaborator.EventDate);
 
-            if (IsEventAlreadyCollaborated(newEventCollaborator))
-            {
-                PrintHandler.PrintWarningMessage("You already collaborated on this event");
-                return;
-            }
+            if (IsEligibleToCollaborate(newEventCollaborator)) return;
 
-            EventCollaborator overlappedCollaboration = GetCollaborationOverlap(newEventCollaborator);
-
-            if (overlappedCollaboration != null)
-            {
-                EventService eventService = new EventService();
-                Event eventObj = eventService.GetEventsById(overlappedCollaboration.EventId);   
-
-                PrintHandler.PrintWarningMessage($"Can't collaborate ! \nThe collaboration causes overlap with {eventObj.Title} on " +
-                                                 $"{overlappedCollaboration.EventDate}, indicating that both events are scheduled concurrently.");
-
-                return;
-            }
-
-            try
-            {
-                _eventCollaboratorsService.InsertEventCollaborators(newEventCollaborator);
-                PrintHandler.PrintSuccessMessage($"Successfully collaborated on {eventCollaborator.EventDate} event");
-            }
-            catch
-            {
-                PrintHandler.PrintErrorMessage("Some error occurred ! Can't collaborate on event");
-            }
+            _eventCollaboratorsService.InsertEventCollaborators(newEventCollaborator);
 
         }
 
-        public List<EventCollaborator> GetAllEventCollaborators()
+        private bool IsEligibleToCollaborate(EventCollaborator eventCollaborator)
+        {
+            if (IsEventAlreadyCollaborated(eventCollaborator))
+            {
+                PrintHandler.PrintWarningMessage("You already collaborated on this event");
+                return false;
+            }
+
+            if (IsOverlappedCollaboration(eventCollaborator)) return false;
+
+            return true;
+        }
+
+        private List<EventCollaborator> GetAllEventCollaborators()
         {
             return _eventCollaboratorsService.GetAllEventCollaborators();
         }
 
-        public bool IsEventAlreadyCollaborated(EventCollaborator newEventCollaborator)
+        private bool IsOverlappedCollaboration(EventCollaborator eventCollaborator)
         {
+            EventCollaborator overlappedCollaboration = GetCollaborationOverlap(eventCollaborator);
 
-            return GetAllEventCollaborators().Exists(eventCollaborator => eventCollaborator.UserId == newEventCollaborator.UserId
-                                          && eventCollaborator.EventId == newEventCollaborator.EventId
-                                          && eventCollaborator.EventDate == newEventCollaborator.EventDate);
+            if (overlappedCollaboration != null)
+            {
+                EventService eventService = new();
+                Event eventObj = eventService.GetEventsById(overlappedCollaboration.EventId);
+
+                PrintHandler.PrintWarningMessage($"Can't collaborate ! \nThe collaboration causes overlap with {eventObj.Title}"
+                     + $" on {overlappedCollaboration.EventDate}, indicating that both events are scheduled concurrently.");
+
+                return true;
+            }
+
+            return false;
         }
 
-        public EventCollaborator? GetCollaborationOverlap(EventCollaborator newEventCollaborator)
+        private bool IsEventAlreadyCollaborated(EventCollaborator newEventCollaborator)
         {
-            return GetAllEventCollaborators().Find(eventCollaborator => eventCollaborator.EventDate == newEventCollaborator.EventDate
-                                                  && eventCollaborator.UserId == newEventCollaborator.UserId);
+            return GetAllEventCollaborators().Exists(eventCollaborator =>
+                                                     eventCollaborator.UserId == newEventCollaborator.UserId
+                                                     && eventCollaborator.EventId == newEventCollaborator.EventId
+                                                     && eventCollaborator.EventDate == newEventCollaborator.EventDate);
+        }
+
+        private EventCollaborator? GetCollaborationOverlap(EventCollaborator newEventCollaborator)
+        {
+            return GetAllEventCollaborators().Find(eventCollaborator =>
+                                                   eventCollaborator.EventDate == newEventCollaborator.EventDate
+                                                   && eventCollaborator.UserId == newEventCollaborator.UserId);
         }
     }
 }

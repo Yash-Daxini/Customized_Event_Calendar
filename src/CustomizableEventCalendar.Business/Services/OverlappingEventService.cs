@@ -34,12 +34,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                     DateTime matchedDate = occurrences1.Find(singlOccurrence => singlOccurrence == occurrence);
                     if (matchedDate != new DateTime())
                     {
-                        PrintHandler.PrintWarningMessage($"{eventForVerify.Title} overlaps with {eventObj.Title} at following date and time.\n"
-                                                       + $"{occurrence.Date} from {DateTimeManager.ConvertTo12HourFormat(eventForVerify.EventStartHour)} " +
-                                                         $" to {DateTimeManager.ConvertTo12HourFormat(eventForVerify.EventEndHour)} overlaps with " +
-                                                         $"{matchedDate.Date} from {DateTimeManager.ConvertTo12HourFormat(eventObj.EventStartHour)}" +
-                                                         $" to {DateTimeManager.ConvertTo12HourFormat(eventObj.EventEndHour)}" +
-                                                         $"\nPlease choose another date time !");
+
+                        string message = GetOverlapMessageFromEvents(eventForVerify, eventObj, occurrence, matchedDate);
+                        PrintHandler.PrintWarningMessage(message);
                         return true;
                     }
                 }
@@ -47,6 +44,17 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
 
             return false;
+        }
+
+        public static string GetOverlapMessageFromEvents(Event eventForVerify, Event eventObj, DateTime occurrence,
+                                                  DateTime matchedDate)
+        {
+            return $"{eventForVerify.Title} overlaps with {eventObj.Title} at following date and time.\n" +
+                   $"{occurrence.Date} from {DateTimeManager.ConvertTo12HourFormat(eventForVerify.EventStartHour)} " +
+                   $" to {DateTimeManager.ConvertTo12HourFormat(eventForVerify.EventEndHour)} " +
+                   $"overlaps with {matchedDate.Date} from {DateTimeManager.ConvertTo12HourFormat(eventObj.EventStartHour)}" +
+                   $" to {DateTimeManager.ConvertTo12HourFormat(eventObj.EventEndHour)}" +
+                   $"\nPlease choose another date time !";
         }
 
         public void FindOccurrencesOfEvents(Event eventObj, ref List<DateTime> occurrences)

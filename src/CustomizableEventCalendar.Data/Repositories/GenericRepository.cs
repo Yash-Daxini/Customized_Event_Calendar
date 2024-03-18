@@ -14,7 +14,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
     internal class GenericRepository<T> : BaseRepository
     {
 
-        public List<T> GetAll<T>(Func<SqlDataReader, T> createObject)
+        public List<T> GetAll(Func<SqlDataReader, T> createObject)
         {
             List<T> list = [];
             string query = QueryBuilder.Read<T>();
@@ -34,7 +34,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
             return list;
         }
 
-        public T? GetById<T>(Func<SqlDataReader, T> createObject, int Id)
+        public T? GetById(Func<SqlDataReader, T> createObject, int Id)
         {
             string query = QueryBuilder.Read<T>(Id);
 
@@ -56,7 +56,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
             return data;
         }
 
-        public int Insert<T>(T data)
+        public int Insert(T data)
         {
             string query = QueryBuilder.Create<T>(data);
 
@@ -74,7 +74,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
             return Id;
         }
 
-        public void Update<T>(T data, int Id)
+        public void Update(T data, int Id)
         {
             string query = QueryBuilder.Update<T>(data, Id);
 
@@ -85,7 +85,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
             Disconnect();
         }
 
-        public void Delete<T>(int Id)
+        public void Delete(int Id)
         {
             string query = QueryBuilder.Delete<T>(Id);
 

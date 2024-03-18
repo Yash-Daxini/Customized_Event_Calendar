@@ -32,14 +32,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public List<Event> GetAllEvents()
         {
-            List<Event> listOfEvents = [.. _eventRepository.GetAll<Event>(data => new Event(data))];
+            List<Event> listOfEvents = [.. _eventRepository.GetAll(data => new Event(data))];
 
             return listOfEvents;
         }
 
         public Event GetEventsById(int eventId)
         {
-            Event listOfEvents = _eventRepository.GetById<Event>(data => new Event(data), eventId);
+            Event listOfEvents = _eventRepository.GetById(data => new Event(data), eventId);
 
             return listOfEvents;
         }
@@ -55,7 +55,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                 _eventCollaboratorsService.DeleteEventCollaboratorsByEventId(eventId);
 
-                _eventRepository.Delete<Event>(eventId);
+                _eventRepository.Delete(eventId);
 
                 scope.Complete();
             }
@@ -106,10 +106,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             List<Event> events = GetAllEvents().Where(eventObj => eventObj.UserId == GlobalData.user.Id)
                                                .ToList();
 
-            List<List<string>> outputRows = [["Event NO.", "Title", "Description", "Location", "StartHour", "EndHour", "StartDate",
-                                              "EndDate", "Frequency","Interval","Days","Week No.","Month Days","Month","Year"]];
-
-            AddEventDetailsIn2DList(events, ref outputRows);
+            List<List<string>> outputRows = AddEventDetailsIn2DList(events);
 
             string eventTable = PrintHandler.GiveTable(outputRows);
 
@@ -121,8 +118,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return "";
         }
 
-        public static void AddEventDetailsIn2DList(List<Event> events, ref List<List<string>> outputRows)
+        private static List<List<string>> AddEventDetailsIn2DList(List<Event> events)
         {
+            List<List<string>> outputRows = [["Event NO.", "Title", "Description", "Location", "StartHour", "EndHour",
+                                              "StartDate","EndDate", "Frequency","Interval","Days","Week No.",
+                                              "Month Days","Month","Year"]];
+
             foreach (var (eventObj, index) in events.Select((value, index) => (value, index)))
             {
                 outputRows.Add([(index+1).ToString(), eventObj.Title, eventObj.Description, eventObj.Location,
@@ -137,6 +138,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                                 eventObj.ByMonth == null ? "-" : DateTimeManager.GetMonthFromMonthNumber((int)eventObj.ByMonth),
                                 eventObj.ByYear == null ? "-" : eventObj.ByYear.ToString()]);
             }
+
+            return outputRows;
         }
 
         public void ConvertProposedEventToScheduleEvent(int eventId)
@@ -157,7 +160,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
 
             if (daysOfWeek.Length == 0) return "-";
-            return daysOfWeek.ToString().Substring(0, daysOfWeek.Length - 1);
+            return daysOfWeek.ToString()[..(daysOfWeek.Length - 1)];
         }
 
         public int GetTotalEventCount()

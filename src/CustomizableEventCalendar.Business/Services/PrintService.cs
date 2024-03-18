@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
 {
@@ -12,42 +13,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             StringBuilder table = new();
 
-            var columnWidths = new List<int>();
-
-            for (int col = 0; col < data[0].Count; col++)
-            {
-                int maxWidth = 0;
-                try
-                {
-                    foreach (var row in data)
-                    {
-                        maxWidth = Math.Max(maxWidth, row[col].Length);
-                    }
-
-                }
-                catch(Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
-
-                columnWidths.Add(maxWidth);
-            }
-
-            for (int col = 0; col < data[0].Count; col++)
-            {
-
-                for (int row = 0; row < data.Count; row++)
-                {
-                    columnWidths[col] = Math.Max(columnWidths[col], data[row][col].Length);
-                }
-
-            }
+            List<int> columnWidths = FindTheMaxWidthOfColumns(data);
 
             for (int row = 0; row < data.Count; row++)
             {
                 if (row == 0)
                 {
-                    table.Append("┌");
+                    table.Append('┌');
 
                     for (int col = 0; col < data[row].Count; col++)
                     {
@@ -57,19 +29,19 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                     table.AppendLine();
                 }
 
-                table.Append("│");
+                table.Append('│');
 
                 for (int col = 0; col < data[row].Count; col++)
                 {
                     table.Append(data[row][col].PadRight(columnWidths[col] + 2));
-                    table.Append("│");
+                    table.Append('│');
                 }
 
                 table.AppendLine();
 
                 if (row < data.Count - 1)
                 {
-                    table.Append("├");
+                    table.Append('├');
 
                     for (int col = 0; col < data[row].Count; col++)
                     {
@@ -80,7 +52,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 }
                 else
                 {
-                    table.Append("└");
+                    table.Append('└');
 
                     for (int col = 0; col < data[row].Count; col++)
                     {
@@ -97,7 +69,62 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             StringBuilder table = new();
 
-            var columnWidths = new List<int>();
+            List<int> columnWidths = FindTheMaxWidthOfColumns(data);
+
+            for (int row = 0; row < data.Count; row++)
+            {
+
+                if (row == 0)
+                {
+                    table.Append('╔');
+
+                    for (int col = 0; col < data[row].Count; col++)
+                    {
+                        table.Append(new string('═', columnWidths[col] + 2) + "╦");
+                    }
+
+                    table.AppendLine();
+                }
+
+                table.Append('║');
+
+                for (int col = 0; col < data[row].Count; col++)
+                {
+                    table.Append(data[row][col].PadRight(columnWidths[col] + 2));
+                    table.Append('║');
+                }
+
+                table.AppendLine();
+
+                if (row < data.Count - 1)
+                {
+                    table.Append('╠');
+                    for (int col = 0; col < data[row].Count; col++)
+                    {
+                        table.Append(new string('═', columnWidths[col] + 2) + "╬");
+                    }
+                    table.AppendLine();
+
+                }
+                else
+                {
+                    table.Append('╚');
+
+                    for (int col = 0; col < data[row].Count; col++)
+                    {
+                        table.Append(new string('═', columnWidths[col] + 2) + "╩");
+                    }
+
+                    table.AppendLine();
+                }
+            }
+
+            return table.ToString();
+        }
+
+        private static List<int> FindTheMaxWidthOfColumns(List<List<string>> data)
+        {
+            List<int> columnWidths = [];
 
             for (int col = 0; col < data[0].Count; col++)
             {
@@ -111,65 +138,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 columnWidths.Add(maxWidth);
             }
 
-            for (int col = 0; col < data[0].Count; col++)
-            {
+            return columnWidths;
 
-                for (int row = 0; row < data.Count; row++)
-                {
-                    columnWidths[col] = Math.Max(columnWidths[col], data[row][col].Length);
-                }
-
-            }
-
-            for (int row = 0; row < data.Count; row++)
-            {
-
-                if (row == 0)
-                {
-                    table.Append("╔");
-
-                    for (int col = 0; col < data[row].Count; col++)
-                    {
-                        table.Append(new string('═', columnWidths[col] + 2) + "╦");
-                    }
-
-                    table.AppendLine();
-                }
-
-                table.Append("║");
-
-                for (int col = 0; col < data[row].Count; col++)
-                {
-                    table.Append(data[row][col].PadRight(columnWidths[col] + 2));
-                    table.Append("║");
-                }
-
-                table.AppendLine();
-
-                if (row < data.Count - 1)
-                {
-                    table.Append("╠");
-                    for (int col = 0; col < data[row].Count; col++)
-                    {
-                        table.Append(new string('═', columnWidths[col] + 2) + "╬");
-                    }
-                    table.AppendLine();
-
-                }
-                else
-                {
-                    table.Append("╚");
-
-                    for (int col = 0; col < data[row].Count; col++)
-                    {
-                        table.Append(new string('═', columnWidths[col] + 2) + "╩");
-                    }
-
-                    table.AppendLine();
-                }
-            }
-
-            return table.ToString();
         }
     }
 }

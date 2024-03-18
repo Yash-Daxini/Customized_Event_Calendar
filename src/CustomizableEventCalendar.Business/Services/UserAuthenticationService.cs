@@ -12,51 +12,29 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public bool Authenticate(string username, string password)
         {
+            User? user = userRepository.AuthenticateUser(username, password);
 
-            User? user = null;
-            try
-            {
-                user = userRepository.AuthenticateUser(username, password);
-                GlobalData.user = user;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Some error occurred! " + ex.Message);
-            }
+            GlobalData.user = user;
+
             if (user != null)
             {
-                MultipleInviteesEventService multipleInviteesEventService = new();
-
-                multipleInviteesEventService.StartSchedulingProcessOfProposedEvent();
+                ScheduleProposedEventsForLoggedInUser();
             }
+
             return user != null;
 
         }
 
-        public bool AddUser(User user)
+        private static void ScheduleProposedEventsForLoggedInUser()
         {
+            MultipleInviteesEventService multipleInviteesEventService = new();
 
-            try
-            {
-                userRepository.Insert(user);
-                return true;
-            }
-            catch (SqlException ex)
-            {
-                if (ex.Number == 2627 || ex.Number == 2601) //Check the unique key constraint
-                {
-                    Console.WriteLine("User name is not available. Please Enter another name");
-                }
-                else
-                {
-                    Console.WriteLine("Some error occurred!" + " " + ex.Message);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Some error occurred! " + ex.Message);
-            }
-            return false;
+            multipleInviteesEventService.StartSchedulingProcessOfProposedEvent();
+        }
+
+        public void AddUser(User user)
+        {
+            userRepository.Insert(user);
         }
     }
 }

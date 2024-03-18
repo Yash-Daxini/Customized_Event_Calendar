@@ -78,5 +78,25 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             return GetStartDateOfWeek(todayDate).AddDays(6);
         }
+
+        public static DateTime GetStartDateOfWeek(DateTime todayDate)
+        {
+            return todayDate.AddDays(-(int)(todayDate.DayOfWeek - 1));
+        }
+
+        public static DateTime GetEndDateOfWeek(DateTime todayDate)
+        {
+            return GetStartDateOfWeek(todayDate).AddDays(6);
+        }
+
+        public static DateTime GetStartDateOfMonth(DateTime todayDate)
+        {
+            return new(todayDate.Year, todayDate.Month, 1);
+        }
+
+        public static DateTime GetEndDateOfMonth(DateTime todayDate)
+        {
+            return new DateTime(todayDate.Year, todayDate.Month, DateTime.DaysInMonth(todayDate.Year, todayDate.Month));
+        }
     }
 }

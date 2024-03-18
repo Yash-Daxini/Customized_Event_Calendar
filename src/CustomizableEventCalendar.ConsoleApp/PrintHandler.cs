@@ -128,5 +128,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             PrintWithColor(message, ConsoleColor.Yellow);
         }
 
+        public static void PrintNotification(string message)
+        {
+            PrintWithColor(message, ConsoleColor.Cyan);
+        }
     }
 }

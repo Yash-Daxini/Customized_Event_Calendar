@@ -8,20 +8,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
     {
         private readonly EventCollaboratorService eventCollaboratorsService = new();
 
-        //public void ScheduleEventsOfThisMonth()
-        //{
-        //    EventService eventService = new();
-
-        //    List<Event> events = eventService.GetAllEvents()
-        //                                     .Where(eventObj => eventObj.UserId == GlobalData.user.Id)
-        //                                     .ToList();
-
-        //    foreach (var eventObj in events)
-        //    {
-        //        ScheduleEvents(eventObj);
-        //    }
-        //}
-
         public void ScheduleEvents(Event eventObj)
         {
             List<EventCollaborator> lastScheduledEvents = GetAllPreviousScheduledEvents(eventObj);
