@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -24,9 +25,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public static bool IsValidListOfCommaSeparatedIntegers(string input)
         {
-            string[] numbers = input.Split(',')
+            string[] numbers = [..input.Split(',')
                                     .Select(number => number.Trim())
-                                    .ToArray();
+                                    .OrderBy(number => number)];
 
             foreach (var number in numbers)
             {
@@ -87,7 +88,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return abbreviation.Equals("AM") || abbreviation.Equals("PM");
         }
 
-        public static bool IsVallidStartAndEndDate(DateOnly startDate, DateOnly endDate)
+        public static bool IsValidStartAndEndDate(DateOnly startDate, DateOnly endDate)
         {
             return startDate <= endDate;
         }

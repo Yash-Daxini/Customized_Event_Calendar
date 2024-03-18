@@ -98,5 +98,21 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             return new DateTime(todayDate.Year, todayDate.Month, DateTime.DaysInMonth(todayDate.Year, todayDate.Month));
         }
+
+        public static string GetWeekDaysFromWeekDayNumbers(string days)
+        {
+            List<string> listOfDays = [.. days.Split(",").Select(day => day.Trim())];
+
+            StringBuilder daysOfWeek = new();
+
+            foreach (string day in listOfDays)
+            {
+                if (day.Length == 0) continue;
+                daysOfWeek.Append(DateTimeManager.GetWeekDayFromWeekNumber(Convert.ToInt32(day)) + ",");
+            }
+
+            if (daysOfWeek.Length == 0) return "-";
+            return daysOfWeek.ToString()[..(daysOfWeek.Length - 1)];
+        }
     }
 }

@@ -42,7 +42,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                    && eventCollaborator.ConfirmationStatus.Equals("pending");
         }
 
-        private string GenerateProposedEventTable()
+        public string GenerateProposedEventTable()
         {
             List<Event> proposedEvents = GetProposedEvents();
 

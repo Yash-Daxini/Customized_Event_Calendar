@@ -120,23 +120,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         private static List<List<string>> AddEventDetailsIn2DList(List<Event> events)
         {
-            List<List<string>> outputRows = [["Event NO.", "Title", "Description", "Location", "StartHour", "EndHour",
-                                              "StartDate","EndDate", "Frequency","Interval","Days","Week No.",
-                                              "Month Days","Month","Year"]];
+            List<List<string>> outputRows = [["Event NO.", "Title", "Description", "Location",
+                                              "Event Repetition"]];
 
             foreach (var (eventObj, index) in events.Select((value, index) => (value, index)))
             {
                 outputRows.Add([(index+1).ToString(), eventObj.Title, eventObj.Description, eventObj.Location,
-                                DateTimeManager.ConvertTo12HourFormat(eventObj.EventStartHour),
-                                DateTimeManager.ConvertTo12HourFormat(eventObj.EventEndHour),
-                                eventObj.EventStartDate.ToString(),eventObj.EventEndDate.ToString(),
-                                eventObj.Frequency ?? "-" ,
-                                eventObj.Interval == null ? "-" : eventObj.Interval.ToString(),
-                                eventObj.ByWeekDay == null ? "-" : GetWeekDaysFromNumbers(eventObj.ByWeekDay),
-                                eventObj.WeekOrder== null ? "-" : eventObj.WeekOrder.ToString(),
-                                eventObj.ByMonthDay == null ? "-" : eventObj.ByMonthDay.ToString(),
-                                eventObj.ByMonth == null ? "-" : DateTimeManager.GetMonthFromMonthNumber((int)eventObj.ByMonth),
-                                eventObj.ByYear == null ? "-" : eventObj.ByYear.ToString()]);
+                                RecurrencePatternMessageGenerator.GenerateRecurrenceMessage(eventObj)]);
             }
 
             return outputRows;
@@ -145,22 +135,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         public void ConvertProposedEventToScheduleEvent(int eventId)
         {
             _eventRepository.ConvertProposedEventToScheduleEvent(eventId);
-        }
-
-        public static string GetWeekDaysFromNumbers(string days)
-        {
-            List<string> listOfDays = [.. days.Split(",").Select(day => day.Trim())];
-
-            StringBuilder daysOfWeek = new();
-
-            foreach (string day in listOfDays)
-            {
-                if (day.Length == 0) continue;
-                daysOfWeek.Append(DateTimeManager.GetWeekDayFromWeekNumber(Convert.ToInt32(day)) + ",");
-            }
-
-            if (daysOfWeek.Length == 0) return "-";
-            return daysOfWeek.ToString()[..(daysOfWeek.Length - 1)];
         }
 
         public int GetTotalEventCount()
