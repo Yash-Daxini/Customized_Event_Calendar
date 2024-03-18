@@ -17,7 +17,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
 
             List<User> users = userRepository.ReadInsensitiveInformation(data => new User(data))
-                                             .Where(user => user.Id != GlobalData.user.Id)
+                                             .Where(user => user.Id != GlobalData.GetUser().Id)
                                              .ToList();
 
             return users;

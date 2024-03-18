@@ -14,7 +14,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             User? user = userRepository.AuthenticateUser(username, password);
 
-            GlobalData.user = user;
+            GlobalData.SetUser(user);
 
             if (user != null)
             {

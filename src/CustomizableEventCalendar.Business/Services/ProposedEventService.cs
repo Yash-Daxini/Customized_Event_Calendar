@@ -37,7 +37,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         private bool IsLoggedInUserHasPendingResponseForProposedEvent(HashSet<int> proposedEventIds, EventCollaborator eventCollaborator)
         {
             return proposedEventIds.Contains(eventCollaborator.EventId)
-                   && eventCollaborator.UserId == GlobalData.user.Id
+                   && eventCollaborator.UserId == GlobalData.GetUser().Id
                    && eventCollaborator.ParticipantRole.Equals("participant")
                    && eventCollaborator.ConfirmationStatus.Equals("pending");
         }

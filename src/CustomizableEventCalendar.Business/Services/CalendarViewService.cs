@@ -48,6 +48,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return hourEventMapping;
         }
 
+        private bool IsProposedEvent(int eventId)
+        {
+            return _eventService.GetProposedEvents().Exists(eventObj => eventObj.Id == eventId);
+        }
+
         private static List<List<string>> InsertTodayEventsWithDateIn2DList(Dictionary<int, Event> hourEventMapping)
         {
             List<List<string>> dailyViewTableContent = [["Date", "Event Title"]];
@@ -74,7 +79,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             List<EventCollaborator> eventCollaborators = [.. _eventCollaboratorsService.GetAllEventCollaborators()
                                                                       .Where(eventCollaborator =>
                                                                        eventCollaborator.EventDate.Date == DateTime.Today
-                                                                       && eventCollaborator.UserId == GlobalData.user.Id)];
+                                                                       && eventCollaborator.UserId == GlobalData.GetUser().Id
+                                                                       && !IsProposedEvent(eventCollaborator.EventId))];
 
             return eventCollaborators;
         }
@@ -99,18 +105,19 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return currentWeekEvents;
         }
 
-        private static List<EventCollaborator> GetGivenWeekEvents(List<EventCollaborator> eventCollaborators, DateTime startDateOfWeek, DateTime endDateOfWeek)
+        private List<EventCollaborator> GetGivenWeekEvents(List<EventCollaborator> eventCollaborators, DateTime startDateOfWeek, DateTime endDateOfWeek)
         {
             return [..eventCollaborators.Where(eventCollaborator => IsEventOccurInGivenWeek(startDateOfWeek,
                                                                        endDateOfWeek, eventCollaborator))];
         }
 
-        private static bool IsEventOccurInGivenWeek(DateTime startDateOfWeek, DateTime endDateOfWeek,
+        private bool IsEventOccurInGivenWeek(DateTime startDateOfWeek, DateTime endDateOfWeek,
                                              EventCollaborator eventCollaborator)
         {
             return eventCollaborator.EventDate.Date >= startDateOfWeek.Date
                    && eventCollaborator.EventDate.Date <= endDateOfWeek.Date
-                   && eventCollaborator.UserId == GlobalData.user.Id;
+                   && eventCollaborator.UserId == GlobalData.GetUser().Id
+                   && !IsProposedEvent(eventCollaborator.EventId);
         }
 
         public string GenerateWeeklyView()
@@ -124,8 +131,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             weeklyView.AppendLine(PrintHandler.PrintHorizontalLine());
 
-            weeklyView.AppendLine("Schedule from date :- " + DateTimeManager.GetDateFromDateTime(startDateOfWeek) 
-                                   +" to date :- " + DateTimeManager.GetDateFromDateTime(endDateOfWeek) + "\n");
+            weeklyView.AppendLine("Schedule from date :- " + DateTimeManager.GetDateFromDateTime(startDateOfWeek)
+                                   + " to date :- " + DateTimeManager.GetDateFromDateTime(endDateOfWeek) + "\n");
 
             List<List<string>> weeklyViewTableContent = Generate2DListForWeeklyEvents(startDateOfWeek, endDateOfWeek,
                                                                                               currentWeekEvents);
@@ -183,15 +190,16 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return currentMonthEvents;
         }
 
-        private static bool IsEventOccurInGivenMonth(DateTime startDateOfMonth, DateTime endDateOfMonth,
+        private bool IsEventOccurInGivenMonth(DateTime startDateOfMonth, DateTime endDateOfMonth,
                                              EventCollaborator eventCollaborator)
         {
             return eventCollaborator.EventDate.Date >= startDateOfMonth.Date
                    && eventCollaborator.EventDate.Date <= endDateOfMonth.Date
-                   && eventCollaborator.UserId == GlobalData.user.Id;
+                   && eventCollaborator.UserId == GlobalData.GetUser().Id
+                   && !IsProposedEvent(eventCollaborator.EventId);
         }
 
-        private static List<EventCollaborator> GetGivenMonthEvents(List<EventCollaborator> eventCollaborators, DateTime startDateOfMonth, DateTime endDateOfMonth)
+        private List<EventCollaborator> GetGivenMonthEvents(List<EventCollaborator> eventCollaborators, DateTime startDateOfMonth, DateTime endDateOfMonth)
         {
             return [..eventCollaborators.Where(eventCollaborator => IsEventOccurInGivenMonth
                                                                     (startDateOfMonth, endDateOfMonth, eventCollaborator))];

@@ -21,6 +21,18 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         private readonly static ShareCalendar _shareCalendar = new();
 
+        private static readonly Dictionary<EventOperations, Action> operationDictionary = new()
+        {{ EventOperations.Add, TakeInputToAddEvent },
+        { EventOperations.Display, DisplayEvents },
+        { EventOperations.Delete, TakeInputToDeleteEvent },
+        { EventOperations.Update, TakeInputToUpdateEvent },
+        { EventOperations.View, CalendarView.ViewSelection },
+        { EventOperations.ShareCalendar, _shareCalendar.GetDetailsToShareCalendar },
+        { EventOperations.ViewSharedCalendar, _shareCalendar.ViewSharedCalendars },
+        { EventOperations.SharedEventCollaboration, SharedEventCollaboration.ShowSharedEvents },
+        { EventOperations.EventWithMultipleInvitees, TakeInputForProposedEvent },
+        { EventOperations.GiveResponseToProposedEvent, ProposedEventResponseHandler.ShowProposedEvents}};
+
         public static void PrintColorMessage(string message, ConsoleColor color)
         {
             Console.ForegroundColor = color;
@@ -30,17 +42,21 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         public static void ShowAllChoices()
         {
-            PrintColorMessage("\n1. Add Event", ConsoleColor.Green);
-            PrintColorMessage("2. See all Events", ConsoleColor.Blue);
-            PrintColorMessage("3. Delete Event", ConsoleColor.Red);
-            PrintColorMessage("4. Update Event", ConsoleColor.White);
-            PrintColorMessage("5. See calendar view", ConsoleColor.Yellow);
-            PrintColorMessage("6. Share calendar", ConsoleColor.Cyan);
-            PrintColorMessage("7. View Shared calendar", ConsoleColor.Magenta);
-            PrintColorMessage("8. Collaborate from shared calendar", ConsoleColor.DarkGreen);
-            PrintColorMessage("9. Add event with multiple invitees", ConsoleColor.DarkGray);
-            PrintColorMessage("10. Give response to proposed events", ConsoleColor.DarkCyan);
-            PrintColorMessage("0. Back", ConsoleColor.Gray);
+            Dictionary<string, ConsoleColor> operationWithColor = new()
+            {
+                { "1. Add Event",ConsoleColor.Green},{ "2. See all Events",ConsoleColor.Blue },
+                { "3. Delete Event",ConsoleColor.Red },{ "4. Update Event" , ConsoleColor.White } ,
+                { "5. See calendar view",ConsoleColor.Yellow} ,{ "6. Share calendar" , ConsoleColor.Cyan } ,
+                { "7. View Shared calendar" , ConsoleColor.Magenta } ,
+                { "8. Collaborate from shared calendar" , ConsoleColor.DarkGreen} ,
+                { "9. Add event with multiple invitees" , ConsoleColor.DarkGray } ,
+                { "10. Give response to proposed events" , ConsoleColor.DarkCyan} , {"Back" , ConsoleColor.Gray }
+            };
+
+            foreach (var (key, value) in operationWithColor.Select(operation => (operation.Key, operation.Value)))
+            {
+                PrintColorMessage(key, value);
+            }
 
             Console.Write("\nSelect Any Option :- ");
         }
@@ -51,48 +67,21 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             EventOperations option = (EventOperations)choice;
 
-            switch (option)
+            if (operationDictionary.TryGetValue(option, out Action? actionMethod))
             {
-                case EventOperations.Add:
-                    TakeInputToAddEvent();
-                    break;
-                case EventOperations.Display:
-                    DisplayEvents();
-                    break;
-                case EventOperations.Delete:
-                    TakeInputToDeleteEvent();
-                    break;
-                case EventOperations.Update:
-                    TakeInputToUpdateEvent();
-                    break;
-                case EventOperations.View:
-                    CalendarView.ViewSelection();
-                    break;
-                case EventOperations.ShareCalendar:
-                    _shareCalendar.GetDetailsToShareCalendar();
-                    break;
-                case EventOperations.ViewSharedCalendar:
-                    _shareCalendar.ViewSharedCalendars();
-                    break;
-                case EventOperations.SharedEventCollaboration:
-                    SharedEventCollaboration.ShowSharedEvents();
-                    break;
-                case EventOperations.EventWithMultipleInvitees:
-                    TakeInputForProposedEvent();
-                    break;
-                case EventOperations.GiveResponseToProposedEvent:
-                    ProposedEventResponseHandler.ShowProposedEvents();
-                    break;
-                case EventOperations.Back:
-                    Console.WriteLine("Going Back ...");
-                    break;
-                default:
-                    Console.WriteLine("Oops! Wrong choice");
-                    break;
+                actionMethod.Invoke();
+                AskForChoice();
             }
-
-            if (option.Equals(EventOperations.Back)) Authentication.AuthenticationChoice();
-            else AskForChoice();
+            else if (option == EventOperations.Back)
+            {
+                Console.WriteLine("Going Back ...");
+                Authentication.AuthenticationChoice();
+            }
+            else
+            {
+                Console.WriteLine("Oops! Wrong choice");
+                AskForChoice();
+            }
         }
 
         public static int GetValidatedChoice()
@@ -125,7 +114,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                 eventObj.EventStartDate = DateOnly.FromDateTime(proposedDate);
                 eventObj.EventEndDate = DateOnly.FromDateTime(proposedDate);
 
-                eventObj.UserId = GlobalData.user.Id;
+                eventObj.UserId = GlobalData.GetUser().Id;
 
                 eventObj.IsProposed = true;
 
@@ -286,7 +275,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
                 GetEventDetailsFromUser(eventObj);
 
-                eventObj.UserId = GlobalData.user.Id;
+                eventObj.UserId = GlobalData.GetUser().Id;
 
                 RecurrenceHandling.AskForRecurrenceChoice(eventObj);
 
@@ -360,7 +349,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
                 GetEventDetailsFromUser(eventObj);
 
-                eventObj.UserId = GlobalData.user.Id;
+                eventObj.UserId = GlobalData.GetUser().Id;
 
                 RecurrenceHandling.AskForRecurrenceChoice(eventObj);
 

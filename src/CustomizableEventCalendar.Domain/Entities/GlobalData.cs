@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -8,6 +9,18 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
 {
     internal static class GlobalData
     {
-        public static User user;
+        private static User? user;
+
+        public static User GetUser() { return user; }
+
+        public static void SetUser(User newUser)
+        {
+            if (newUser == null)
+            {
+                return;
+            }
+
+            user = newUser;
+        }
     }
 }

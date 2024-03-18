@@ -14,7 +14,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         public static void AuthenticationChoice()
         {
 
-            if (GlobalData.user != null)
+            if (GlobalData.GetUser() != null)
             {
                 AskForChoiceToLoginUser();
             }
@@ -59,12 +59,19 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             {
                 case LoggedoutUserChoices.Login:
                     bool isLoggedin = Login();
-                    if (!isLoggedin) AuthenticationChoice();
+
+                    if (!isLoggedin) 
+                        AuthenticationChoice();
+
                     break;
                 case LoggedoutUserChoices.Signup:
                     bool isSignUp = SignUp();
-                    if (isSignUp) Login();
-                    else AuthenticationChoice();
+
+                    if (isSignUp) 
+                        Login();
+                    else 
+                        AuthenticationChoice();
+
                     break;
                 case LoggedoutUserChoices.Exit:
                     break;
@@ -181,13 +188,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             Console.SetCursorPosition(0, Console.CursorTop);
 
-            PrintHandler.PrintSuccessMessage($"{PrintHandler.CenterText()}Welcome {GlobalData.user.Name}");
+            PrintHandler.PrintSuccessMessage($"{PrintHandler.CenterText()}Welcome {GlobalData.GetUser().Name}");
 
             Thread.Sleep(1000);
 
             Console.Clear();
 
-            PrintHandler.PrintUserName(GlobalData.user.Name);
+            PrintHandler.PrintUserName(GlobalData.GetUser().Name);
 
             Console.WriteLine();
 
@@ -203,7 +210,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public static void Logout()
         {
-            GlobalData.user = null;
+            GlobalData.SetUser(null);
 
             PrintHandler.PrintSuccessMessage("Successfully Logout!");
         }

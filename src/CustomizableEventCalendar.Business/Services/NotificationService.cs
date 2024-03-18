@@ -56,7 +56,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         private List<EventCollaborator> GetConsiderableEventCollaborators()
         {
             return [.. _eventCollaboratorsService.GetAllEventCollaborators()
-                                                 .Where(eventCollaborator => eventCollaborator.UserId == GlobalData.user.Id &&
+                                                 .Where(eventCollaborator => eventCollaborator.UserId == GlobalData.GetUser().Id &&
                                                  (IsEventOrganizer(eventCollaborator)
                                                  || (!IsEventOrganizer(eventCollaborator)
                                                       && eventCollaborator.ConfirmationStatus != null
@@ -140,7 +140,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             StringBuilder proposedEventsNotificationTable = new();
 
-            HashSet<int> proposedEventIds = events.Where(eventObj => eventObj.IsProposed)
+            HashSet<int> proposedEventIds = events.Where(eventObj => eventObj.IsProposed
+                                                         && eventObj.EventStartDate >= DateOnly.FromDateTime(DateTime.Now))
                                                   .Select(eventObj => eventObj.Id)
                                                   .ToHashSet();
 
@@ -148,7 +149,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             proposedEventCollabprators = [..proposedEventCollabprators.Where(eventCollaborator => proposedEventIds
                                                           .Contains(eventCollaborator.EventId) &&
-                                                           eventCollaborator.UserId == GlobalData.user.Id)];
+                                                           eventCollaborator.UserId == GlobalData.GetUser().Id)];
 
 
             if (events.Count == 0 || proposedEventCollabprators.Count == 0) return "";

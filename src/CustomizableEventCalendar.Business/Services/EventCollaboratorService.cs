@@ -89,7 +89,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             EventCollaborator? eventCollaborator = GetAllEventCollaborators()
                                                    .FirstOrDefault(eventCollaborator =>
-                                                                   eventCollaborator.UserId == GlobalData.user.Id
+                                                                   eventCollaborator.UserId == GlobalData.GetUser().Id
                                                                    && eventCollaborator.EventId == eventId);
 
             return eventCollaborator;

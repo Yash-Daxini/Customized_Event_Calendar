@@ -21,7 +21,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             EventService eventService = new();
 
-            List<Event> events = [.. eventService.GetAllEvents().Where(eventObj => eventObj.UserId == GlobalData.user.Id)];
+            List<Event> events = [.. eventService.GetAllEvents().Where(eventObj => eventObj.UserId == GlobalData.GetUser().Id)];
 
             foreach (var eventObj in events)
             {

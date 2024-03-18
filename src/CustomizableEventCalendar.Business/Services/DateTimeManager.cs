@@ -114,5 +114,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             if (daysOfWeek.Length == 0) return "-";
             return daysOfWeek.ToString()[..(daysOfWeek.Length - 1)];
         }
+
+        public static int GetDayNumberFromWeekDay(DateOnly date)
+        {
+            int dayNumber = Convert.ToInt32(date.DayOfWeek.ToString("d"));
+            return dayNumber == 0 ? 7 : dayNumber;
+        }
     }
 }

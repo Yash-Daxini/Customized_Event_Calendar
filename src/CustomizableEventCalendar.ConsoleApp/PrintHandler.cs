@@ -76,24 +76,29 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             Console.SetCursorPosition((Console.WindowWidth - 30) / 2, Console.CursorTop);
         }
+        public static void SetCursorToMiddle(int nameLength)
+        {
+            Console.SetCursorPosition((Console.WindowWidth / 2) - nameLength, Console.CursorTop);
+        }
 
         public static void PrintUserName(string userName)
         {
+            int length = userName.Length + 20;
 
-            SetCursorToMiddle();
-            Console.WriteLine("╔═══════════════════════════════╗");
+            SetCursorToMiddle(userName.Length);
+            Console.WriteLine("╔" + new string('═', length) + "╗");
 
-            SetCursorToMiddle();
-            Console.WriteLine("║                               ║");
+            SetCursorToMiddle(userName.Length);
+            Console.WriteLine("║" + new string(' ', length) + "║");
 
-            SetCursorToMiddle();
-            Console.WriteLine($"              {userName}              ");
+            SetCursorToMiddle(userName.Length);
+            Console.WriteLine($"{new string(' ', length / 2)}{userName}{new string(' ', length)}");
 
-            SetCursorToMiddle();
-            Console.WriteLine("║                               ║");
+            SetCursorToMiddle(userName.Length);
+            Console.WriteLine("║" + new string(' ', length) + "║");
 
-            SetCursorToMiddle();
-            Console.WriteLine("╚═══════════════════════════════╝");
+            SetCursorToMiddle(userName.Length);
+            Console.WriteLine("╚" + new string('═', length) + "╝");
         }
 
         public static void PrintWithColor(string message, ConsoleColor consoleColor)

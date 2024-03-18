@@ -21,7 +21,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             int eventId = eventCollaborator.EventId;
 
-            EventCollaborator newEventCollaborator = new(eventId, GlobalData.user.Id, "participant", null, null, null,
+            EventCollaborator newEventCollaborator = new(eventId, GlobalData.GetUser().Id, "participant", null, null, null,
                                                         eventCollaborator.EventDate);
 
             if (IsEligibleToCollaborate(newEventCollaborator)) return;

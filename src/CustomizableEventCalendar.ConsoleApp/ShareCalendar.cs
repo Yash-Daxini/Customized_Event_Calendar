@@ -32,7 +32,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
                 User user = GetUserFromSerialNumber(serialNumberOfTableRow);
 
-                SharedCalendar sharedCalendar = new(user.Id, GlobalData.user == null ? 0 : GlobalData.user.Id, new DateOnly(), new DateOnly());
+                SharedCalendar sharedCalendar = new(user.Id, GlobalData.GetUser() == null ? 0 : GlobalData.GetUser().Id, new DateOnly(), new DateOnly());
 
                 GetDatesFromUser(sharedCalendar);
 

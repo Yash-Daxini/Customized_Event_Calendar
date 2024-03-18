@@ -25,7 +25,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
         public EventCollaborator? ReadByEventId(int eventId)
         {
             string query = @$"Select * from [dbo].[EventCollaborator]
-                              where EventId = {eventId} and UserId = {GlobalData.user.Id}";
+                              where EventId = {eventId} and UserId = {GlobalData.GetUser().Id}";
             Connect();
 
             ExecuteQuery(query);

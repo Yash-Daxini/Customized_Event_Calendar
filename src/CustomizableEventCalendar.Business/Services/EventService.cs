@@ -103,7 +103,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public string GenerateEventTable()
         {
-            List<Event> events = GetAllEvents().Where(eventObj => eventObj.UserId == GlobalData.user.Id)
+            List<Event> events = GetAllEvents().Where(eventObj => eventObj.UserId == GlobalData.GetUser().Id)
                                                .ToList();
 
             List<List<string>> outputRows = AddEventDetailsIn2DList(events);

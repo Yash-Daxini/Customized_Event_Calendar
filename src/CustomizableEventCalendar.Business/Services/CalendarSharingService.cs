@@ -20,7 +20,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             return [.._sharedEventsRepository.GetAll(data => new SharedCalendar(data))
                                                                         .Where(sharedEvent =>
-                                                                         sharedEvent.ReceiverUserId == GlobalData.user.Id)];
+                                                                         sharedEvent.ReceiverUserId ==
+                                                                         GlobalData.GetUser().Id)];
 
         }
 

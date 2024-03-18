@@ -95,7 +95,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             switch (choice)
             {
                 case 1:
-                    Console.WriteLine($"\nEnter your proposed timings for {eventCollaborator.EventDate.Date}");
+                    Console.WriteLine($"\nEnter your proposed timings for {DateTimeManager.GetDateFromDateTime(eventCollaborator.EventDate)}");
                     TakeStartingAndEndingHourOfProposedEvent(eventCollaborator);
                     break;
                 case 0: break;
