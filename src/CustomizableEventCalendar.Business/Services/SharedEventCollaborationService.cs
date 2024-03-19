@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp;
+﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
@@ -24,7 +19,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             EventCollaborator newEventCollaborator = new(eventId, GlobalData.GetUser().Id, "participant", null, null, null,
                                                         eventCollaborator.EventDate);
 
-            if (IsEligibleToCollaborate(newEventCollaborator)) return;
+            if (!IsEligibleToCollaborate(newEventCollaborator)) return;
 
             _eventCollaboratorsService.InsertEventCollaborators(newEventCollaborator);
 

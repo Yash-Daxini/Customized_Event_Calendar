@@ -37,6 +37,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return listOfEvents;
         }
 
+        public List<Event> GetAllEventsOfLoggedInUser()
+        {
+            return [.. GetAllEvents().Where(eventObj => eventObj.UserId == GlobalData.GetUser().Id)];
+        }
+
         public Event GetEventsById(int eventId)
         {
             Event listOfEvents = _eventRepository.GetById(data => new Event(data), eventId);
@@ -103,12 +108,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public string GenerateEventTable()
         {
-            List<Event> events = GetAllEvents().Where(eventObj => eventObj.UserId == GlobalData.GetUser().Id)
-                                               .ToList();
+            List<Event> events = GetAllEventsOfLoggedInUser();
 
             List<List<string>> outputRows = AddEventDetailsIn2DList(events);
 
-            string eventTable = PrintHandler.GiveTable(outputRows);
+            string eventTable = PrintService.GenerateTable(outputRows);
 
             if (events.Count > 0)
             {
@@ -120,13 +124,15 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         private static List<List<string>> AddEventDetailsIn2DList(List<Event> events)
         {
-            List<List<string>> outputRows = [["Event NO.", "Title", "Description", "Location",
-                                              "Event Repetition"]];
+            List<List<string>> outputRows = [["Event NO.", "Title", "Description", "Location", "Event Repetition", "Start Date", "End Date", "Duration"]];
 
             foreach (var (eventObj, index) in events.Select((value, index) => (value, index)))
             {
                 outputRows.Add([(index+1).ToString(), eventObj.Title, eventObj.Description, eventObj.Location,
-                                RecurrencePatternMessageGenerator.GenerateRecurrenceMessage(eventObj)]);
+                                RecurrencePatternMessageGenerator.GenerateRecurrenceMessage(eventObj),
+                                eventObj.EventStartDate.ToString(),eventObj.EventEndDate.ToString(),
+                                DateTimeManager.ConvertTo12HourFormat(eventObj.EventStartHour)+" - "+
+                                DateTimeManager.ConvertTo12HourFormat(eventObj.EventEndHour)]);
             }
 
             return outputRows;
@@ -139,12 +145,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public int GetTotalEventCount()
         {
-            return GetAllEvents().Count;
+            return GetAllEventsOfLoggedInUser().Count;
         }
 
         public int GetEventIdFromSerialNumber(int srNo)
         {
-            return GetAllEvents()[srNo - 1].Id;
+            return GetAllEventsOfLoggedInUser()[srNo - 1].Id;
         }
     }
 }

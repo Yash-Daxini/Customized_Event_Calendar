@@ -21,17 +21,17 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         private readonly static ShareCalendar _shareCalendar = new();
 
-        private static readonly Dictionary<EventOperations, Action> operationDictionary = new()
-        {{ EventOperations.Add, TakeInputToAddEvent },
-        { EventOperations.Display, DisplayEvents },
-        { EventOperations.Delete, TakeInputToDeleteEvent },
-        { EventOperations.Update, TakeInputToUpdateEvent },
-        { EventOperations.View, CalendarView.ViewSelection },
-        { EventOperations.ShareCalendar, _shareCalendar.GetDetailsToShareCalendar },
-        { EventOperations.ViewSharedCalendar, _shareCalendar.ViewSharedCalendars },
-        { EventOperations.SharedEventCollaboration, SharedEventCollaboration.ShowSharedEvents },
-        { EventOperations.EventWithMultipleInvitees, TakeInputForProposedEvent },
-        { EventOperations.GiveResponseToProposedEvent, ProposedEventResponseHandler.ShowProposedEvents}};
+        private static readonly Dictionary<EventOperation, Action> operationDictionary = new()
+        {{ EventOperation.Add, TakeInputToAddEvent },
+        { EventOperation.Display, DisplayEvents },
+        { EventOperation.Delete, TakeInputToDeleteEvent },
+        { EventOperation.Update, TakeInputToUpdateEvent },
+        { EventOperation.View, CalendarView.ViewSelection },
+        { EventOperation.ShareCalendar, _shareCalendar.GetDetailsToShareCalendar },
+        { EventOperation.ViewSharedCalendar, _shareCalendar.ViewSharedCalendars },
+        { EventOperation.SharedEventCollaboration, SharedEventCollaboration.ShowSharedEvents },
+        { EventOperation.EventWithMultipleInvitees, TakeInputForProposedEvent },
+        { EventOperation.GiveResponseToProposedEvent, ProposedEventResponseHandler.ShowProposedEvents}};
 
         public static void PrintColorMessage(string message, ConsoleColor color)
         {
@@ -50,7 +50,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                 { "7. View Shared calendar" , ConsoleColor.Magenta } ,
                 { "8. Collaborate from shared calendar" , ConsoleColor.DarkGreen} ,
                 { "9. Add event with multiple invitees" , ConsoleColor.DarkGray } ,
-                { "10. Give response to proposed events" , ConsoleColor.DarkCyan} , {"Back" , ConsoleColor.Gray }
+                { "10. Give response to proposed events" , ConsoleColor.DarkCyan} , {"0. Back" , ConsoleColor.Gray }
             };
 
             foreach (var (key, value) in operationWithColor.Select(operation => (operation.Key, operation.Value)))
@@ -65,14 +65,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             int choice = GetValidatedChoice();
 
-            EventOperations option = (EventOperations)choice;
+            EventOperation option = (EventOperation)choice;
 
             if (operationDictionary.TryGetValue(option, out Action? actionMethod))
             {
                 actionMethod.Invoke();
                 AskForChoice();
             }
-            else if (option == EventOperations.Back)
+            else if (option == EventOperation.Back)
             {
                 Console.WriteLine("Going Back ...");
                 Authentication.AuthenticationChoice();
@@ -150,7 +150,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                     userTableContent.Add([user.Id.ToString(), user.Name, user.Email]);
                 }
 
-                userInformation.AppendLine(PrintHandler.GiveTable(userTableContent));
+                userInformation.AppendLine(PrintService.GenerateTable(userTableContent));
 
                 Console.WriteLine(userInformation);
             }
@@ -313,9 +313,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
                 if (!IsEventsPresent()) return;
 
-                int Id = TakeIdForUpdateOrDelete(true);
+                int serialNumber = TakeIdForUpdateOrDelete(true);
 
-                _eventService.DeleteEvent(Id);
+                _eventService.DeleteEvent(serialNumber);
 
                 PrintHandler.PrintSuccessMessage("Data deleted Successfully");
             }
@@ -335,9 +335,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
                 if (!IsEventsPresent()) return;
 
-                int Id = TakeIdForUpdateOrDelete(false);
+                int id = TakeIdForUpdateOrDelete(false);
 
-                Event eventObj = _eventService.GetEventsById(_eventService.GetEventIdFromSerialNumber(Id));
+                Event eventObj = _eventService.GetEventsById(_eventService.GetEventIdFromSerialNumber(id));
 
                 if (eventObj == null) return;
 
@@ -353,7 +353,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
                 RecurrenceHandling.AskForRecurrenceChoice(eventObj);
 
-                bool isUpdated = _eventService.UpdateEvent(eventObj, Id);
+                bool isUpdated = _eventService.UpdateEvent(eventObj, id);
 
                 if (isUpdated) PrintHandler.PrintSuccessMessage("Data Updated Successfully");
             }

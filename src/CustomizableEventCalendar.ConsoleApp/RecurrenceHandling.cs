@@ -57,7 +57,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         public static void GetRecurrenceForSingleEvent(Event eventObj)
         {
-            GetDates(eventObj);
+            PrintHandler.PrintNewLine();
+            eventObj.EventStartDate = DateOnly.FromDateTime(ValidatedInputProvider.GetValidatedDateTime("Enter event date : "));
+            eventObj.EventEndDate = eventObj.EventStartDate;
         }
 
         public static void GetRecurrencePattern(Event eventObj)
@@ -239,28 +241,28 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             Console.WriteLine("\n1. Monday \n2. Tuesday \n3. Wednesday \n4. Thursday \n5. Friday \n6. Saturday \n7. " +
                               "Sunday");
 
-            WeekDays choice = (WeekDays)ValidatedInputProvider.GetValidatedInteger("\nEnter choice :");
+            Domain.Enums.WeekDay choice = (Domain.Enums.WeekDay)ValidatedInputProvider.GetValidatedInteger("\nEnter choice :");
             switch (choice)
             {
-                case WeekDays.Monday:
+                case Domain.Enums.WeekDay.Monday:
                     eventObj.ByWeekDay = "1";
                     break;
-                case WeekDays.Tuesday:
+                case Domain.Enums.WeekDay.Tuesday:
                     eventObj.ByWeekDay = "2";
                     break;
-                case WeekDays.Wednesday:
+                case Domain.Enums.WeekDay.Wednesday:
                     eventObj.ByWeekDay = "3";
                     break;
-                case WeekDays.Thursday:
+                case Domain.Enums.WeekDay.Thursday:
                     eventObj.ByWeekDay = "4";
                     break;
-                case WeekDays.Friday:
+                case Domain.Enums.WeekDay.Friday:
                     eventObj.ByWeekDay = "5";
                     break;
-                case WeekDays.Saturday:
+                case Domain.Enums.WeekDay.Saturday:
                     eventObj.ByWeekDay = "6";
                     break;
-                case WeekDays.Sunday:
+                case Domain.Enums.WeekDay.Sunday:
                     eventObj.ByWeekDay = "7";
                     break;
                 default:

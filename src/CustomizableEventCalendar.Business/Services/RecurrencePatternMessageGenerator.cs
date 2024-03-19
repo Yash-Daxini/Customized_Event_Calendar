@@ -28,28 +28,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             if (eventObj.ByMonth != null) recurrenceMessage.Append($"in {GetMonth((int)
                                                                    eventObj.ByMonth)} ");
 
-
-            recurrenceMessage.Append(GetDatesAndHours(eventObj));
-
             return recurrenceMessage.ToString();
         }
 
         private static string GenerateRecurrenceMessageForNonRecurringEvent(Event eventObj)
         {
-            return $"On {eventObj.EventStartDate} at {eventObj.EventStartHour} to {eventObj.EventEndHour}";
-        }
-
-        private static string GetDatesAndHours(Event eventObj)
-        {
-            StringBuilder datesAndHours = new();
-
-            datesAndHours.Append($"effective {eventObj.EventStartDate} ");
-            datesAndHours.Append($"until {eventObj.EventEndDate} ");
-
-            datesAndHours.Append($"at {DateTimeManager.ConvertTo12HourFormat(eventObj.EventStartHour)} ");
-            datesAndHours.Append($"to {DateTimeManager.ConvertTo12HourFormat(eventObj.EventEndHour)} ");
-
-            return datesAndHours.ToString();
+            return $"On {eventObj.EventStartDate} at {DateTimeManager.ConvertTo12HourFormat(eventObj.EventStartHour)} " +
+                   $" to {DateTimeManager.ConvertTo12HourFormat(eventObj.EventEndHour)}";
         }
 
         private static string GetCombinationOfIntervalAndFrequency(Event eventObj)

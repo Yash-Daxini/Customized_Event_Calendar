@@ -38,7 +38,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             List<List<string>> sharedEventsTableContent = InsertInto2DList(sharedCalendars);
 
-            sharedEventsDisplayString.Append(PrintHandler.GiveTable(sharedEventsTableContent));
+            sharedEventsDisplayString.Append(PrintService.GenerateTable(sharedEventsTableContent));
 
             return sharedEventsDisplayString.ToString();
         }
@@ -110,7 +110,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 }
             }
 
-            sharedEventInfo.AppendLine(PrintHandler.GiveTable(sharedEventTableContent));
+            sharedEventInfo.AppendLine(PrintService.GenerateTable(sharedEventTableContent));
 
             return sharedEventInfo.ToString();
         }

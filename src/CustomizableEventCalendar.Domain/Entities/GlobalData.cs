@@ -11,15 +11,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
     {
         private static User? user;
 
-        public static User GetUser() { return user; }
+        public static User? GetUser() { return user; }
 
-        public static void SetUser(User newUser)
+        public static void SetUser(User? newUser)
         {
-            if (newUser == null)
-            {
-                return;
-            }
-
             user = newUser;
         }
     }

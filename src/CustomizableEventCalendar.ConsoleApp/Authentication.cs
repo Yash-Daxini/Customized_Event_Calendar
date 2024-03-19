@@ -16,68 +16,50 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             if (GlobalData.GetUser() != null)
             {
-                AskForChoiceToLoginUser();
+                AskForChoiceToLoggedInUser();
             }
             else
             {
-                AskForChoiceToLogoutUser();
+                AskForChoiceToLoggedOutUser();
             }
 
         }
 
-        public static void AskForChoiceToLoginUser()
+        public static void AskForChoiceToLoggedInUser()
         {
 
-            int choice = ValidatedInputProvider.GetValidatedInteger("\nChoose the option: \n1. Logout \n0. Exit \nEnter Choice : ");
+            int choice = ValidatedInputProvider.GetValidatedIntegerBetweenRange("\nChoose the option: \n1. Logout \n0. Exit \nEnter Choice : ", 0, 1);
 
-            LoggedinUserChoices option = (LoggedinUserChoices)choice;
+            LoggedinUserChoice option = (LoggedinUserChoice)choice;
 
             switch (option)
             {
-                case LoggedinUserChoices.Logout:
+                case LoggedinUserChoice.Logout:
                     Logout();
                     AuthenticationChoice();
                     break;
-                case LoggedinUserChoices.Exit:
-                    break;
-                default:
-                    Console.WriteLine("Please choose correct option");
-                    AuthenticationChoice();
+                case LoggedinUserChoice.Exit:
                     break;
             }
 
         }
 
-        public static void AskForChoiceToLogoutUser()
+        public static void AskForChoiceToLoggedOutUser()
         {
 
-            int choice = ValidatedInputProvider.GetValidatedInteger("\nChoose the option: \n1. Login\n2. Sign up \n0. Exit \nEnter Choice :  ");
+            int choice = ValidatedInputProvider.GetValidatedIntegerBetweenRange("\nChoose the option: \n1. Login\n2. Sign up \n0. Exit \nEnter Choice :  ", 0, 2);
 
-            LoggedoutUserChoices option = (LoggedoutUserChoices)choice;
+            LoggedoutUserChoice option = (LoggedoutUserChoice)choice;
 
             switch (option)
             {
-                case LoggedoutUserChoices.Login:
-                    bool isLoggedin = Login();
-
-                    if (!isLoggedin) 
-                        AuthenticationChoice();
-
+                case LoggedoutUserChoice.Login:
+                    Login();
                     break;
-                case LoggedoutUserChoices.Signup:
-                    bool isSignUp = SignUp();
-
-                    if (isSignUp) 
-                        Login();
-                    else 
-                        AuthenticationChoice();
-
+                case LoggedoutUserChoice.Signup:
+                    SignUp();
                     break;
-                case LoggedoutUserChoices.Exit:
-                    break;
-                default:
-                    Console.WriteLine("Please choose correct option");
-                    AuthenticationChoice();
+                case LoggedoutUserChoice.Exit:
                     break;
             }
 
@@ -108,7 +90,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
         }
 
-        public static bool SignUp()
+        public static void SignUp()
         {
             try
             {
@@ -118,7 +100,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                 PrintHandler.PrintSuccessMessage("Sign up completed successfully");
 
-                return true;
+                Login();
+
+                return;
             }
             catch (SqlException ex)
             {
@@ -135,7 +119,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             {
                 PrintHandler.PrintErrorMessage("Some error occurred! " + ex.Message);
             }
-            return false;
+
+            AuthenticationChoice();
         }
 
         public static void GetLoginDetails(out string userName, out string password)
@@ -149,7 +134,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             password = Console.ReadLine();
         }
 
-        public static bool Login()
+        public static void Login()
         {
             try
             {
@@ -165,19 +150,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 else
                 {
                     PrintHandler.PrintErrorMessage("Invalid user name or password! Please try again.");
-                    return false;
                 }
-                return true;
-
             }
             catch (Exception ex)
             {
                 PrintHandler.PrintErrorMessage("Some error occurred! " + ex.Message);
             }
-
-            return false;
-
-
+            AuthenticationChoice();
         }
 
         public static void ShowUserInfo()

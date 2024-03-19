@@ -93,6 +93,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return startDate <= endDate;
         }
 
+        public static bool IsValidDateWithGreaterThanTodayDate(DateOnly startDate)
+        {
+            return startDate >= DateOnly.FromDateTime(DateTime.Now);
+        }
+
         public static bool IsNumberInRange(int start, int end, int number)
         {
             return number >= start && number <= end;

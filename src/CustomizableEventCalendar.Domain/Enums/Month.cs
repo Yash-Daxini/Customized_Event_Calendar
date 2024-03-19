@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums
 {
-    internal enum Months
+    internal enum Month
     {
         January = 1,
         February = 2,

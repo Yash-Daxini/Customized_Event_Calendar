@@ -27,7 +27,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             List<List<string>> dailyViewTableContent = InsertTodayEventsWithDateIn2DList(hourEventMapping);
 
-            dailyView.AppendLine(PrintHandler.GiveTable(dailyViewTableContent));
+            dailyView.AppendLine(PrintService.GenerateTable(dailyViewTableContent));
 
             return dailyView.ToString();
         }
@@ -76,13 +76,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         private List<EventCollaborator> GetTodayEvents()
         {
-            List<EventCollaborator> eventCollaborators = [.. _eventCollaboratorsService.GetAllEventCollaborators()
-                                                                      .Where(eventCollaborator =>
-                                                                       eventCollaborator.EventDate.Date == DateTime.Today
-                                                                       && eventCollaborator.UserId == GlobalData.GetUser().Id
-                                                                       && !IsProposedEvent(eventCollaborator.EventId))];
-
-            return eventCollaborators;
+            return [.. _eventCollaboratorsService.GetAllEventCollaborators()
+                   .Where(eventCollaborator => eventCollaborator.EventDate.Date == DateTime.Today
+                                               && eventCollaborator.UserId == GlobalData.GetUser().Id
+                                               && !IsProposedEvent(eventCollaborator.EventId))];
         }
 
         private static void AssignEventToSpecificHour(ref Dictionary<int, Event> eventRecordByHour, Event eventObj)
@@ -137,7 +134,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             List<List<string>> weeklyViewTableContent = Generate2DListForWeeklyEvents(startDateOfWeek, endDateOfWeek,
                                                                                               currentWeekEvents);
 
-            weeklyView.AppendLine(PrintHandler.GiveTable(weeklyViewTableContent));
+            weeklyView.AppendLine(PrintService.GenerateTable(weeklyViewTableContent));
 
             return weeklyView.ToString();
         }
@@ -234,7 +231,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             List<List<string>> monthlyViewTableContent = Generate2DListForMonthlyEvents(ref startDateOfMonth, endDateOfMonth, currentMonthEvents);
 
-            monthlyView.Append(PrintHandler.GiveTable(monthlyViewTableContent));
+            monthlyView.Append(PrintService.GenerateTable(monthlyViewTableContent));
 
             return monthlyView.ToString();
         }

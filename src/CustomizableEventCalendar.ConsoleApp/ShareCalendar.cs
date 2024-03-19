@@ -1,13 +1,5 @@
-﻿using System;
-using System.CodeDom.Compiler;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Channels;
-using System.Threading.Tasks;
+﻿using System.Text;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp.InputMessageStore;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
@@ -21,14 +13,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             try
             {
-                int availableUsersToShareCaledar = ShowAllUser();
+                int availableUsersToShareCalendar = ShowAllUser();
 
-                if (availableUsersToShareCaledar <= 0) return;
+                if (availableUsersToShareCalendar <= 0) return;
 
                 string inputMessage = "Enter Sr No. whom you want to share calendar :- ";
 
                 int serialNumberOfTableRow = ValidatedInputProvider.GetValidatedIntegerBetweenRange(inputMessage, 1,
-                                             availableUsersToShareCaledar);
+                                             availableUsersToShareCalendar);
 
                 User user = GetUserFromSerialNumber(serialNumberOfTableRow);
 
@@ -78,7 +70,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             {
                 StringBuilder userInformation = new();
 
-                userInformation.AppendLine(PrintHandler.GiveTable(Get2DListToGenerateTable(users)));
+                userInformation.AppendLine(PrintService.GenerateTable(Get2DListToGenerateTable(users)));
 
                 Console.WriteLine(userInformation);
             }
@@ -104,7 +96,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         }
 
         public void ViewSharedCalendars()
-
         {
             try
             {

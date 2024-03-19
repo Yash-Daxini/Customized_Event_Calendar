@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums
 {
-    internal enum WeekDays
+    internal enum WeekDay
     {
         Monday = 1,
         Tuesday = 2,

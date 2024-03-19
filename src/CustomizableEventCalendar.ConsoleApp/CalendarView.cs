@@ -17,23 +17,23 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             int choice = ValidatedInputProvider.GetValidatedInteger("\nChoose the view you want to see : 1. Daily View " +
                                                                     "2. Weekly View 3. Monthly View 0. Back :- ");
 
-            Domain.Enums.CalendarView option = (Domain.Enums.CalendarView)choice;
+            CalendarViewChoice option = (CalendarViewChoice)choice;
 
             switch (option)
             {
-                case Domain.Enums.CalendarView.Daily:
+                case CalendarViewChoice.Daily:
                     DailyView();
                     ViewSelection();
                     break;
-                case Domain.Enums.CalendarView.Weekly:
+                case CalendarViewChoice.Weekly:
                     WeeklyView();
                     ViewSelection();
                     break;
-                case Domain.Enums.CalendarView.Monthly:
+                case CalendarViewChoice.Monthly:
                     MonthlyView();
                     ViewSelection();
                     break;
-                case Domain.Enums.CalendarView.Back:
+                case CalendarViewChoice.Back:
                     Console.WriteLine("Going back");
                     break;
                 default:

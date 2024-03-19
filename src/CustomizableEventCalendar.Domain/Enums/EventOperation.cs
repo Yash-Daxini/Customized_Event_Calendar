@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums
 {
-    internal enum EventOperations
+    internal enum EventOperation
     {
         Add = 1,
         Display = 2,

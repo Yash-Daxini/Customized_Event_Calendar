@@ -56,22 +56,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             Console.WriteLine("|");
         }
 
-        public static string GiveTable(List<List<string>> data)
-        {
-
-            string table = PrintService.GenerateTable(data);
-
-            return table.ToString();
-        }
-
-        public static string GiveTableForNotification(List<List<string>> data)
-        {
-
-            string table = PrintService.GenerateTableForNotification(data);
-
-            return table.ToString();
-        }
-
         public static void SetCursorToMiddle()
         {
             Console.SetCursorPosition((Console.WindowWidth - 30) / 2, Console.CursorTop);

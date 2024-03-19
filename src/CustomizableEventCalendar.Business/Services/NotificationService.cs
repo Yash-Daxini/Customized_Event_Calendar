@@ -38,11 +38,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             StringBuilder notification = new();
 
-            string completedEvents = GetCompletedEvents(eventCollaborators, events);
+            //string completedEvents = GetCompletedEvents(eventCollaborators, events);
             string upcommingEvents = GetUpcomingEvents(eventCollaborators, events);
             string proposedEvents = GetProposedEvents(events);
 
-            if (completedEvents.Length > 0) notification.AppendLine(completedEvents);
+            //if (completedEvents.Length > 0) notification.AppendLine(completedEvents);
             if (upcommingEvents.Length > 0) notification.AppendLine(upcommingEvents);
             if (proposedEvents.Length > 0) notification.AppendLine(proposedEvents);
 
@@ -79,7 +79,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             completedEventsNotificationTable.AppendLine($"Completed events :- \n{PrintHandler.PrintHorizontalLine()}\n");
 
-            completedEventsNotificationTable.AppendLine(PrintHandler.GiveTableForNotification(InsertCompletedEventsInto2DList
+            completedEventsNotificationTable.AppendLine(PrintService.GenerateTableForNotification(InsertCompletedEventsInto2DList
                                                         (completedEvents, events)));
 
             return completedEventsNotificationTable.ToString();
@@ -113,7 +113,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             upcommingEventsNotificationTable.AppendLine($"Your today's events :- \n{PrintHandler.PrintHorizontalLine()}\n");
 
-            upcommingEventsNotificationTable.AppendLine(PrintHandler.GiveTableForNotification(InsertUpcommingEventsInto2DList
+            upcommingEventsNotificationTable.AppendLine(PrintService.GenerateTableForNotification(InsertUpcommingEventsInto2DList
                                                         (upcommingEvents, events)));
 
             return upcommingEventsNotificationTable.ToString();
@@ -156,7 +156,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             proposedEventsNotificationTable.AppendLine($"Proposed Events : \n {PrintHandler.PrintHorizontalLine()} \n");
 
-            proposedEventsNotificationTable.AppendLine(PrintHandler.GiveTableForNotification(InsertProposedEventsInto2DList
+            proposedEventsNotificationTable.AppendLine(PrintService.GenerateTableForNotification(InsertProposedEventsInto2DList
                                                       (proposedEventCollabprators)));
 
             return proposedEventsNotificationTable.ToString();

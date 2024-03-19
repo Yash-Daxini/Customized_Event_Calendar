@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums
 {
-    internal enum LoggedinUserChoices
+    internal enum CalendarViewChoice
     {
-        Logout = 1,
-        Exit = 0
-
+        Daily = 1,
+        Weekly = 2,
+        Monthly = 3,
+        Back = 0
     }
 }

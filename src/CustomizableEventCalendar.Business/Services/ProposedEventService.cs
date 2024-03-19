@@ -48,7 +48,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             List<List<string>> outputRows = AddProposedEventDetailsIn2DList(proposedEvents);
 
-            string eventTable = PrintHandler.GiveTable(outputRows);
+            string eventTable = PrintService.GenerateTable(outputRows);
 
             if (proposedEvents.Count > 0)
             {

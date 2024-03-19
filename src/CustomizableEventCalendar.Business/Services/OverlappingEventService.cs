@@ -15,27 +15,27 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         public bool IsOverlappingEvent(Event eventForVerify)
         {
 
-            List<DateTime> occurrences = [];
+            List<DateTime> occurrencesOfEventForVerify = [];
 
-            FindOccurrencesOfEvents(eventForVerify, ref occurrences);
+            FindOccurrencesOfEvents(eventForVerify, ref occurrencesOfEventForVerify);
 
             EventService eventService = new();
 
-            List<Event> events = [.. eventService.GetAllEvents().Where(eventObj => eventObj.UserId == GlobalData.GetUser().Id)];
+            List<Event> events = eventService.GetAllEventsOfLoggedInUser();
 
-            foreach (var eventObj in events)
+            foreach (var eventToCheckOverlap in events)
             {
-                List<DateTime> occurrences1 = [];
+                List<DateTime> occurrencesOfEventToCheckOverlap = [];
 
-                FindOccurrencesOfEvents(eventObj, ref occurrences1);
+                FindOccurrencesOfEvents(eventToCheckOverlap, ref occurrencesOfEventToCheckOverlap);
 
-                foreach (var occurrence in occurrences)
+                foreach (var occurrence in occurrencesOfEventForVerify)
                 {
-                    DateTime matchedDate = occurrences1.Find(singlOccurrence => singlOccurrence == occurrence);
+                    DateTime matchedDate = occurrencesOfEventToCheckOverlap.Find(singlOccurrence => singlOccurrence == occurrence);
                     if (matchedDate != new DateTime())
                     {
 
-                        string message = GetOverlapMessageFromEvents(eventForVerify, eventObj, occurrence, matchedDate);
+                        string message = GetOverlapMessageFromEvents(eventForVerify, eventToCheckOverlap, occurrence, matchedDate);
                         PrintHandler.PrintWarningMessage(message);
                         return true;
                     }
@@ -46,14 +46,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return false;
         }
 
-        public static string GetOverlapMessageFromEvents(Event eventForVerify, Event eventObj, DateTime occurrence,
-                                                  DateTime matchedDate)
+        public static string GetOverlapMessageFromEvents(Event eventForVerify, Event eventToCheckOverlap, DateTime occurrence, DateTime matchedDate)
         {
-            return $"{eventForVerify.Title} overlaps with {eventObj.Title} at following date and time.\n" +
-                   $"{occurrence.Date} from {DateTimeManager.ConvertTo12HourFormat(eventForVerify.EventStartHour)} " +
+            return $"{eventForVerify.Title} overlaps with {eventToCheckOverlap.Title} at following date and time.\n" +
+                   $"{DateTimeManager.GetDateFromDateTime(occurrence)} from {DateTimeManager.ConvertTo12HourFormat(eventForVerify.EventStartHour)} " +
                    $" to {DateTimeManager.ConvertTo12HourFormat(eventForVerify.EventEndHour)} " +
-                   $"overlaps with {matchedDate.Date} from {DateTimeManager.ConvertTo12HourFormat(eventObj.EventStartHour)}" +
-                   $" to {DateTimeManager.ConvertTo12HourFormat(eventObj.EventEndHour)}" +
+                   $"overlaps with {DateTimeManager.GetDateFromDateTime(matchedDate)} from " +
+                   $"{DateTimeManager.ConvertTo12HourFormat(eventToCheckOverlap.EventStartHour)}" +
+                   $" to {DateTimeManager.ConvertTo12HourFormat(eventToCheckOverlap.EventEndHour)}" +
                    $"\nPlease choose another date time !";
         }
 
@@ -97,7 +97,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             DateOnly startDate = eventObj.EventStartDate;
 
-            while (startDate < eventObj.EventEndDate)
+            while (startDate <= eventObj.EventEndDate)
             {
                 int day = Convert.ToInt32(startDate.DayOfWeek.ToString("d"));
 
@@ -115,7 +115,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             DateOnly startDate = eventObj.EventStartDate;
 
-            while (startDate < eventObj.EventEndDate)
+            while (startDate <= eventObj.EventEndDate)
             {
                 OccurrencesForSpecificHour(eventObj.EventStartHour, eventObj.EventEndHour, startDate, ref occurrences);
 
@@ -145,7 +145,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             DateOnly curDate = startDateOfWeek;
 
-            while (curDate < eventObj.EventEndDate)
+            while (curDate <= eventObj.EventEndDate)
             {
                 int day = Convert.ToInt32(curDate.DayOfWeek.ToString("d"));
 
@@ -203,11 +203,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             int day = (int)eventObj.ByMonthDay;
 
-            DateOnly startDate = new();
-
-            startDate = new(eventObj.EventStartDate.Year, eventObj.EventStartDate.Month, GetMinimumDateFromGivenMonthAndDay(day,
+            DateOnly startDate = new(eventObj.EventStartDate.Year, eventObj.EventStartDate.Month, GetMinimumDateFromGivenMonthAndDay(day,
                                      eventObj.EventStartDate));
-
 
             while (true)
             {

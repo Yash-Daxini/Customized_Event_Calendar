@@ -31,8 +31,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             EventService eventService = new();
 
-            return [..eventService.GetAllEvents().Where(eventObj => eventObj.IsProposed
-                                                        && eventObj.UserId == GlobalData.GetUser().Id)];
+            return [.. eventService.GetAllEventsOfLoggedInUser().Where(eventObj => eventObj.IsProposed)];
         }
 
         private int CalculateDayDifferenceBetweenTwoDates(DateTime firstDate, DateTime secondDate)

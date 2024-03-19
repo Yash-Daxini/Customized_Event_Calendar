@@ -22,7 +22,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
 
             return user != null;
-
         }
 
         private static void ScheduleProposedEventsForLoggedInUser()
