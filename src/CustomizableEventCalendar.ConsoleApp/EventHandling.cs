@@ -46,6 +46,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                 { "10. Give response to proposed events" , ConsoleColor.DarkCyan} , {"0. Back" , ConsoleColor.Gray }
             };
 
+            PrintHandler.PrintNewLine();
+
             foreach (var (key, value) in operationWithColor.Select(operation => (operation.Key, operation.Value)))
             {
                 PrintColorMessage(key, value);
@@ -96,6 +98,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             try
             {
+                if (GetInsensitiveUserInformationList().Count == 0)
+                {
+                    PrintHandler.PrintWarningMessage("No invitees are available !");
+                    return;
+                }
+
                 Event eventObj = new();
 
                 GetEventDetailsFromUser(eventObj);
@@ -106,17 +114,16 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                                                                                   "date in dd-MM-yyyy) :- ");
 
                 eventObj.EventStartDate = DateOnly.FromDateTime(proposedDate);
+
                 eventObj.EventEndDate = DateOnly.FromDateTime(proposedDate);
 
                 eventObj.UserId = GlobalData.GetUser().Id;
 
+                string invitees = GetInviteesFromUser();
+
                 eventObj.IsProposed = true;
 
                 AddEvent(eventObj);
-
-                string invitees = GetInviteesFromUser();
-
-                if (invitees.Length == 0) return;
 
                 MultipleInviteesEventService.AddInviteesInProposedEvent(eventObj, invitees);
             }
@@ -152,11 +159,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             {
                 case 1:
                     GetStartingAndEndingHourOfEvent(eventObj);
-                    RecurrenceHandling.AskForRecurrenceChoice(eventObj);
+                    if (eventObj.IsProposed) RecurrenceHandling.GetRecurrenceForSingleEvent(eventObj);
                     return true;
                 case 2:
                     return false;
-                    //break;
             }
             return false;
         }
@@ -174,18 +180,17 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         public static bool ShowAllUser()
         {
-            UserService userService = new();
-            List<User> users = userService.GetInsensitiveInformationOfUser();
+            List<User> users = GetInsensitiveUserInformationList();
 
             StringBuilder userInformation = new();
 
             if (users.Count != 0)
             {
-                List<List<string>> userTableContent = [["User Sr. No", "Name", "Email"]];
+                List<List<string>> userTableContent = [["Sr. No", "Name", "Email"]];
 
-                foreach (var user in users)
+                foreach (var (user, index) in users.Select((user, index) => (user, index)))
                 {
-                    userTableContent.Add([user.Id.ToString(), user.Name, user.Email]);
+                    userTableContent.Add([(index + 1).ToString(), user.Name, user.Email]);
                 }
 
                 userInformation.AppendLine(PrintService.GenerateTable(userTableContent));
@@ -200,16 +205,37 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         }
 
+        public static List<User> GetInsensitiveUserInformationList()
+        {
+            UserService userService = new();
+            List<User> users = userService.GetInsensitiveInformationOfUser();
+
+            return users;
+        }
+
         public static string GetInviteesFromUser()
         {
             bool isUsersAvailable = ShowAllUser();
 
             if (!isUsersAvailable) return "";
 
-            string invitees = ValidatedInputProvider.GetValidatedCommaSeparatedInput("Enter users you want to Invite. " +
-                                                                       "Enter users Sr No. comma separated Ex:- 1,2,3 :- ");
+            string inviteesSerialNumber = ValidatedInputProvider.GetValidatedCommaSeparatedInputInRange("Enter users you want to Invite. (Enter users Sr No. comma separated Ex:- 1,2,3) : ", 1, GetInsensitiveUserInformationList().Count);
 
-            return invitees;
+            return GetInviteesUserIdFromSerialNumber(inviteesSerialNumber);
+        }
+
+        private static string GetInviteesUserIdFromSerialNumber(string inviteesSerialNumber)
+        {
+            List<User> users = GetInsensitiveUserInformationList();
+
+            StringBuilder invitees = new();
+
+            foreach (int inviteeSerialNumber in inviteesSerialNumber.Split(",").Select(number => Convert.ToInt32(number.Trim())))
+            {
+                invitees.Append(users[inviteeSerialNumber - 1].Id + ",");
+            }
+
+            return invitees.ToString()[..(invitees.Length - 1)];
         }
 
         public static void GetEventDetailsFromUser(Event eventObj)
@@ -324,7 +350,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             {
                 if (IsOverlappingEvent(eventObj, true)) return;
 
-                int eventId = _eventService.InsertEvent(eventObj);
+                eventObj.Id = _eventService.InsertEvent(eventObj);
 
                 PrintHandler.PrintSuccessMessage("Event Added Successfully");
 

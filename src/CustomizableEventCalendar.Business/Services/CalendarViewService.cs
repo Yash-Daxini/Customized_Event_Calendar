@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Numerics;
+using System.Text;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 
 
@@ -71,8 +72,17 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             return [.. _eventCollaboratorsService.GetAllEventCollaborators()
                    .Where(eventCollaborator => eventCollaborator.EventDate == DateOnly.FromDateTime(DateTime.Today)
-                                               && eventCollaborator.UserId == GlobalData.GetUser().Id
+                                               && IsConsiderableEventCollaborators(eventCollaborator)
                                                && !IsProposedEvent(eventCollaborator.EventId))];
+        }
+
+        private static bool IsConsiderableEventCollaborators(EventCollaborator eventCollaborator)
+        {
+            return eventCollaborator.UserId == GlobalData.GetUser().Id
+                   && !(eventCollaborator.ConfirmationStatus.Equals("reject")
+                        && eventCollaborator.ProposedStartHour == null
+                        && eventCollaborator.ProposedEndHour == null
+                       );
         }
 
         private static void AssignEventToSpecificHour(ref Dictionary<int, Event> eventRecordByHour, Event eventObj)
@@ -105,7 +115,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             return eventCollaborator.EventDate >= startDateOfWeek
                    && eventCollaborator.EventDate <= endDateOfWeek
-                   && eventCollaborator.UserId == GlobalData.GetUser().Id
+                   && IsConsiderableEventCollaborators(eventCollaborator)
                    && !IsProposedEvent(eventCollaborator.EventId);
         }
 
@@ -183,7 +193,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             return eventCollaborator.EventDate >= startDateOfMonth
                    && eventCollaborator.EventDate <= endDateOfMonth
-                   && eventCollaborator.UserId == GlobalData.GetUser().Id
+                   && IsConsiderableEventCollaborators(eventCollaborator)
                    && !IsProposedEvent(eventCollaborator.EventId);
         }
 

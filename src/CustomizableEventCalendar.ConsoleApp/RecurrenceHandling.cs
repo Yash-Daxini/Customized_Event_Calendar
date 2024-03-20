@@ -36,7 +36,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         }
 
-        public static void GetDates(Event eventObj)
+        private static void GetDates(Event eventObj)
         {
             Console.WriteLine("Enter dates for the event :- ");
 
@@ -62,7 +62,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             eventObj.EventEndDate = eventObj.EventStartDate;
         }
 
-        public static void GetRecurrencePattern(Event eventObj)
+        private static void GetRecurrencePattern(Event eventObj)
         {
 
             PrintHandler.PrintNewLine();
@@ -78,7 +78,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             HandleRecurrenceFrequency(choiceForFreq, eventObj);
         }
 
-        public static void HandleRecurrenceFrequency(RecurrencePatternFrequency choiceForFreq, Event eventObj)
+        private static void HandleRecurrenceFrequency(RecurrencePatternFrequency choiceForFreq, Event eventObj)
         {
             switch (choiceForFreq)
             {
@@ -110,7 +110,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             }
         }
 
-        public static void DailyRecurrence(Event eventObj)
+        private static void DailyRecurrence(Event eventObj)
         {
             PrintHandler.PrintNewLine();
 
@@ -143,7 +143,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         }
 
-        public static void WeeklyRecurrence(Event eventObj)
+        private static void WeeklyRecurrence(Event eventObj)
         {
             PrintHandler.PrintNewLine();
 
@@ -163,7 +163,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                 $"{DateTimeManager.GetWeekDaysFromWeekDayNumbers(days)}.");
         }
 
-        public static string GetValidWeekDays()
+        private static string GetValidWeekDays()
         {
             PrintHandler.PrintNewLine();
 
@@ -175,7 +175,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         }
 
-        public static void MonthlyRecurrence(Event eventObj)
+        private static void MonthlyRecurrence(Event eventObj)
         {
             PrintHandler.PrintNewLine();
 
@@ -188,7 +188,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         }
 
-        public static void GetMonthlyFrequencyChoices(Event eventObj)
+        private static void GetMonthlyFrequencyChoices(Event eventObj)
         {
             PrintHandler.PrintNewLine();
 
@@ -217,13 +217,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             eventObj.ByYear = null;
         }
 
-        public static void GetSpecificMonthDay(Event eventObj)
+        private static void GetSpecificMonthDay(Event eventObj)
         {
             eventObj.ByMonthDay = ValidatedInputProvider.GetValidatedMonthDay("On which day of the month would you like the "
                                                                                + "event to occur? (From 1 to 31) : ");
         }
 
-        public static void GetDayOfWeekAndWeekOrderNumber(Event eventObj)
+        private static void GetDayOfWeekAndWeekOrderNumber(Event eventObj)
         {
 
             GetWeekOrder(eventObj);
@@ -232,7 +232,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         }
 
-        public static void GetWeekDay(Event eventObj)
+        private static void GetWeekDay(Event eventObj)
         {
             PrintHandler.PrintNewLine();
 
@@ -273,7 +273,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         }
 
-        public static void GetWeekOrder(Event eventObj)
+        private static void GetWeekOrder(Event eventObj)
         {
             PrintHandler.PrintNewLine();
 
@@ -306,7 +306,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             }
         }
 
-        public static void YearlyRecurrence(Event eventObj)
+        private static void YearlyRecurrence(Event eventObj)
         {
             PrintHandler.PrintNewLine();
 
@@ -340,7 +340,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         }
 
-        public static void GetValidMonth(Event eventObj)
+        private static void GetValidMonth(Event eventObj)
         {
             PrintHandler.PrintNewLine();
 

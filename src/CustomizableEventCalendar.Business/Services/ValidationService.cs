@@ -39,6 +39,24 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             return true;
         }
+        public static bool IsValidListOfCommaSeparatedIntegersInRange(string input, int startRange, int endRange)
+        {
+            string[] numbers = [..input.Split(',')
+                                    .Select(number => number.Trim())
+                                    .OrderBy(number => number)];
+
+            foreach (var number in numbers)
+            {
+                if (!int.TryParse(number, out int validateNumber))
+                {
+                    return false;
+                }
+
+                if (validateNumber < startRange || validateNumber > endRange) return false;
+            }
+
+            return true;
+        }
 
         public static bool IsValidEmail(string input)
         {

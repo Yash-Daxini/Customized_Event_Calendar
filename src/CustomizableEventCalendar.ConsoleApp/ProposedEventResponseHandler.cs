@@ -98,7 +98,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                     Console.WriteLine($"\nEnter your proposed timings for {eventCollaborator.EventDate}");
                     TakeStartingAndEndingHourOfProposedEvent(eventCollaborator);
                     break;
-                case 0: break;
+                case 0:
+                    eventCollaborator.ProposedStartHour = null;
+                    eventCollaborator.ProposedEndHour = null;
+                    break;
 
             }
         }

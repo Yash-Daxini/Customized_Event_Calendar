@@ -8,14 +8,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
     {
         private readonly SharedCalendarRepository _sharedEventsRepository = new();
 
-        public static List<EventCollaborator> availableEventsToCollaborate = [];
+        public static List<EventCollaborator> availableSharedEventsToCollaborate = [];
 
         public void AddSharedCalendar(SharedCalendar sharedEvent)
         {
             _sharedEventsRepository.Insert(sharedEvent);
         }
 
-        public List<SharedCalendar> GetSharedEvents()
+        public List<SharedCalendar> GetSharedCalendars()
         {
             return [.._sharedEventsRepository.GetAll(data => new SharedCalendar(data))
                                                                         .Where(sharedEvent =>
@@ -24,14 +24,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         }
 
-        public int GetSharedEventsCount()
+        public int GetSharedCalendarsCount()
         {
-            return GetSharedEvents().Count;
+            return GetSharedCalendars().Count;
         }
 
-        public string DesignSharedEventDisplayFormat()
+        public string DesignSharedCalendarDisplayFormat()
         {
-            List<SharedCalendar> sharedCalendars = GetSharedEvents();
+            List<SharedCalendar> sharedCalendars = GetSharedCalendars();
 
             StringBuilder sharedEventsDisplayString = new();
 
@@ -59,7 +59,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return sharedEventsTableContent;
         }
 
-        public string GenerateSharedCalendar(int sharedEventId)
+        public string GetSharedEventsFromSharedCalendar(int sharedEventId)
         {
             SharedCalendar? sharedCalendar = _sharedEventsRepository.GetById(data => new SharedCalendar(data), sharedEventId);
 
@@ -76,17 +76,16 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             Dictionary<DateOnly, EventCollaborator?> dateAndEvent = GenerateListOfAvailableCollaborationEvents(sharedCalendar.FromDate,
                                                                    sharedCalendar.ToDate, eventCollaborators);
 
-            availableEventsToCollaborate.Clear();
+            availableSharedEventsToCollaborate.Clear();
 
-            return GenerateTableForSharedCalendar(events, dateAndEvent);
+            return GenerateTableForSharedEventsFromSharedCalendar(events, dateAndEvent);
         }
 
-        private static string GenerateTableForSharedCalendar(List<Event> events, Dictionary<DateOnly, EventCollaborator?> dateAndEvent)
+        private static string GenerateTableForSharedEventsFromSharedCalendar(List<Event> events, Dictionary<DateOnly, EventCollaborator?> dateAndEvent)
         {
             StringBuilder sharedEventInfo = new();
 
-            List<List<string>> sharedEventTableContent = [["Sr No.", "Event No.", "Event Title", "Event Description",
-                                                            "Event Timing"]];
+            List<List<string>> sharedEventTableContent = [["Sr No.", "Event Title", "Event Description", "Event Date", "Event Duration"]];
 
             int index = 0;
             foreach (var (date, eventCollaborator) in dateAndEvent.Select(x => (x.Key, x.Value)))
@@ -95,17 +94,19 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 {
                     Event? eventObj = events.Find(eventObj => eventObj.Id == eventCollaborator.EventId);
 
-                    sharedEventTableContent.Add([(index + 1).ToString(), eventObj.Id.ToString(),
+                    sharedEventTableContent.Add([(index + 1).ToString(),
                                                  eventObj.Title, eventObj.Description,
-                                                 eventCollaborator.EventDate.ToString()
+                                                 eventCollaborator.EventDate.ToString(),
+                                                 DateTimeManager.ConvertTo12HourFormat(eventObj.EventStartHour)+" - "+
+                                                 DateTimeManager.ConvertTo12HourFormat(eventObj.EventEndHour)
                                                 ]);
 
-                    availableEventsToCollaborate.Add(eventCollaborator);
+                    availableSharedEventsToCollaborate.Add(eventCollaborator);
                     index++;
                 }
                 else
                 {
-                    sharedEventTableContent.Add(["-", "-", "-", "-", date.ToString()]);
+                    sharedEventTableContent.Add(["-", "-", "-", date.ToString(), "-"]);
                 }
             }
 
@@ -181,7 +182,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         public static List<EventCollaborator> GetAvailableEventCollaborations()
         {
 
-            return availableEventsToCollaborate;
+            return availableSharedEventsToCollaborate;
         }
     }
 }

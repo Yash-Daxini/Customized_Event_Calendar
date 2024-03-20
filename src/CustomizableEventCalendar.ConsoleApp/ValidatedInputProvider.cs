@@ -80,6 +80,21 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return input;
         }
 
+        public static string GetValidatedCommaSeparatedInputInRange(string inputMessage, int startRange, int endRange)
+        {
+            Console.Write(inputMessage);
+            string input = Console.ReadLine();
+
+            while (!ValidationService.IsValidListOfCommaSeparatedIntegersInRange(input, startRange, endRange))
+            {
+                PrintHandler.PrintWarningMessage("Invalid Input ! Please enter valid comma separated values");
+                Console.Write(inputMessage);
+                input = Console.ReadLine();
+            }
+
+            return input;
+        }
+
         public static string GetValidateEmail(string email)
         {
 

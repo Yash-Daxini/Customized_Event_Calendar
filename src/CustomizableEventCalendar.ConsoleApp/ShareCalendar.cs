@@ -42,7 +42,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         }
 
-        public static void GetDatesFromUser(SharedCalendar sharedCalendar)
+        private static void GetDatesFromUser(SharedCalendar sharedCalendar)
         {
             Console.WriteLine("Enter Time Range for which you want to share events");
 
@@ -55,14 +55,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             sharedCalendar.ToDate = ValidatedInputProvider.GetValidatedDateOnly("Enter end date in dd-MM-yyyy format :-  ");
         }
 
-        public static User GetUserFromSerialNumber(int serialNumber)
+        private static User GetUserFromSerialNumber(int serialNumber)
         {
             List<User> users = _userService.GetInsensitiveInformationOfUser();
 
             return users[serialNumber - 1];
         }
 
-        public static int ShowAllUser()
+        private static int ShowAllUser()
         {
             List<User> users = _userService.GetInsensitiveInformationOfUser();
 
@@ -82,7 +82,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         }
 
-        public static List<List<string>> Get2DListToGenerateTable(List<User> users)
+        private static List<List<string>> Get2DListToGenerateTable(List<User> users)
         {
             List<List<string>> userTableContent = [["Sr. No", "Name", "Email"]];
 
@@ -99,11 +99,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             try
             {
-                List<SharedCalendar> sharedCalendarsList = _calendarSharingService.GetSharedEvents();
+                List<SharedCalendar> sharedCalendarsList = _calendarSharingService.GetSharedCalendars();
 
-                string sharedEvents = _calendarSharingService.DesignSharedEventDisplayFormat();
+                string sharedEvents = _calendarSharingService.DesignSharedCalendarDisplayFormat();
 
-                if (_calendarSharingService.GetSharedEventsCount() > 0)
+                if (_calendarSharingService.GetSharedCalendarsCount() > 0)
                 {
                     Console.WriteLine("Calendars shared to you !");
                     Console.WriteLine(sharedEvents);
@@ -128,9 +128,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             }
         }
 
-        public void ViewSpecificCalendar(int sharedCalendarId)
+        private void ViewSpecificCalendar(int sharedCalendarId)
         {
-            string calendar = _calendarSharingService.GenerateSharedCalendar(sharedCalendarId);
+            string calendar = _calendarSharingService.GetSharedEventsFromSharedCalendar(sharedCalendarId);
             Console.WriteLine(calendar);
         }
     }

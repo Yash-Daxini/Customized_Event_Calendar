@@ -21,14 +21,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
         }
 
-        private List<Event> GetProposedEvents()
+        private static List<Event> GetProposedEvents()
         {
             EventService eventService = new();
 
             return [.. eventService.GetAllEventsOfLoggedInUser().Where(eventObj => eventObj.IsProposed)];
         }
 
-        private int CalculateDayDifferenceBetweenTwoDates(DateTime firstDate, DateTime secondDate)
+        private static int CalculateDayDifferenceBetweenTwoDates(DateTime firstDate, DateTime secondDate)
         {
             return Math.Abs((firstDate - secondDate).Days);
         }
@@ -36,7 +36,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         public static void AddInviteesInProposedEvent(Event eventObj, string invitees)
         {
             HashSet<int> invitedUsers = invitees.Split(",")
-                                                .Select(invitedUser => Convert.ToInt32(invitedUser))
+                                                .Select(invitedUser => Convert.ToInt32(invitedUser.Trim()))
                                                 .ToHashSet();
 
             EventCollaboratorService eventCollaboratorService = new();

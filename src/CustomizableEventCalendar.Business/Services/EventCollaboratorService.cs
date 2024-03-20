@@ -13,7 +13,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return eventCollaborators;
         }
 
-        public EventCollaborator? GetEventCollaboratorsById(int eventCollaboratorId)
+        public EventCollaborator? GetEventCollaboratorById(int eventCollaboratorId)
         {
             EventCollaborator? eventCollaborators = _eventCollaboratorsRepository.GetById(data => new EventCollaborator(data), eventCollaboratorId);
             return eventCollaborators;
