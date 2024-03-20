@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp;
+﻿using System.Data;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
@@ -50,7 +44,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             foreach (int userId in invitedUsers)
             {
                 eventCollaboratorService.InsertEventCollaborators(new EventCollaborator(eventObj.Id, userId, "participant",
-                                                  "pending", null, null, DateTime.Parse(eventObj.EventStartDate.ToString())));
+                                                  "pending", null, null, eventObj.EventStartDate));
             }
 
         }
@@ -65,8 +59,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             {
                 if (IsNeedToConsiderProposedTime(eventCollaborator))
                 {
-                    CountProposeHours((int)eventCollaborator.ProposedStartHour, (int)eventCollaborator.ProposedEndHour,
-                                      ref proposedHours);
+                    CountProposeHours((int)eventCollaborator.ProposedStartHour, (int)eventCollaborator.ProposedEndHour, ref proposedHours);
                 }
 
             }
@@ -127,8 +120,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             List<EventCollaborator> eventCollaborators = [.. GetInviteesOfEvent(eventObj.Id).Where(ConsiderableInvitees)];
 
-            DateTime date = new DateTime(eventObj.EventStartDate.Year, eventObj.EventStartDate.Month,
-                                         eventObj.EventStartDate.Day, (int)eventObj.EventStartHour, 0, 0);
+            DateOnly date = new(eventObj.EventStartDate.Year, eventObj.EventStartDate.Month, eventObj.EventStartDate.Day);
 
             EventCollaboratorService eventCollaboratorService = new();
 

@@ -12,51 +12,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
     {
         public Event() { }
 
-        public Event(int Id, string Title, string Description, string Location, int UserId, int EventStartHour, int EventEndHour,
-                        DateOnly EventStartDate, DateOnly EventEndDate, string Frequency, int Interval, string ByWeekDay,
-                        int WeekOrder, int ByMonthDay, int ByMonth, int ByYear)
-        {
-            this.Id = Id;
-            this.Title = Title;
-            this.Description = Description;
-            this.Location = Location;
-            this.UserId = UserId;
-            this.EventStartHour = EventStartHour;
-            this.EventEndHour = EventEndHour;
-            this.EventStartDate = EventStartDate;
-            this.EventEndDate = EventEndDate;
-            this.Frequency = Frequency;
-            this.Interval = Interval;
-            this.ByWeekDay = ByWeekDay;
-            this.WeekOrder = WeekOrder;
-            this.ByMonthDay = ByMonthDay;
-            this.ByMonth = ByMonth;
-            this.ByYear = ByYear;
-            this.IsProposed = IsProposed;
-        }
-
-        public Event(string Title, string Description, string Location, int UserId, int EventStartHour, int EventEndHour,
-                        DateOnly EventStartDate, DateOnly EventEndDate, string Frequency, int Interval, string ByWeekDay,
-                        int WeekOrder, int ByMonthDay, int ByMonth, int ByYear)
-        {
-            this.Title = Title;
-            this.Description = Description;
-            this.Location = Location;
-            this.UserId = UserId;
-            this.EventStartHour = EventStartHour;
-            this.EventEndHour = EventEndHour;
-            this.EventStartDate = EventStartDate;
-            this.EventEndDate = EventEndDate;
-            this.Frequency = Frequency;
-            this.Interval = Interval;
-            this.ByWeekDay = ByWeekDay;
-            this.WeekOrder = WeekOrder;
-            this.ByMonthDay = ByMonthDay;
-            this.ByMonth = ByMonth;
-            this.ByYear = ByYear;
-            this.IsProposed = IsProposed;
-        }
-
         public Event(SqlDataReader sqlDataReader)
         {
             this.Id = Convert.ToInt32(sqlDataReader["Id"]);

@@ -141,5 +141,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return columnWidths;
 
         }
+
+        public static string GetHorizontalLine()
+        {
+            return new string('-', Console.WindowWidth);
+        }
     }
 }

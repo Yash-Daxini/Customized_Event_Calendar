@@ -17,16 +17,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return $"{new string(' ', padding)}";
         }
 
-        public static string PrintHorizontalLine()
-        {
-            return new string('-', Console.WindowWidth);
-        }
-
-        public static void PrintInvalidMessage(string message)
-        {
-            Console.WriteLine(message);
-        }
-
         public static void ShowLoadingAnimation()
         {
             string message = "Fetching your data";
@@ -49,17 +39,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             Console.Clear();
         }
 
-        public static void PrintEndingLine(int left)
-        {
-            Console.SetCursorPosition(left + 1, Console.CursorTop - 1);
-
-            Console.WriteLine("|");
-        }
-
-        public static void SetCursorToMiddle()
-        {
-            Console.SetCursorPosition((Console.WindowWidth - 30) / 2, Console.CursorTop);
-        }
         public static void SetCursorToMiddle(int nameLength)
         {
             Console.SetCursorPosition((Console.WindowWidth / 2) - nameLength, Console.CursorTop);

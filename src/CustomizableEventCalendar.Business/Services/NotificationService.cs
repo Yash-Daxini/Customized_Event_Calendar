@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp;
+﻿using System.Text;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
@@ -73,11 +67,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             StringBuilder completedEventsNotificationTable = new();
 
             List<EventCollaborator> completedEvents = [..eventCollaborators.Where(scheduleEvent =>
-                                                                             scheduleEvent.EventDate.Date < DateTime.Now.Date)];
+                                                                             scheduleEvent.EventDate< DateOnly.FromDateTime(DateTime.Now))];
 
             if (completedEvents.Count == 0) return "";
 
-            completedEventsNotificationTable.AppendLine($"Completed events :- \n{PrintHandler.PrintHorizontalLine()}\n");
+            completedEventsNotificationTable.AppendLine($"Completed events :- \n{PrintService.GetHorizontalLine()}\n");
 
             completedEventsNotificationTable.AppendLine(PrintService.GenerateTableForNotification(InsertCompletedEventsInto2DList
                                                         (completedEvents, events)));
@@ -106,12 +100,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             StringBuilder upcommingEventsNotificationTable = new();
 
             List<EventCollaborator> upcommingEvents = [..scheduleEvents.Where(eventCollaborators =>
-                                                                            eventCollaborators.EventDate.Date ==
-                                                                            DateTime.Now.Date)];
+                                                                            eventCollaborators.EventDate==DateOnly.FromDateTime(DateTime.Now))];
 
             if (upcommingEvents.Count == 0) return "";
 
-            upcommingEventsNotificationTable.AppendLine($"Your today's events :- \n{PrintHandler.PrintHorizontalLine()}\n");
+            upcommingEventsNotificationTable.AppendLine($"Your today's events :- \n{PrintService.GetHorizontalLine()}\n");
 
             upcommingEventsNotificationTable.AppendLine(PrintService.GenerateTableForNotification(InsertUpcommingEventsInto2DList
                                                         (upcommingEvents, events)));
@@ -154,7 +147,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             if (events.Count == 0 || proposedEventCollabprators.Count == 0) return "";
 
-            proposedEventsNotificationTable.AppendLine($"Proposed Events : \n {PrintHandler.PrintHorizontalLine()} \n");
+            proposedEventsNotificationTable.AppendLine($"Proposed Events : \n {PrintService.GetHorizontalLine()} \n");
 
             proposedEventsNotificationTable.AppendLine(PrintService.GenerateTableForNotification(InsertProposedEventsInto2DList
                                                       (proposedEventCollabprators)));
@@ -172,7 +165,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             foreach (var eventCollaborator in proposedEventCollabprators)
             {
-                Event eventObj = eventService.GetEventsById(eventCollaborator.EventId);
+                Event eventObj = eventService.GetEventById(eventCollaborator.EventId);
 
                 User? eventProposer = userService.Read(eventObj.UserId);
 

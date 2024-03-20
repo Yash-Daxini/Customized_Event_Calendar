@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
+﻿using System.Globalization;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
 {
@@ -22,6 +18,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         public static string GetDayFromDateTime(DateTime dateTime)
         {
             return dateTime.ToString("dddd");
+        }
+
+        public static string GetDayFromDateTime(DateOnly dateOnly)
+        {
+            return dateOnly.ToString("dddd");
         }
 
         public static string GetWeekDayFromWeekNumber(int dayNumber)
@@ -89,14 +90,19 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return GetStartDateOfWeek(todayDate).AddDays(6);
         }
 
-        public static DateTime GetStartDateOfMonth(DateTime todayDate)
+        public static DateOnly GetStartDateOfMonth(DateTime todayDate)
         {
-            return new(todayDate.Year, todayDate.Month, 1);
+            return ConvertToDateOnly(new(todayDate.Year, todayDate.Month, 1));
         }
 
-        public static DateTime GetEndDateOfMonth(DateTime todayDate)
+        public static DateOnly GetEndDateOfMonth(DateTime todayDate)
         {
-            return new DateTime(todayDate.Year, todayDate.Month, DateTime.DaysInMonth(todayDate.Year, todayDate.Month));
+            return ConvertToDateOnly(new(todayDate.Year, todayDate.Month, DateTime.DaysInMonth(todayDate.Year, todayDate.Month)));
+        }
+
+        public static DateOnly ConvertToDateOnly(DateTime dateTime)
+        {
+            return DateOnly.FromDateTime(dateTime);
         }
 
         public static string GetWeekDaysFromWeekDayNumbers(string days)

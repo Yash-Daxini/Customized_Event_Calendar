@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.SqlClient;
 using System.Linq;
@@ -12,7 +13,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
     {
 
         public EventCollaborator(int Id, int EventId, int UserId, string? ParticipantRole, string? ConfirmationStatus, int? ProposedStartHour,
-                                  int? ProposedEndHour, DateTime EventDate)
+                                  int? ProposedEndHour, DateOnly EventDate)
         {
             this.Id = Id;
             this.UserId = UserId;
@@ -25,7 +26,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
         }
 
         public EventCollaborator(int EventId, int UserId, string? ParticipantRole, string? ConfirmationStatus, int? ProposedStartHour,
-                                  int? ProposedEndHour, DateTime EventDate)
+                                  int? ProposedEndHour, DateOnly EventDate)
         {
             this.UserId = UserId;
             this.EventId = EventId;
@@ -47,7 +48,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
             this.ProposedStartHour = sqlDataReader["ProposedStartHour"] == DBNull.Value ? null :
                                                                            Convert.ToInt32(sqlDataReader["ProposedStartHour"]);
             this.ProposedEndHour = sqlDataReader["ProposedEndHour"] == DBNull.Value ? null : Convert.ToInt32(sqlDataReader["ProposedEndHour"]);
-            this.EventDate = Convert.ToDateTime(sqlDataReader["EventDate"].ToString());
+            this.EventDate = DateOnly.FromDateTime(Convert.ToDateTime(sqlDataReader["EventDate"].ToString()));
         }
 
         [NotMapped]
@@ -58,7 +59,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
         public string? ConfirmationStatus { get; set; }
         public int? ProposedStartHour { get; set; }
         public int? ProposedEndHour { get; set; }
-        public DateTime EventDate { get; set; }
+        public DateOnly EventDate { get; set; }
 
 
         public override string ToString()

@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 
@@ -138,8 +137,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             List<EventCollaborator> sharedEvents = [.. eventCollaboratorsRepository.GetAll(data => new EventCollaborator(data))
                                                                     .Where(sharedEvent =>
-                                                                      IsDateBetweenRange(fromDate,toDate,
-                                                                      DateOnly.FromDateTime(sharedEvent.EventDate)) &&
+                                                                      IsDateBetweenRange(fromDate,toDate,sharedEvent.EventDate) &&
                                                                       IsSharedEvent(sharedEventIds, sharedEvent.EventId))
                                                                     ];
 
@@ -163,8 +161,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             while (startDate <= endDate)
             {
-                EventCollaborator? eventCollaborator = eventCollaborators.Find(eventCollaborator =>
-                                                       DateOnly.FromDateTime(eventCollaborator.EventDate) == startDate);
+                EventCollaborator? eventCollaborator = eventCollaborators.Find(eventCollaborator => eventCollaborator.EventDate == startDate);
 
                 if (eventCollaborator != null)
                 {

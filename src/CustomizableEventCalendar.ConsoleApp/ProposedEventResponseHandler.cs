@@ -3,7 +3,7 @@ using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {
-    internal class ProposedEventResponseHandler
+    internal static class ProposedEventResponseHandler
     {
         private readonly static ProposedEventService _proposedEventService = new();
 
@@ -95,7 +95,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             switch (choice)
             {
                 case 1:
-                    Console.WriteLine($"\nEnter your proposed timings for {DateTimeManager.GetDateFromDateTime(eventCollaborator.EventDate)}");
+                    Console.WriteLine($"\nEnter your proposed timings for {eventCollaborator.EventDate}");
                     TakeStartingAndEndingHourOfProposedEvent(eventCollaborator);
                     break;
                 case 0: break;

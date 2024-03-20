@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp;
+﻿using System.Text;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
-using NodaTime;
+
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
 {
@@ -21,9 +15,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             StringBuilder dailyView = new();
 
-            dailyView.AppendLine(PrintHandler.PrintHorizontalLine());
+            dailyView.AppendLine(PrintService.GetHorizontalLine());
 
-            dailyView.AppendLine("Schedule of date :- " + DateTime.Today.Date + "\n");
+            dailyView.AppendLine("Schedule of date :- " + DateTimeManager.GetDateFromDateTime(DateTime.Today) + "\n");
 
             List<List<string>> dailyViewTableContent = InsertTodayEventsWithDateIn2DList(hourEventMapping);
 
@@ -40,7 +34,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             foreach (var eventCollaborator in eventCollaborators)
             {
-                Event eventObj = _eventService.GetEventsById(eventCollaborator.EventId);
+                Event eventObj = _eventService.GetEventById(eventCollaborator.EventId);
 
                 AssignEventToSpecificHour(ref hourEventMapping, eventObj);
             }
@@ -65,8 +59,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                 hourEventMapping.TryGetValue(curHour, out Event? eventObj);
 
-                dailyViewTableContent.Add([DateTimeManager.GetDateWithAbbreviationFromDateTime(today), eventObj == null ? "-" :
-                                                                                               eventObj.Title]);
+                dailyViewTableContent.Add([DateTimeManager.GetDateWithAbbreviationFromDateTime(today), eventObj == null ? "-" : eventObj.Title]);
 
                 today = today.AddHours(1);
             }
@@ -77,7 +70,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         private List<EventCollaborator> GetTodayEvents()
         {
             return [.. _eventCollaboratorsService.GetAllEventCollaborators()
-                   .Where(eventCollaborator => eventCollaborator.EventDate.Date == DateTime.Today
+                   .Where(eventCollaborator => eventCollaborator.EventDate == DateOnly.FromDateTime(DateTime.Today)
                                                && eventCollaborator.UserId == GlobalData.GetUser().Id
                                                && !IsProposedEvent(eventCollaborator.EventId))];
         }
@@ -93,26 +86,25 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
         }
 
-        private Dictionary<DateTime, List<int>> GetGivenWeekEventsWithDate(DateTime startDateOfWeek, DateTime endDateOfWeek)
+        private Dictionary<DateOnly, List<int>> GetGivenWeekEventsWithDate(DateOnly startDateOfWeek, DateOnly endDateOfWeek)
         {
             List<EventCollaborator> eventCollaborators = _eventCollaboratorsService.GetAllEventCollaborators();
 
-            Dictionary<DateTime, List<int>> currentWeekEvents = GenerateDictionaryOfDateTimeAndEventIdFromList(GetGivenWeekEvents(eventCollaborators, startDateOfWeek, endDateOfWeek));
+            Dictionary<DateOnly, List<int>> currentWeekEvents = GenerateDictionaryOfDateOnlyAndEventIdFromList(GetGivenWeekEvents(eventCollaborators, startDateOfWeek, endDateOfWeek));
 
             return currentWeekEvents;
         }
 
-        private List<EventCollaborator> GetGivenWeekEvents(List<EventCollaborator> eventCollaborators, DateTime startDateOfWeek, DateTime endDateOfWeek)
+        private List<EventCollaborator> GetGivenWeekEvents(List<EventCollaborator> eventCollaborators, DateOnly startDateOfWeek, DateOnly endDateOfWeek)
         {
             return [..eventCollaborators.Where(eventCollaborator => IsEventOccurInGivenWeek(startDateOfWeek,
                                                                        endDateOfWeek, eventCollaborator))];
         }
 
-        private bool IsEventOccurInGivenWeek(DateTime startDateOfWeek, DateTime endDateOfWeek,
-                                             EventCollaborator eventCollaborator)
+        private bool IsEventOccurInGivenWeek(DateOnly startDateOfWeek, DateOnly endDateOfWeek, EventCollaborator eventCollaborator)
         {
-            return eventCollaborator.EventDate.Date >= startDateOfWeek.Date
-                   && eventCollaborator.EventDate.Date <= endDateOfWeek.Date
+            return eventCollaborator.EventDate >= startDateOfWeek
+                   && eventCollaborator.EventDate <= endDateOfWeek
                    && eventCollaborator.UserId == GlobalData.GetUser().Id
                    && !IsProposedEvent(eventCollaborator.EventId);
         }
@@ -121,15 +113,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             StringBuilder weeklyView = new();
 
-            DateTime startDateOfWeek = DateTimeManager.GetStartDateOfWeek(DateTime.Today);
-            DateTime endDateOfWeek = DateTimeManager.GetEndDateOfWeek(DateTime.Today);
+            DateOnly startDateOfWeek = DateTimeManager.GetStartDateOfWeek(DateOnly.FromDateTime(DateTime.Today));
+            DateOnly endDateOfWeek = DateTimeManager.GetEndDateOfWeek(DateOnly.FromDateTime(DateTime.Today));
 
-            Dictionary<DateTime, List<int>> currentWeekEvents = GetGivenWeekEventsWithDate(startDateOfWeek, endDateOfWeek);
+            Dictionary<DateOnly, List<int>> currentWeekEvents = GetGivenWeekEventsWithDate(startDateOfWeek, endDateOfWeek);
 
-            weeklyView.AppendLine(PrintHandler.PrintHorizontalLine());
+            weeklyView.AppendLine(PrintService.GetHorizontalLine());
 
-            weeklyView.AppendLine("Schedule from date :- " + DateTimeManager.GetDateFromDateTime(startDateOfWeek)
-                                   + " to date :- " + DateTimeManager.GetDateFromDateTime(endDateOfWeek) + "\n");
+            weeklyView.AppendLine("Schedule from date :- " + startDateOfWeek + " to date :- " + endDateOfWeek + "\n");
 
             List<List<string>> weeklyViewTableContent = Generate2DListForWeeklyEvents(startDateOfWeek, endDateOfWeek,
                                                                                               currentWeekEvents);
@@ -139,7 +130,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return weeklyView.ToString();
         }
 
-        private List<List<string>> Generate2DListForWeeklyEvents(DateTime startDateOfWeek, DateTime endDateOfWeek, Dictionary<DateTime, List<int>> currentWeekEvents)
+        private List<List<string>> Generate2DListForWeeklyEvents(DateOnly startDateOfWeek, DateOnly endDateOfWeek, Dictionary<DateOnly, List<int>> currentWeekEvents)
         {
             List<List<string>> weeklyViewTableContent = [["Date", "Day", "Event Title", "Start Time", "End Time"]];
 
@@ -153,16 +144,16 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return weeklyViewTableContent;
         }
 
-        private void InsertGivenWeekEventsWithDateIn2DList(DateTime startDateOfWeek, Dictionary<DateTime, List<int>> currentWeekEvents, List<List<string>> weeklyViewTableContent)
+        private void InsertGivenWeekEventsWithDateIn2DList(DateOnly startDateOfWeek, Dictionary<DateOnly, List<int>> currentWeekEvents, List<List<string>> weeklyViewTableContent)
         {
-            if (currentWeekEvents.TryGetValue(startDateOfWeek.Date, out List<int>? eventIds))
+            if (currentWeekEvents.TryGetValue(startDateOfWeek, out List<int>? eventIds))
             {
                 foreach (var eventId in eventIds)
                 {
 
-                    Event eventObj = _eventService.GetEventsById(eventId);
+                    Event eventObj = _eventService.GetEventById(eventId);
 
-                    weeklyViewTableContent.Add([DateTimeManager.GetDateFromDateTime(startDateOfWeek),
+                    weeklyViewTableContent.Add([startDateOfWeek.ToString(),
                                                 DateTimeManager.GetDayFromDateTime(startDateOfWeek),
                                                 eventObj.Title,
                                                 DateTimeManager.ConvertTo12HourFormat(eventObj.EventStartHour),
@@ -171,40 +162,40 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
             else
             {
-                weeklyViewTableContent.Add([DateTimeManager.GetDateFromDateTime(startDateOfWeek),
+                weeklyViewTableContent.Add([startDateOfWeek.ToString(),
                                             DateTimeManager.GetDayFromDateTime(startDateOfWeek),
                                             "-","-","-"]);
             }
         }
 
-        public Dictionary<DateTime, List<int>> GetGivenMonthEventsWithDate(DateTime startDateOfMonth, DateTime endDateOfMonth)
+        public Dictionary<DateOnly, List<int>> GetGivenMonthEventsWithDate(DateOnly startDateOfMonth, DateOnly endDateOfMonth)
         {
             List<EventCollaborator> eventCollaborators = _eventCollaboratorsService.GetAllEventCollaborators();
 
-            Dictionary<DateTime, List<int>> currentMonthEvents = GenerateDictionaryOfDateTimeAndEventIdFromList
+            Dictionary<DateOnly, List<int>> currentMonthEvents = GenerateDictionaryOfDateOnlyAndEventIdFromList
                                     (GetGivenMonthEvents(eventCollaborators, startDateOfMonth, endDateOfMonth));
 
             return currentMonthEvents;
         }
 
-        private bool IsEventOccurInGivenMonth(DateTime startDateOfMonth, DateTime endDateOfMonth,
+        private bool IsEventOccurInGivenMonth(DateOnly startDateOfMonth, DateOnly endDateOfMonth,
                                              EventCollaborator eventCollaborator)
         {
-            return eventCollaborator.EventDate.Date >= startDateOfMonth.Date
-                   && eventCollaborator.EventDate.Date <= endDateOfMonth.Date
+            return eventCollaborator.EventDate >= startDateOfMonth
+                   && eventCollaborator.EventDate <= endDateOfMonth
                    && eventCollaborator.UserId == GlobalData.GetUser().Id
                    && !IsProposedEvent(eventCollaborator.EventId);
         }
 
-        private List<EventCollaborator> GetGivenMonthEvents(List<EventCollaborator> eventCollaborators, DateTime startDateOfMonth, DateTime endDateOfMonth)
+        private List<EventCollaborator> GetGivenMonthEvents(List<EventCollaborator> eventCollaborators, DateOnly startDateOfMonth, DateOnly endDateOfMonth)
         {
             return [..eventCollaborators.Where(eventCollaborator => IsEventOccurInGivenMonth
                                                                     (startDateOfMonth, endDateOfMonth, eventCollaborator))];
         }
 
-        private static Dictionary<DateTime, List<int>> GenerateDictionaryOfDateTimeAndEventIdFromList(List<EventCollaborator> eventCollaborators)
+        private static Dictionary<DateOnly, List<int>> GenerateDictionaryOfDateOnlyAndEventIdFromList(List<EventCollaborator> eventCollaborators)
         {
-            return eventCollaborators.GroupBy(eventCollaborator => eventCollaborator.EventDate.Date)
+            return eventCollaborators.GroupBy(eventCollaborator => eventCollaborator.EventDate)
                                            .Select(eventCollaborator => new
                                            {
                                                ScheduleDate = eventCollaborator.Key,
@@ -219,15 +210,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             StringBuilder monthlyView = new();
 
-            DateTime startDateOfMonth = DateTimeManager.GetStartDateOfMonth(DateTime.Now);
-            DateTime endDateOfMonth = DateTimeManager.GetEndDateOfMonth(DateTime.Now);
+            DateOnly startDateOfMonth = DateTimeManager.GetStartDateOfMonth(DateTime.Now);
+            DateOnly endDateOfMonth = DateTimeManager.GetEndDateOfMonth(DateTime.Now);
 
-            Dictionary<DateTime, List<int>> currentMonthEvents = GetGivenMonthEventsWithDate(startDateOfMonth, endDateOfMonth);
+            Dictionary<DateOnly, List<int>> currentMonthEvents = GetGivenMonthEventsWithDate(startDateOfMonth, endDateOfMonth);
 
-            monthlyView.AppendLine(PrintHandler.PrintHorizontalLine());
+            monthlyView.AppendLine(PrintService.GetHorizontalLine());
 
-            monthlyView.AppendLine("Schedule from date :- " + DateTimeManager.GetDateFromDateTime(startDateOfMonth)
-                                    + " to date :- " + DateTimeManager.GetDateFromDateTime(endDateOfMonth) + "\n");
+            monthlyView.AppendLine("Schedule from date :- " + startDateOfMonth + " to date :- " + endDateOfMonth + "\n");
 
             List<List<string>> monthlyViewTableContent = Generate2DListForMonthlyEvents(ref startDateOfMonth, endDateOfMonth, currentMonthEvents);
 
@@ -236,11 +226,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return monthlyView.ToString();
         }
 
-        private List<List<string>> Generate2DListForMonthlyEvents(ref DateTime startDateOfMonth, DateTime endDateOfMonth, Dictionary<DateTime, List<int>> currentMonthEvents)
+        private List<List<string>> Generate2DListForMonthlyEvents(ref DateOnly startDateOfMonth, DateOnly endDateOfMonth, Dictionary<DateOnly, List<int>> currentMonthEvents)
         {
             List<List<string>> monthlyViewTableContent = [["Date", "Day", "Event Title", "Start Time", "End Time"]];
 
-            while (startDateOfMonth.Date <= endDateOfMonth.Date)
+            while (startDateOfMonth <= endDateOfMonth)
             {
                 InsertGivenMonthEventsWithDateIn2DList(startDateOfMonth, currentMonthEvents, monthlyViewTableContent);
 
@@ -250,15 +240,15 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return monthlyViewTableContent;
         }
 
-        private void InsertGivenMonthEventsWithDateIn2DList(DateTime startDateOfMonth, Dictionary<DateTime, List<int>> currentMonthEvents, List<List<string>> monthlyViewTableContent)
+        private void InsertGivenMonthEventsWithDateIn2DList(DateOnly startDateOfMonth, Dictionary<DateOnly, List<int>> currentMonthEvents, List<List<string>> monthlyViewTableContent)
         {
-            if (currentMonthEvents.TryGetValue(startDateOfMonth.Date, out List<int>? eventIds))
+            if (currentMonthEvents.TryGetValue(startDateOfMonth, out List<int>? eventIds))
             {
                 foreach (var eventId in eventIds)
                 {
 
-                    Event eventObj = _eventService.GetEventsById(eventId);
-                    monthlyViewTableContent.Add([DateTimeManager.GetDateFromDateTime(startDateOfMonth),
+                    Event eventObj = _eventService.GetEventById(eventId);
+                    monthlyViewTableContent.Add([startDateOfMonth.ToString(),
                                                  startDateOfMonth.DayOfWeek.ToString(),
                                                  eventObj.Title,
                                                  DateTimeManager.ConvertTo12HourFormat(eventObj.EventStartHour),
@@ -267,7 +257,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
             else
             {
-                monthlyViewTableContent.Add([DateTimeManager.GetDateFromDateTime(startDateOfMonth),
+                monthlyViewTableContent.Add([startDateOfMonth.ToString(),
                                              startDateOfMonth.DayOfWeek.ToString(),
                                              "-","-","-"]);
             }

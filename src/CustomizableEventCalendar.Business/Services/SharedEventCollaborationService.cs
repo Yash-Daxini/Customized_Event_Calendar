@@ -50,7 +50,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             if (overlappedCollaboration != null)
             {
                 EventService eventService = new();
-                Event eventObj = eventService.GetEventsById(overlappedCollaboration.EventId);
+                Event eventObj = eventService.GetEventById(overlappedCollaboration.EventId);
 
                 PrintHandler.PrintWarningMessage($"Can't collaborate ! \nThe collaboration causes overlap with {eventObj.Title}"
                      + $" on {overlappedCollaboration.EventDate}, indicating that both events are scheduled concurrently.");

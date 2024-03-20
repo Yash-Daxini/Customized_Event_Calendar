@@ -1,17 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Data;
-using System.Linq;
-using System.Reflection;
+﻿using System.Data;
 using System.Text;
-using System.Threading.Tasks;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp.InputMessageStore;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums;
-using Ical.Net.DataTypes;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {
@@ -21,16 +12,18 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         private readonly static ShareCalendar _shareCalendar = new();
 
+        private readonly static OverlappingEventService _overlappingEventService = new();
+
         private static readonly Dictionary<EventOperation, Action> operationDictionary = new()
-        {{ EventOperation.Add, TakeInputToAddEvent },
+        {{ EventOperation.Add, GetInputToAddEvent },
         { EventOperation.Display, DisplayEvents },
-        { EventOperation.Delete, TakeInputToDeleteEvent },
-        { EventOperation.Update, TakeInputToUpdateEvent },
+        { EventOperation.Delete, DeleteEvent },
+        { EventOperation.Update, GetInputToUpdateEvent },
         { EventOperation.View, CalendarView.ViewSelection },
         { EventOperation.ShareCalendar, _shareCalendar.GetDetailsToShareCalendar },
         { EventOperation.ViewSharedCalendar, _shareCalendar.ViewSharedCalendars },
         { EventOperation.SharedEventCollaboration, SharedEventCollaboration.ShowSharedEvents },
-        { EventOperation.EventWithMultipleInvitees, TakeInputForProposedEvent },
+        { EventOperation.EventWithMultipleInvitees, GetInputForProposedEvent },
         { EventOperation.GiveResponseToProposedEvent, ProposedEventResponseHandler.ShowProposedEvents}};
 
         public static void PrintColorMessage(string message, ConsoleColor color)
@@ -75,7 +68,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             else if (option == EventOperation.Back)
             {
                 Console.WriteLine("Going Back ...");
-                Authentication.AuthenticationChoice();
             }
             else
             {
@@ -100,13 +92,15 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return choice;
         }
 
-        public static void TakeInputForProposedEvent()
+        public static void GetInputForProposedEvent()
         {
             try
             {
                 Event eventObj = new();
 
                 GetEventDetailsFromUser(eventObj);
+
+                GetStartingAndEndingHourOfEvent(eventObj);
 
                 DateTime proposedDate = ValidatedInputProvider.GetValidatedDateTime("Enter date for the proposed event (Enter " +
                                                                                   "date in dd-MM-yyyy) :- ");
@@ -118,20 +112,64 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
                 eventObj.IsProposed = true;
 
-                int eventId = _eventService.InsertEvent(eventObj);
+                AddEvent(eventObj);
 
                 string invitees = GetInviteesFromUser();
 
                 if (invitees.Length == 0) return;
 
                 MultipleInviteesEventService.AddInviteesInProposedEvent(eventObj, invitees);
-
-                PrintHandler.PrintSuccessMessage("Proposed event added successfully.");
             }
             catch
             {
                 PrintHandler.PrintErrorMessage("Some error occurred ! Proposed event addition failed");
             }
+        }
+
+        public static T Cast<T>(object obj, T type) { return (T)obj; }
+
+        public static void HandleOverlappedEvent(Event eventForVerify, Object overlappedEventInformationObject, bool isInsert)
+        {
+            var overlappedEventInformation = Cast(overlappedEventInformationObject, new { OverlappedEvent = new Event(), MatchedDate = new DateOnly() });
+
+            string message = GetOverlapMessageFromEvents(eventForVerify, overlappedEventInformation.OverlappedEvent, overlappedEventInformation.MatchedDate);
+
+            PrintHandler.PrintWarningMessage(message);
+
+            if (!AskForRescheduleOverlappedEvent(eventForVerify)) return;
+
+            if (isInsert) AddEvent(eventForVerify);
+            else UpdateEvent(eventForVerify.Id, eventForVerify);
+        }
+
+        public static bool AskForRescheduleOverlappedEvent(Event eventObj)
+        {
+            Console.WriteLine("\nAre you want to reschedule event ? \n1. Yes \n2. No");
+
+            int choice = ValidatedInputProvider.GetValidatedIntegerBetweenRange("\nEnter choice : ", 1, 2);
+
+            switch (choice)
+            {
+                case 1:
+                    GetStartingAndEndingHourOfEvent(eventObj);
+                    RecurrenceHandling.AskForRecurrenceChoice(eventObj);
+                    return true;
+                case 2:
+                    return false;
+                    //break;
+            }
+            return false;
+        }
+
+        public static string GetOverlapMessageFromEvents(Event eventForVerify, Event eventToCheckOverlap, DateOnly matchedDate)
+        {
+            return $"\"{eventForVerify.Title}\" overlaps with \"{eventToCheckOverlap.Title}\" at {matchedDate} on following duration\n" +
+                   $"1. {DateTimeManager.ConvertTo12HourFormat(eventForVerify.EventStartHour)} " +
+                   $"- {DateTimeManager.ConvertTo12HourFormat(eventForVerify.EventEndHour)} \n" +
+                   $"overlaps with " +
+                   $"\n2. {DateTimeManager.ConvertTo12HourFormat(eventToCheckOverlap.EventStartHour)} " +
+                   $"- {DateTimeManager.ConvertTo12HourFormat(eventToCheckOverlap.EventEndHour)} \n" +
+                   $"\nPlease choose another date time !";
         }
 
         public static bool ShowAllUser()
@@ -191,12 +229,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             Console.Write("Enter Location : ");
             eventObj.Location = Console.ReadLine();
 
-            TakeStartingAndEndingHourOfEvent(eventObj);
-
             eventObj.IsProposed = false;
         }
 
-        public static void TakeStartingAndEndingHourOfEvent(Event eventObj)
+        public static void GetStartingAndEndingHourOfEvent(Event eventObj)
         {
             Console.WriteLine("\nHow would you like to enter the time? : ");
             Console.WriteLine("\n1.Choose 24-hour format (1 to 24 hours) \n2.Choose 12-hour format (1 to 12 hours and AM/PM)");
@@ -207,20 +243,20 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             {
                 case 1:
                     PrintHandler.PrintInfoMessage("You've selected the 24-hour format.");
-                    TakeHourIn24HourFormat(eventObj);
+                    GetHourIn24HourFormat(eventObj);
                     break;
                 case 2:
                     PrintHandler.PrintInfoMessage("You've selected the 12-hour format.");
-                    TakeHourIn12HourFormat(eventObj);
+                    GetHourIn12HourFormat(eventObj);
                     break;
                 default:
-                    TakeStartingAndEndingHourOfEvent(eventObj);
+                    GetStartingAndEndingHourOfEvent(eventObj);
                     break;
             }
 
         }
 
-        public static void TakeHourIn24HourFormat(Event eventObj)
+        public static void GetHourIn24HourFormat(Event eventObj)
         {
             PrintHandler.PrintNewLine();
 
@@ -235,11 +271,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             if (!ValidationService.IsValidStartAndEndHour(eventObj.EventStartHour, eventObj.EventEndHour))
             {
                 PrintHandler.PrintWarningMessage("Invalid input ! Start hour must less than the end hour.");
-                TakeHourIn24HourFormat(eventObj);
+                GetHourIn24HourFormat(eventObj);
             }
         }
 
-        public static void TakeHourIn12HourFormat(Event eventObj)
+        public static void GetHourIn12HourFormat(Event eventObj)
         {
             PrintHandler.PrintNewLine();
 
@@ -262,35 +298,53 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             if (!ValidationService.IsValidStartAndEndHour(eventObj.EventStartHour, eventObj.EventEndHour))
             {
                 PrintHandler.PrintWarningMessage("Invalid input ! Start hour must less than the end hour.");
-                TakeHourIn12HourFormat(eventObj);
+                GetHourIn12HourFormat(eventObj);
             }
         }
 
 
-        public static void TakeInputToAddEvent()
+        public static void GetInputToAddEvent()
+        {
+            Event eventObj = new();
+
+            GetEventDetailsFromUser(eventObj);
+
+            GetStartingAndEndingHourOfEvent(eventObj);
+
+            eventObj.UserId = GlobalData.GetUser().Id;
+
+            RecurrenceHandling.AskForRecurrenceChoice(eventObj);
+
+            AddEvent(eventObj);
+        }
+
+        private static void AddEvent(Event eventObj)
         {
             try
             {
-                Event eventObj = new();
-
-                GetEventDetailsFromUser(eventObj);
-
-                eventObj.UserId = GlobalData.GetUser().Id;
-
-                RecurrenceHandling.AskForRecurrenceChoice(eventObj);
+                if (IsOverlappingEvent(eventObj, true)) return;
 
                 int eventId = _eventService.InsertEvent(eventObj);
 
-                if (eventId != -1)
-                {
-                    PrintHandler.PrintSuccessMessage("Data Added Successfully");
-                }
+                PrintHandler.PrintSuccessMessage("Event Added Successfully");
 
             }
             catch
             {
                 PrintHandler.PrintErrorMessage("Oops Some error occurred !");
             }
+        }
+
+        private static bool IsOverlappingEvent(Event eventObj, bool isInsert)
+        {
+            var overlappedEventInformationObject = _overlappingEventService.GetOverlappedEventInformation(eventObj, isInsert);
+
+            if (overlappedEventInformationObject != null)
+            {
+                HandleOverlappedEvent(eventObj, overlappedEventInformationObject, isInsert);
+                return true;
+            }
+            return false;
         }
 
         public static void DisplayEvents()
@@ -305,7 +359,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return events.Length > 0;
         }
 
-        public static void TakeInputToDeleteEvent()
+        public static void DeleteEvent()
         {
             try
             {
@@ -313,11 +367,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
                 if (!IsEventsPresent()) return;
 
-                int serialNumber = TakeIdForUpdateOrDelete(true);
+                int serialNumber = GetSerialNumberForUpdateOrDelete(true);
 
-                _eventService.DeleteEvent(serialNumber);
+                _eventService.DeleteEvent(_eventService.GetEventIdFromSerialNumber(serialNumber));
 
-                PrintHandler.PrintSuccessMessage("Data deleted Successfully");
+                PrintHandler.PrintSuccessMessage("Event deleted Successfully");
             }
             catch
             {
@@ -326,7 +380,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         }
 
-        public static void TakeInputToUpdateEvent()
+        public static void GetInputToUpdateEvent()
         {
 
             try
@@ -335,27 +389,23 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
                 if (!IsEventsPresent()) return;
 
-                int id = TakeIdForUpdateOrDelete(false);
+                int serialNumber = GetSerialNumberForUpdateOrDelete(false);
 
-                Event eventObj = _eventService.GetEventsById(_eventService.GetEventIdFromSerialNumber(id));
+                Event eventObj = _eventService.GetEventById(_eventService.GetEventIdFromSerialNumber(serialNumber));
 
                 if (eventObj == null) return;
 
                 if (eventObj.IsProposed)
                 {
-                    TakeInputForProposedEvent();
+                    GetInputForProposedEvent();
                     return;
                 }
 
-                GetEventDetailsFromUser(eventObj);
+                AskForItemsToUpdate(eventObj);
 
                 eventObj.UserId = GlobalData.GetUser().Id;
 
-                RecurrenceHandling.AskForRecurrenceChoice(eventObj);
-
-                bool isUpdated = _eventService.UpdateEvent(eventObj, id);
-
-                if (isUpdated) PrintHandler.PrintSuccessMessage("Data Updated Successfully");
+                UpdateEvent(eventObj.Id, eventObj);
             }
             catch
             {
@@ -363,13 +413,52 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             }
         }
 
-        public static int TakeIdForUpdateOrDelete(bool isDelete)
+        private static void UpdateEvent(int id, Event eventObj)
+        {
+            try
+            {
+                if (IsOverlappingEvent(eventObj, false)) return;
+
+                bool isUpdated = _eventService.UpdateEvent(eventObj, id);
+
+                if (isUpdated) PrintHandler.PrintSuccessMessage("Event Updated Successfully");
+            }
+            catch
+            {
+                PrintHandler.PrintErrorMessage("Oops ! Some error occurred !");
+            }
+        }
+
+        public static void AskForItemsToUpdate(Event eventObj)
+        {
+            string inputMessage = "\nWhat items you want to update ? \n1. Event Details (Event Title , Event Description , Event Location)" +
+                                  "\n2. Event repetition details (Event dates, Event Duration, Event frequency etc ...)";
+
+            Console.WriteLine(inputMessage);
+
+            int choice = ValidatedInputProvider.GetValidatedIntegerBetweenRange("\nEnter choice : ", 1, 2);
+
+            switch (choice)
+            {
+                case 1:
+                    GetEventDetailsFromUser(eventObj);
+                    break;
+                case 2:
+                    GetStartingAndEndingHourOfEvent(eventObj);
+                    RecurrenceHandling.AskForRecurrenceChoice(eventObj);
+                    break;
+
+            }
+
+        }
+
+        public static int GetSerialNumberForUpdateOrDelete(bool isDelete)
         {
             string operation = isDelete ? "delete" : "update";
 
-            int Id = ValidatedInputProvider.GetValidatedIntegerBetweenRange($"From Above events give event no. that you want to {operation} :- ", 1, _eventService.GetTotalEventCount());
+            int serialNumber = ValidatedInputProvider.GetValidatedIntegerBetweenRange($"From Above events give event no. that you want to {operation} :- ", 1, _eventService.GetTotalEventCount());
 
-            return Id;
+            return serialNumber;
         }
 
     }

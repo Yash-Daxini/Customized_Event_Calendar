@@ -36,7 +36,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             {
                 case LoggedinUserChoice.Logout:
                     Logout();
-                    AuthenticationChoice();
+                    AskForChoiceToLoggedOutUser();
                     break;
                 case LoggedinUserChoice.Exit:
                     break;

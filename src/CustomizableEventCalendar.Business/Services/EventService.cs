@@ -1,8 +1,4 @@
-﻿using System.Data.SqlClient;
-using System.Globalization;
-using System.Runtime.ConstrainedExecution;
-using System.Text;
-using System.Transactions;
+﻿using System.Transactions;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
@@ -12,15 +8,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
     internal class EventService
     {
         private readonly EventRepository _eventRepository = new();
-        private readonly OverlappingEventService _overlappingEventService = new();
         private readonly RecurrenceEngine _recurrenceEngine = new();
         private readonly EventCollaboratorService _eventCollaboratorsService = new();
 
         public int InsertEvent(Event eventObj)
         {
-
-            if (_overlappingEventService.IsOverlappingEvent(eventObj)) return -1;
-
             int eventId = _eventRepository.Insert(eventObj);
 
             eventObj.Id = eventId;
@@ -42,22 +34,20 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return [.. GetAllEvents().Where(eventObj => eventObj.UserId == GlobalData.GetUser().Id)];
         }
 
-        public Event GetEventsById(int eventId)
+        public Event GetEventById(int eventId)
         {
             Event listOfEvents = _eventRepository.GetById(data => new Event(data), eventId);
 
             return listOfEvents;
         }
 
-        public void DeleteEvent(int srNo)
+        public void DeleteEvent(int eventId)
         {
 
             using var scope = new TransactionScope();
 
             try
             {
-                int eventId = GetEventIdFromSerialNumber(srNo);
-
                 _eventCollaboratorsService.DeleteEventCollaboratorsByEventId(eventId);
 
                 _eventRepository.Delete(eventId);
@@ -70,17 +60,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
         }
 
-        public bool UpdateEvent(Event eventObj, int srNo)
+        public bool UpdateEvent(Event eventObj, int eventId)
         {
-
-            if (_overlappingEventService.IsOverlappingEvent(eventObj)) return false;
-
             using var scope = new TransactionScope();
 
             try
             {
-                int eventId = GetEventIdFromSerialNumber(srNo);
-
                 _eventRepository.Update(eventObj, eventId);
 
                 _eventCollaboratorsService.DeleteEventCollaboratorsByEventId(eventId);
