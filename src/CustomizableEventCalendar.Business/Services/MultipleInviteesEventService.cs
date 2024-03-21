@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
 {
@@ -16,9 +17,22 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 if (remainingDays <= 1)
                 {
                     CalculateMutualTime(eventObj);
+                    StartProcessOfConvertingProposedEventToScheduleEvent(eventObj);
                     ScheduleProposedEvent(eventObj);
                 }
+                else if (!IsAnyInviteeWithPendingConfirmationStatus(eventObj))
+                {
+                    CalculateMutualTime(eventObj);
+                    UpdateEventCollaboratorsStatus(eventObj);
+                }
             }
+        }
+
+        private static bool IsAnyInviteeWithPendingConfirmationStatus(Event eventObj)
+        {
+            return GetInviteesOfEvent(eventObj.Id)
+                   .Exists(eventCollaborator => eventCollaborator.ConfirmationStatus != null
+                                               && eventCollaborator.ConfirmationStatus.Equals("pending"));
         }
 
         private static List<Event> GetProposedEvents()
@@ -66,8 +80,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             FindMaximumMutualTimeBlock(proposedHours, eventObj);
 
-            StartProcessOfConvertingProposedEventToScheduleEvent(eventObj);
-
         }
 
         private static void StartProcessOfConvertingProposedEventToScheduleEvent(Event eventObj)
@@ -111,8 +123,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 }
             }
 
-            eventObj.EventStartHour = maxHour;
-            eventObj.EventEndHour = maxHour + 1;
+            if (proposedHours.Max() == 1) return;
+
+            UpdateEventTimeBlockToMutualTimeBlock(eventObj, maxHour, maxHour + 1);
 
         }
 
@@ -126,10 +139,52 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             foreach (var eventCollaborator in eventCollaborators)
             {
-                eventCollaborator.EventDate = date;
-                eventCollaboratorService.UpdateEventCollaborators(eventCollaborator, eventCollaborator.Id);
+                if (IsInviteePresentInEvent(eventCollaborator))
+                {
+                    eventCollaborator.EventDate = date;
+                    eventCollaboratorService.UpdateEventCollaborators(eventCollaborator, eventCollaborator.Id);
+                }
             }
 
+        }
+
+        private static bool IsInviteePresentInEvent(EventCollaborator eventCollaborator)
+        {
+            return eventCollaborator.ConfirmationStatus != null
+                   && (eventCollaborator.ConfirmationStatus.Equals("accept")
+                       || eventCollaborator.ConfirmationStatus.Equals("maybe"));
+        }
+
+        private static void UpdateEventCollaboratorsStatus(Event eventObj)
+        {
+            List<EventCollaborator> eventCollaborators = [.. GetInviteesOfEvent(eventObj.Id).Where(ConsiderableInvitees)];
+
+            EventCollaboratorService eventCollaboratorService = new();
+
+            foreach (var eventCollaborator in eventCollaborators)
+            {
+                if (eventCollaborator.ParticipantRole.Equals("organizer"))
+                {
+                    eventCollaborator.ProposedStartHour = eventObj.EventStartHour;
+                    eventCollaborator.ProposedEndHour = eventObj.EventEndHour;
+                }
+                else
+                {
+                    eventCollaborator.ProposedStartHour = null;
+                    eventCollaborator.ProposedEndHour = null;
+                    eventCollaborator.ConfirmationStatus = "pending";
+                }
+                eventCollaboratorService.UpdateEventCollaborators(eventCollaborator, eventCollaborator.Id);
+            }
+        }
+
+        private static void UpdateEventTimeBlockToMutualTimeBlock(Event eventObj, int newStartHour, int newEndHour)
+        {
+            eventObj.EventStartHour = newStartHour;
+            eventObj.EventEndHour = newEndHour;
+
+            EventService eventService = new();
+            eventService.UpdateProposedEvent(eventObj, eventObj.Id);
         }
 
         private static bool ConsiderableInvitees(EventCollaborator eventCollaborator)

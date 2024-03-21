@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Security.Cryptography;
 using System.Text;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
@@ -23,7 +24,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         { EventOperation.ShareCalendar, _shareCalendar.GetDetailsToShareCalendar },
         { EventOperation.ViewSharedCalendar, _shareCalendar.ViewSharedCalendars },
         { EventOperation.SharedEventCollaboration, SharedEventCollaboration.ShowSharedEvents },
-        { EventOperation.EventWithMultipleInvitees, GetInputForProposedEvent },
+        { EventOperation.EventWithMultipleInvitees, () => GetInputForProposedEvent(null) },
         { EventOperation.GiveResponseToProposedEvent, ProposedEventResponseHandler.ShowProposedEvents}};
 
         public static void PrintColorMessage(string message, ConsoleColor color)
@@ -94,7 +95,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return choice;
         }
 
-        public static void GetInputForProposedEvent()
+        public static void GetInputForProposedEvent(Event? eventObj)
         {
             try
             {
@@ -104,7 +105,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                     return;
                 }
 
-                Event eventObj = new();
+                if (eventObj == null) eventObj = new();
 
                 GetEventDetailsFromUser(eventObj);
 
@@ -123,7 +124,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
                 eventObj.IsProposed = true;
 
-                AddEvent(eventObj);
+                if (eventObj.Id > 0)
+                    UpdateEvent(eventObj.Id, eventObj);
+                else
+                    AddEvent(eventObj);
 
                 MultipleInviteesEventService.AddInviteesInProposedEvent(eventObj, invitees);
             }
@@ -133,11 +137,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             }
         }
 
-        public static T Cast<T>(object obj, T type) { return (T)obj; }
+        public static T CastAnonymousObject<T>(object obj, T type) { return (T)obj; }
 
         public static void HandleOverlappedEvent(Event eventForVerify, Object overlappedEventInformationObject, bool isInsert)
         {
-            var overlappedEventInformation = Cast(overlappedEventInformationObject, new { OverlappedEvent = new Event(), MatchedDate = new DateOnly() });
+            var overlappedEventInformation = CastAnonymousObject(overlappedEventInformationObject, new { OverlappedEvent = new Event(), MatchedDate = new DateOnly() });
 
             string message = GetOverlapMessageFromEvents(eventForVerify, overlappedEventInformation.OverlappedEvent, overlappedEventInformation.MatchedDate);
 
@@ -423,7 +427,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
                 if (eventObj.IsProposed)
                 {
-                    GetInputForProposedEvent();
+                    GetInputForProposedEvent(eventObj);
                     return;
                 }
 

@@ -86,6 +86,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return false;
         }
 
+        public void UpdateProposedEvent(Event eventObj,int eventId)
+        {
+            _eventRepository.Update(eventObj, eventId);
+        }
+
         public List<Event> GetProposedEvents()
         {
             return [.. GetAllEvents().Where(eventObj => eventObj.IsProposed)];

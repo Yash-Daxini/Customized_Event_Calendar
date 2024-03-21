@@ -7,14 +7,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
     {
         private readonly EventCollaboratorService _eventCollaboratorsService = new();
 
+        private readonly EventService _eventService = new();
+
 
         public string GenerateNotification()
         {
             StringBuilder notification = new();
 
-            EventService eventService = new();
-
-            List<Event> events = eventService.GetAllEvents();
+            List<Event> events = _eventService.GetAllEvents();
 
             List<EventCollaborator> eventCollaborators = GetConsiderableEventCollaborators();
 
@@ -59,6 +59,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                                                             && eventCollaborator.ProposedEndHour == null
                                                           )
                                                     )
+                                                    && !_eventService.GetProposedEvents().Exists(eventObj=>eventObj.Id == eventCollaborator.EventId)
                                                  ))];
         }
 
@@ -155,17 +156,16 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return proposedEventsNotificationTable.ToString();
         }
 
-        private static List<List<string>> InsertProposedEventsInto2DList(List<EventCollaborator> proposedEventCollabprators)
+        private List<List<string>> InsertProposedEventsInto2DList(List<EventCollaborator> proposedEventCollabprators)
         {
             List<List<string>> propsedEventNotificationsTableContent = [["Event Proposed by", "Date", "Start Time", "End Time",
                                                                          "Event","Description"]];
 
             UserService userService = new();
-            EventService eventService = new();
 
             foreach (var eventCollaborator in proposedEventCollabprators)
             {
-                Event eventObj = eventService.GetEventById(eventCollaborator.EventId);
+                Event eventObj = _eventService.GetEventById(eventCollaborator.EventId);
 
                 User? eventProposer = userService.Read(eventObj.UserId);
 

@@ -162,7 +162,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             while (!ValidationService.IsValid24HourTime(hour))
             {
-                PrintHandler.PrintWarningMessage("Invalid Input ! Please enter hour between 0 to 24");
+                PrintHandler.PrintWarningMessage("Invalid Input ! Please enter hour between 0 to 23");
                 hour = GetValidatedInteger(inputMessage);
             }
 
