@@ -27,12 +27,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public static string GetWeekDayFromWeekNumber(int dayNumber)
         {
-            if (dayNumber == 7) dayNumber = 0;
-
             if (dayNumber < 1 || dayNumber > 7)
             {
                 return "";
             }
+
+            if (dayNumber == 7) dayNumber = 0;
 
             DayOfWeek dayOfWeek = (DayOfWeek)(dayNumber);
 
@@ -114,7 +114,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             foreach (string day in listOfDays)
             {
                 if (day.Length == 0) continue;
-                daysOfWeek.Append(DateTimeManager.GetWeekDayFromWeekNumber(Convert.ToInt32(day)) + ",");
+                daysOfWeek.Append(GetWeekDayFromWeekNumber(Convert.ToInt32(day)) + ",");
             }
 
             if (daysOfWeek.Length == 0) return "-";

@@ -163,15 +163,15 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             Console.Clear();
 
-            PrintHandler.ShowLoadingAnimation();
+            //PrintHandler.ShowLoadingAnimation();
 
-            Console.SetCursorPosition(0, Console.CursorTop);
+            //Console.SetCursorPosition(0, Console.CursorTop);
 
-            PrintHandler.PrintSuccessMessage($"{PrintHandler.CenterText()}Welcome {GlobalData.GetUser().Name}");
+            //PrintHandler.PrintSuccessMessage($"{PrintHandler.CenterText()}Welcome {GlobalData.GetUser().Name}");
 
-            Thread.Sleep(1000);
+            //Thread.Sleep(1000);
 
-            Console.Clear();
+            //Console.Clear();
 
             PrintHandler.PrintUserName(GlobalData.GetUser().Name);
 

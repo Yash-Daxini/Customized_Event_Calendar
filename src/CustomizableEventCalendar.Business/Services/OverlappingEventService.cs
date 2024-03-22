@@ -206,6 +206,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             int weekDay = Convert.ToInt32(eventObj.ByWeekDay.Split(",")[0]);
 
+            if (weekDay == 7) weekDay = 0;
+
             DayOfWeek dayOfWeek = (DayOfWeek)weekDay;
 
             DateOnly curDate = new(eventObj.EventStartDate.Year, eventObj.EventStartDate.Month, 1);
@@ -274,6 +276,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             int weekOrder = (int)eventObj.WeekOrder;
 
             int weekDay = Convert.ToInt32(eventObj.ByWeekDay.Split(",")[0]);
+
+            if (weekDay == 7) weekDay = 0;
 
             DayOfWeek dayOfWeek = (DayOfWeek)weekDay;
 

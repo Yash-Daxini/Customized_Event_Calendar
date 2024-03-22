@@ -110,22 +110,25 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         public static string GetValidatedWeekDays(string inputMessage)
         {
+            bool isValidWeekDays = false;
 
-            string weekDays = GetValidatedCommaSeparatedInput(inputMessage);
+            string weekDays = "";
 
-            bool isValidWeekDays = true;
-
-            foreach (var weekDay in weekDays.Split(","))
+            while (!isValidWeekDays)
             {
-                if (!ValidationService.IsValidWeekDay(Convert.ToInt32(weekDay)))
+                weekDays = GetValidatedCommaSeparatedInput(inputMessage);
+                isValidWeekDays = true;
+                foreach (var weekDay in weekDays.Split(","))
                 {
-                    isValidWeekDays = false;
-                    PrintHandler.PrintWarningMessage("Invalid Input ! Please enter week days between 1 to 7");
-                    break;
+                    if (!ValidationService.IsValidWeekDay(Convert.ToInt32(weekDay)))
+                    {
+                        isValidWeekDays = false;
+                        PrintHandler.PrintWarningMessage("Invalid Input ! Please enter week days between 1 to 7");
+                        break;
+                    }
                 }
             }
 
-            if (!isValidWeekDays) GetValidatedWeekDays(inputMessage);
             return weekDays;
 
         }

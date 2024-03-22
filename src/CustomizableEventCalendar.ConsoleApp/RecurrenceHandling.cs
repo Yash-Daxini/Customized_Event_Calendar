@@ -16,7 +16,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             PrintHandler.PrintNewLine();
 
-            int choice = ValidatedInputProvider.GetValidatedInteger("Are you want repeat this event ? \n 1. Yes 2. No :- ");
+            int choice = ValidatedInputProvider.GetValidatedIntegerBetweenRange("Are you want repeat this event ? \n 1. Yes 2. No :- ", 1, 2);
 
             RecurrencePatternChoice isRepeative = (RecurrencePatternChoice)choice;
 
@@ -71,7 +71,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             GetDates(eventObj);
 
-            int frequency = ValidatedInputProvider.GetValidatedInteger(RecurrencePatternMessages.Frequency);
+            int frequency = ValidatedInputProvider.GetValidatedIntegerBetweenRange(RecurrencePatternMessages.Frequency, 1, 5);
 
             RecurrencePatternFrequency choiceForFreq = (RecurrencePatternFrequency)frequency;
 
@@ -115,7 +115,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             PrintHandler.PrintNewLine();
 
             Console.WriteLine("How often does this event occur? \n1.Every Weekday \n2.Every n days (You need to specify the value of n)");
-            int choice = ValidatedInputProvider.GetValidatedInteger("\nEnter choice : ");
+            int choice = ValidatedInputProvider.GetValidatedIntegerBetweenRange("\nEnter choice : ", 1, 2);
 
             string days;
 
@@ -127,8 +127,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                     eventObj.Interval = null;
                     break;
                 case 2:
-                    int interval = ValidatedInputProvider.GetValidatedInteger("Please specify how often you'd like to repeat the event" +
-                                                                              "(in days) : ");
+                    int interval = ValidatedInputProvider.GetValidatedIntegerBetweenRange("Please specify how often you'd like to repeat the event" +
+                                                                              "(in days) : ", 1, 5);
                     eventObj.Interval = interval;
                     eventObj.ByWeekDay = null;
                     PrintHandler.PrintInfoMessage($"You've chosen to repeat the event every {eventObj.Interval} days.");
@@ -147,7 +147,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             PrintHandler.PrintNewLine();
 
-            int interval = ValidatedInputProvider.GetValidatedInteger("Please specify how often you'd like to repeat the event(in weeks) : ");
+            int interval = ValidatedInputProvider.GetValidatedIntegerBetweenRange("Please specify how often you'd like to repeat the event(in weeks) : ", 1, 5);
 
             eventObj.Interval = interval;
 
@@ -179,8 +179,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             PrintHandler.PrintNewLine();
 
-            int interval = ValidatedInputProvider.GetValidatedInteger("Please specify how often you'd like to repeat the " +
-                                                                      "event (in months) : ");
+            int interval = ValidatedInputProvider.GetValidatedIntegerBetweenRange("Please specify how often you'd like to repeat the " +
+                                                                      "event (in months) : ", 1, 5);
 
             eventObj.Interval = interval;
 
@@ -194,7 +194,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             Console.WriteLine("1.Select specific Day of the Month\n2.Select day of the month and its position ");
 
-            int choice = ValidatedInputProvider.GetValidatedInteger("\nEnter your choice : ");
+            int choice = ValidatedInputProvider.GetValidatedIntegerBetweenRange("\nEnter your choice : ", 1, 2);
 
             switch (choice)
             {
@@ -219,8 +219,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         private static void GetSpecificMonthDay(Event eventObj)
         {
-            eventObj.ByMonthDay = ValidatedInputProvider.GetValidatedMonthDay("On which day of the month would you like the "
-                                                                               + "event to occur? (From 1 to 31) : ");
+            eventObj.ByMonthDay = ValidatedInputProvider.GetValidatedIntegerBetweenRange("On which day of the month would you like the "
+                                                                               + "event to occur? (From 1 to 31) : ", 1, 31);
         }
 
         private static void GetDayOfWeekAndWeekOrderNumber(Event eventObj)
@@ -241,7 +241,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             Console.WriteLine("\n1. Monday \n2. Tuesday \n3. Wednesday \n4. Thursday \n5. Friday \n6. Saturday \n7. " +
                               "Sunday");
 
-            Domain.Enums.WeekDay choice = (Domain.Enums.WeekDay)ValidatedInputProvider.GetValidatedInteger("\nEnter choice :");
+            Domain.Enums.WeekDay choice = (Domain.Enums.WeekDay)ValidatedInputProvider.GetValidatedIntegerBetweenRange("\nEnter choice :", 1, 7);
             switch (choice)
             {
                 case Domain.Enums.WeekDay.Monday:
@@ -280,7 +280,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             Console.WriteLine("Enter the order number (e.g., 'first' or 'second' or 'third' or 'fourth' or 'last')");
             Console.WriteLine("\n1. First \n2. Second \n3. Third \n4. Fourth \n5. Fifth");
 
-            WeekOrder choice = (WeekOrder)ValidatedInputProvider.GetValidatedInteger("\nEnter choice :");
+            WeekOrder choice = (WeekOrder)ValidatedInputProvider.GetValidatedIntegerBetweenRange("\nEnter choice :", 1, 5);
 
             switch (choice)
             {
@@ -310,12 +310,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             PrintHandler.PrintNewLine();
 
-            eventObj.Interval = ValidatedInputProvider.GetValidatedInteger("Please specify how often you'd like to repeat " +
-                                                                           "the event (in years) : ");
+            eventObj.Interval = ValidatedInputProvider.GetValidatedIntegerBetweenRange("Please specify how often you'd like to repeat " +
+                                                                           "the event (in years) : ", 1, 5);
 
             Console.WriteLine("1.Select specific Day of the Month \n2.Select day of the month and its position ");
 
-            int choice = ValidatedInputProvider.GetValidatedInteger("\nEnter your choice : ");
+            int choice = ValidatedInputProvider.GetValidatedIntegerBetweenRange("\nEnter your choice : ", 1, 2);
 
             GetValidMonth(eventObj);
 

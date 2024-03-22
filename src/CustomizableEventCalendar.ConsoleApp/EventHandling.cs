@@ -143,9 +143,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             var overlappedEventInformation = CastAnonymousObject(overlappedEventInformationObject, new { OverlappedEvent = new Event(), MatchedDate = new DateOnly() });
 
-            string message = GetOverlapMessageFromEvents(eventForVerify, overlappedEventInformation.OverlappedEvent, overlappedEventInformation.MatchedDate);
+            string overlapEventMessage = GetOverlapMessageFromEvents(eventForVerify, overlappedEventInformation.OverlappedEvent, overlappedEventInformation.MatchedDate);
 
-            PrintHandler.PrintWarningMessage(message);
+            PrintHandler.PrintWarningMessage(overlapEventMessage);
 
             if (!AskForRescheduleOverlappedEvent(eventForVerify)) return;
 
@@ -164,6 +164,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                 case 1:
                     GetStartingAndEndingHourOfEvent(eventObj);
                     if (eventObj.IsProposed) RecurrenceHandling.GetRecurrenceForSingleEvent(eventObj);
+                    else RecurrenceHandling.AskForRecurrenceChoice(eventObj);
                     return true;
                 case 2:
                     return false;
@@ -311,13 +312,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             eventObj.EventStartHour = ValidatedInputProvider.GetValidated12HourFormatTime("Enter Start Hour for the event (From 1 to 12) : ");
 
-            string startHourAbbreviation = ValidatedInputProvider.GetValidatedAbbreviations();
+            string startHourAbbreviation = GetChoiceOfAbbreviation();
 
             PrintHandler.PrintNewLine();
 
             eventObj.EventEndHour = ValidatedInputProvider.GetValidated12HourFormatTime("Enter End Hour for the event (From 1 to 12) : ");
 
-            string endHourAbbreviation = ValidatedInputProvider.GetValidatedAbbreviations();
+            string endHourAbbreviation = GetChoiceOfAbbreviation();
 
             eventObj.EventStartHour += startHourAbbreviation.Equals("PM") && eventObj.EventStartHour != 12 ? 12 : 0;
 
@@ -330,6 +331,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                 PrintHandler.PrintWarningMessage("Invalid input ! Start hour must less than the end hour.");
                 GetHourIn12HourFormat(eventObj);
             }
+        }
+
+        private static string GetChoiceOfAbbreviation()
+        {
+            Console.WriteLine("Enter choice for AM or PM \n1. AM \n2. PM");
+            int choice = ValidatedInputProvider.GetValidatedIntegerBetweenRange("Enter choice : ", 1, 2);
+
+            return choice == 1 ? "AM" : "PM";
         }
 
 
