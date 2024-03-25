@@ -18,6 +18,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums
         SharedEventCollaboration = 8,
         EventWithMultipleInvitees = 9,
         GiveResponseToProposedEvent = 10,
+        EventsTimeline = 11,
         Back = 0,
     }
 }

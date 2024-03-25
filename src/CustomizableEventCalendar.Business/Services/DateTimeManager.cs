@@ -15,7 +15,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return dateTime.ToString("dd-MM-yyyy");
         }
 
-        public static string GetDayFromDateTime(DateTime dateTime)
+        public static string GetDayFromDateOnly(DateOnly dateTime)
         {
             return dateTime.ToString("dddd");
         }

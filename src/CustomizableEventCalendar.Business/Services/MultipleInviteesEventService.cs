@@ -1,6 +1,5 @@
 ﻿using System.Data;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
 {

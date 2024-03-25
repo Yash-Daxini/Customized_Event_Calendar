@@ -98,8 +98,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 if (currentDate > endDateOfWeek)
                 {
                     startDateOfWeek = startDateOfWeek.AddDays(7 * (int)eventObj.Interval);
-                    endDateOfWeek = DateTimeManager.GetEndDateOfWeek(currentDate);
                     currentDate = startDateOfWeek;
+                    endDateOfWeek = DateTimeManager.GetEndDateOfWeek(currentDate);
                 }
             }
         }
