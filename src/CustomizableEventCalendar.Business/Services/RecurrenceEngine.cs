@@ -98,8 +98,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 if (currentDate > endDateOfWeek)
                 {
                     startDateOfWeek = startDateOfWeek.AddDays(7 * (int)eventObj.Interval);
-                    endDateOfWeek = DateTimeManager.GetEndDateOfWeek(currentDate);
                     currentDate = startDateOfWeek;
+                    endDateOfWeek = DateTimeManager.GetEndDateOfWeek(currentDate);
                 }
             }
         }
@@ -143,7 +143,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             int month = isMonthly ? startDateOfEvent.Month : (int)eventObj.ByMonth;
 
-            DateOnly currentDate = new(startDateOfEvent.Year, month, GetMinimumDateFromGivenMonthAndDay(day, startDateOfEvent));
+            DateOnly currentDate = new(startDateOfEvent.Year, month, GetMinimumDateFromGivenMonthAndDay(day, month, startDateOfEvent.Year));
 
             while (currentDate <= eventObj.EventEndDate)
             {
@@ -151,13 +151,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                 currentDate = isMonthly ? currentDate.AddMonths((int)eventObj.Interval) : currentDate.AddYears((int)eventObj.Interval);
 
-                currentDate = new DateOnly(currentDate.Year, currentDate.Month, GetMinimumDateFromGivenMonthAndDay(day, currentDate));
+                currentDate = new DateOnly(currentDate.Year, currentDate.Month, GetMinimumDateFromGivenMonthAndDay(day, month, currentDate.Year));
             }
         }
 
-        private static int GetMinimumDateFromGivenMonthAndDay(int day, DateOnly date)
+        private static int GetMinimumDateFromGivenMonthAndDay(int day, int month, int year)
         {
-            int daysInMonth = DateTime.DaysInMonth(date.Year, date.Month);
+            int daysInMonth = DateTime.DaysInMonth(year, month);
 
             return Math.Min(day, daysInMonth);
         }

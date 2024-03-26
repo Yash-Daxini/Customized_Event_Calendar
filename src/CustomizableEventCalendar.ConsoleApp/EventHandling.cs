@@ -1,5 +1,4 @@
 ﻿using System.Data;
-using System.Security.Cryptography;
 using System.Text;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
@@ -25,7 +24,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         { EventOperation.ViewSharedCalendar, _shareCalendar.ViewSharedCalendars },
         { EventOperation.SharedEventCollaboration, SharedEventCollaboration.ShowSharedEvents },
         { EventOperation.EventWithMultipleInvitees, () => GetInputForProposedEvent(null) },
-        { EventOperation.GiveResponseToProposedEvent, ProposedEventResponseHandler.ShowProposedEvents}};
+        { EventOperation.GiveResponseToProposedEvent, ProposedEventResponseHandler.ShowProposedEvents},
+            { EventOperation.EventsTimeline , PrintEventWithTimeline} };
 
         public static void PrintColorMessage(string message, ConsoleColor color)
         {
@@ -34,17 +34,19 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             Console.ResetColor();
         }
 
-        public static void ShowAllChoices()
+        private static void ShowAllChoices()
         {
             Dictionary<string, ConsoleColor> operationWithColor = new()
             {
-                { "1. Add Event",ConsoleColor.Green},{ "2. See all Events",ConsoleColor.Blue },
+                { "1. Add Event",ConsoleColor.Green},{ "2. Events Overview",ConsoleColor.Blue },
                 { "3. Delete Event",ConsoleColor.Red },{ "4. Update Event" , ConsoleColor.White } ,
                 { "5. See calendar view",ConsoleColor.Yellow} ,{ "6. Share calendar" , ConsoleColor.Cyan } ,
                 { "7. View Shared calendar" , ConsoleColor.Magenta } ,
                 { "8. Collaborate from shared calendar" , ConsoleColor.DarkGreen} ,
                 { "9. Add event with multiple invitees" , ConsoleColor.DarkGray } ,
-                { "10. Give response to proposed events" , ConsoleColor.DarkCyan} , {"0. Back" , ConsoleColor.Gray }
+                { "10. Give response to proposed events" , ConsoleColor.DarkCyan} ,
+                { "11. See Events time line",ConsoleColor.DarkMagenta},
+                {"0. Back" , ConsoleColor.Gray }
             };
 
             PrintHandler.PrintNewLine();
@@ -79,7 +81,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             }
         }
 
-        public static int GetValidatedChoice()
+        private static int GetValidatedChoice()
         {
             ShowAllChoices();
 
@@ -95,7 +97,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return choice;
         }
 
-        public static void GetInputForProposedEvent(Event? eventObj)
+        private static void GetInputForProposedEvent(Event? eventObj)
         {
             try
             {
@@ -105,7 +107,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                     return;
                 }
 
-                if (eventObj == null) eventObj = new();
+                eventObj ??= new();
 
                 GetEventDetailsFromUser(eventObj);
 
@@ -137,9 +139,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             }
         }
 
-        public static T CastAnonymousObject<T>(object obj, T type) { return (T)obj; }
+        private static T CastAnonymousObject<T>(object obj, T type) { return (T)obj; }
 
-        public static void HandleOverlappedEvent(Event eventForVerify, Object overlappedEventInformationObject, bool isInsert)
+        private static void HandleOverlappedEvent(Event eventForVerify, Object overlappedEventInformationObject, bool isInsert)
         {
             var overlappedEventInformation = CastAnonymousObject(overlappedEventInformationObject, new { OverlappedEvent = new Event(), MatchedDate = new DateOnly() });
 
@@ -153,7 +155,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             else UpdateEvent(eventForVerify.Id, eventForVerify);
         }
 
-        public static bool AskForRescheduleOverlappedEvent(Event eventObj)
+        private static bool AskForRescheduleOverlappedEvent(Event eventObj)
         {
             Console.WriteLine("\nAre you want to reschedule event ? \n1. Yes \n2. No");
 
@@ -172,7 +174,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return false;
         }
 
-        public static string GetOverlapMessageFromEvents(Event eventForVerify, Event eventToCheckOverlap, DateOnly matchedDate)
+        private static string GetOverlapMessageFromEvents(Event eventForVerify, Event eventToCheckOverlap, DateOnly matchedDate)
         {
             return $"\"{eventForVerify.Title}\" overlaps with \"{eventToCheckOverlap.Title}\" at {matchedDate} on following duration\n" +
                    $"1. {DateTimeManager.ConvertTo12HourFormat(eventForVerify.EventStartHour)} " +
@@ -183,7 +185,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                    $"\nPlease choose another date time !";
         }
 
-        public static bool ShowAllUser()
+        private static bool ShowAllUser()
         {
             List<User> users = GetInsensitiveUserInformationList();
 
@@ -210,7 +212,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         }
 
-        public static List<User> GetInsensitiveUserInformationList()
+        private static List<User> GetInsensitiveUserInformationList()
         {
             UserService userService = new();
             List<User> users = userService.GetInsensitiveInformationOfUser();
@@ -218,7 +220,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return users;
         }
 
-        public static string GetInviteesFromUser()
+        private static string GetInviteesFromUser()
         {
             bool isUsersAvailable = ShowAllUser();
 
@@ -243,7 +245,76 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return invitees.ToString()[..(invitees.Length - 1)];
         }
 
-        public static void GetEventDetailsFromUser(Event eventObj)
+        private static DateOnly GetDate(string inputMessage)
+        {
+            return ValidatedInputProvider.GetValidatedDateOnly(inputMessage);
+        }
+
+        private static void GetDatesToPrintEventWithTimeline(out DateOnly startDate, out DateOnly endDate)
+        {
+            startDate = GetDate("Please enter start date from you want to see events : ");
+            endDate = GetDate("Please enter end date from you want to see events : ");
+        }
+
+        private static void PrintEventWithTimeline()
+        {
+
+            GetDatesToPrintEventWithTimeline(out DateOnly startDate, out DateOnly endDate);
+
+            EventCollaboratorService eventCollaboratorService = new();
+            List<EventCollaborator> eventCollaborators = eventCollaboratorService.GetAllEventCollaborators()
+                                                                                 .FindAll(eventCollaborator => eventCollaborator.UserId
+                                                                                  == GlobalData.GetUser().Id);
+            List<Event> events = _eventService.GetAllEvents();
+
+            List<List<string>> tableContentOfEventTimeLine = [["Date", "Day", "Event Name", "Start Time", "End Time"]];
+
+            Dictionary<DateOnly, List<EventCollaborator>> dateWiseEventCollaborators = GetDateWiseEventCollaborators(startDate, endDate, eventCollaborators);
+
+            foreach (var date in dateWiseEventCollaborators.Keys)
+            {
+                foreach (var eventCollaborator in dateWiseEventCollaborators[date])
+                {
+                    Event eventObj = _eventService.GetEventById(eventCollaborator.EventId);
+                    tableContentOfEventTimeLine.Add([date.ToString(), DateTimeManager.GetDayFromDateOnly(date),
+                                                     eventObj.Title, eventObj.EventStartHour.ToString(),
+                                                     eventObj.EventEndHour.ToString()]);
+                }
+                if (dateWiseEventCollaborators[date].Count == 0) tableContentOfEventTimeLine.Add([date.ToString(),
+                                                                                                  DateTimeManager.GetDayFromDateOnly(date),
+                                                                                                  "-", "-", "-"]);
+            }
+
+            Console.WriteLine("\n" + PrintService.GenerateTable(tableContentOfEventTimeLine));
+
+        }
+
+        private static Dictionary<DateOnly, List<EventCollaborator>> GetDateWiseEventCollaborators(DateOnly startDate, DateOnly endDate, List<EventCollaborator> eventCollaborators)
+        {
+            Dictionary<DateOnly, List<EventCollaborator>> dateWiseEventCollaborators = [];
+
+            DateOnly currentDate = startDate;
+
+            while (currentDate <= endDate)
+            {
+                List<EventCollaborator> eventCollaboratorBetweenGivenRange = eventCollaborators.FindAll(eventCollaborator =>
+                                                                             IsDateInRange(startDate, endDate, eventCollaborator.EventDate) &&
+                                                                             currentDate == eventCollaborator.EventDate);
+
+                dateWiseEventCollaborators[currentDate] = eventCollaboratorBetweenGivenRange;
+
+                currentDate = currentDate.AddDays(1);
+            }
+
+            return dateWiseEventCollaborators;
+        }
+
+        private static bool IsDateInRange(DateOnly startDate, DateOnly endDate, DateOnly dateToCheck)
+        {
+            return dateToCheck >= startDate && dateToCheck <= endDate;
+        }
+
+        private static void GetEventDetailsFromUser(Event eventObj)
         {
             Console.WriteLine("\nFill Details Related to Event : ");
 
@@ -263,7 +334,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             eventObj.IsProposed = false;
         }
 
-        public static void GetStartingAndEndingHourOfEvent(Event eventObj)
+        private static void GetStartingAndEndingHourOfEvent(Event eventObj)
         {
             Console.WriteLine("\nHow would you like to enter the time? : ");
             Console.WriteLine("\n1.Choose 24-hour format (1 to 24 hours) \n2.Choose 12-hour format (1 to 12 hours and AM/PM)");
@@ -287,7 +358,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         }
 
-        public static void GetHourIn24HourFormat(Event eventObj)
+        private static void GetHourIn24HourFormat(Event eventObj)
         {
             PrintHandler.PrintNewLine();
 
@@ -306,7 +377,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             }
         }
 
-        public static void GetHourIn12HourFormat(Event eventObj)
+        private static void GetHourIn12HourFormat(Event eventObj)
         {
             PrintHandler.PrintNewLine();
 
@@ -342,7 +413,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         }
 
 
-        public static void GetInputToAddEvent()
+        private static void GetInputToAddEvent()
         {
             Event eventObj = new();
 
@@ -386,19 +457,19 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return false;
         }
 
-        public static void DisplayEvents()
+        private static void DisplayEvents()
         {
             string events = _eventService.GenerateEventTable();
             Console.WriteLine(events.Length == 0 ? "No events available !\n" : events);
         }
 
-        public static bool IsEventsPresent()
+        private static bool IsEventsPresent()
         {
             string events = _eventService.GenerateEventTable();
             return events.Length > 0;
         }
 
-        public static void DeleteEvent()
+        private static void DeleteEvent()
         {
             try
             {
@@ -419,7 +490,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         }
 
-        public static void GetInputToUpdateEvent()
+        private static void GetInputToUpdateEvent()
         {
 
             try
@@ -468,7 +539,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             }
         }
 
-        public static void AskForItemsToUpdate(Event eventObj)
+        private static void AskForItemsToUpdate(Event eventObj)
         {
             string inputMessage = "\nWhat items you want to update ? \n1. Event Details (Event Title , Event Description , Event Location)" +
                                   "\n2. Event repetition details (Event dates, Event Duration, Event frequency etc ...)";
@@ -491,7 +562,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         }
 
-        public static int GetSerialNumberForUpdateOrDelete(bool isDelete)
+        private static int GetSerialNumberForUpdateOrDelete(bool isDelete)
         {
             string operation = isDelete ? "delete" : "update";
 

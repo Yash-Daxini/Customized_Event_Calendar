@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums
+﻿namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums
 {
     internal enum EventOperation
     {
@@ -18,6 +12,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums
         SharedEventCollaboration = 8,
         EventWithMultipleInvitees = 9,
         GiveResponseToProposedEvent = 10,
+        EventsTimeline = 11,
         Back = 0,
     }
 }

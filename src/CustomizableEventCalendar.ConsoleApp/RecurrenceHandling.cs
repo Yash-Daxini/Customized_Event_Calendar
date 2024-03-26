@@ -24,16 +24,17 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             {
                 case RecurrencePatternChoice.Yes:
                     GetRecurrencePattern(eventObj);
+                    PrintHandler.PrintInfoMessage("You decided to repeat event " + RecurrencePatternMessageGenerator.GenerateRecurrenceMessage(eventObj));
                     break;
                 case RecurrencePatternChoice.No:
                     GetRecurrenceForSingleEvent(eventObj);
+                    PrintHandler.PrintInfoMessage("Event will be " + RecurrencePatternMessageGenerator.GenerateRecurrenceMessage(eventObj));
                     break;
                 default:
                     Console.WriteLine("Please enter correct value : ");
                     AskForRecurrenceChoice(eventObj);
                     break;
             }
-
         }
 
         private static void GetDates(Event eventObj)
@@ -122,7 +123,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             switch (choice)
             {
                 case 1:
-                    PrintHandler.PrintInfoMessage("Great! You've selected to repeat the event every weekday.");
                     eventObj.ByWeekDay = "1,2,3,4,5";
                     eventObj.Interval = null;
                     break;
@@ -131,7 +131,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                                                                               "(in days) : ", 1, 5);
                     eventObj.Interval = interval;
                     eventObj.ByWeekDay = null;
-                    PrintHandler.PrintInfoMessage($"You've chosen to repeat the event every {eventObj.Interval} days.");
                     break;
 
             }
@@ -158,9 +157,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             eventObj.ByMonthDay = null;
             eventObj.ByMonth = null;
             eventObj.ByYear = null;
-
-            PrintHandler.PrintInfoMessage($"You've chosen to repeat the event every {eventObj.Interval} weeks on the following weekdays: " +
-                $"{DateTimeManager.GetWeekDaysFromWeekDayNumbers(days)}.");
         }
 
         private static string GetValidWeekDays()
@@ -200,15 +196,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             {
                 case 1:
                     GetSpecificMonthDay(eventObj);
-                    PrintHandler.PrintInfoMessage($"You've chosen to repeat the event every {eventObj.Interval} months on the {eventObj.ByMonthDay} day of" +
-                                                  $" the month");
                     eventObj.WeekOrder = null;
                     eventObj.ByWeekDay = null;
                     break;
                 case 2:
                     GetDayOfWeekAndWeekOrderNumber(eventObj);
-                    PrintHandler.PrintInfoMessage($"You've chosen to repeat the event every {eventObj.Interval} months on the {eventObj.WeekOrder}th" +
-                                                  $" {DateTimeManager.GetWeekDaysFromWeekDayNumbers(eventObj.ByWeekDay)} day of the month");
                     eventObj.ByMonthDay = null;
                     break;
             }
@@ -323,15 +315,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             {
                 case 1:
                     GetSpecificMonthDay(eventObj);
-                    PrintHandler.PrintSuccessMessage($"You've chosen to repeat the event every {eventObj.Interval} years on the {eventObj.ByMonthDay} day" +
-                                                     $" of the month of {eventObj.ByMonth}");
                     eventObj.WeekOrder = null;
                     eventObj.ByWeekDay = null;
                     break;
                 case 2:
                     GetDayOfWeekAndWeekOrderNumber(eventObj);
-                    PrintHandler.PrintSuccessMessage($"You've chosen to repeat the event every {eventObj.Interval} years on the {eventObj.WeekOrder}th" +
-                        $" {DateTimeManager.GetWeekDaysFromWeekDayNumbers(eventObj.ByWeekDay)} day of the month of {eventObj.ByMonth}");
                     eventObj.ByMonthDay = null;
                     break;
             }

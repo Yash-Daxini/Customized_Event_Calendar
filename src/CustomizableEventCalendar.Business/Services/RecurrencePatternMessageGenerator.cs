@@ -81,6 +81,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         private static string GetWeekOrder(int weekOrder)
         {
+            if (weekOrder == 5) return "last";
             return GetMonthDay(weekOrder);
         }
     }
