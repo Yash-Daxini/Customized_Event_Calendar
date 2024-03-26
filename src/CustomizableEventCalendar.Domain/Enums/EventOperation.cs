@@ -9,10 +9,9 @@
         View = 5,
         ShareCalendar = 6,
         ViewSharedCalendar = 7,
-        SharedEventCollaboration = 8,
-        EventWithMultipleInvitees = 9,
-        GiveResponseToProposedEvent = 10,
-        EventsTimeline = 11,
+        EventWithMultipleInvitees = 8,
+        GiveResponseToProposedEvent = 9,
+        EventsTimeline = 10,
         Back = 0,
     }
 }

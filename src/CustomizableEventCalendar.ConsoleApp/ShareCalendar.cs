@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
@@ -7,7 +8,15 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
     internal class ShareCalendar
     {
         private readonly CalendarSharingService _calendarSharingService = new();
+
         private readonly static UserService _userService = new();
+
+        public List<SharedCalendar> sharedCalendarsList;
+
+        public ShareCalendar()
+        {
+            sharedCalendarsList = _calendarSharingService.GetSharedCalendars();
+        }
 
         public void GetDetailsToShareCalendar()
         {
@@ -70,7 +79,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             {
                 StringBuilder userInformation = new();
 
-                userInformation.AppendLine(PrintService.GenerateTable(Get2DListToGenerateTable(users)));
+                userInformation.AppendLine(PrintService.GenerateTable(users.InsertInto2DList(["Sr. No", "Name", "Email"],
+                    [
+                        user => users.IndexOf(user)+1,
+                        user => user.Name,
+                        user => user.Email,
+                    ])));
 
                 Console.WriteLine(userInformation);
             }
@@ -82,45 +96,34 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         }
 
-        private static List<List<string>> Get2DListToGenerateTable(List<User> users)
-        {
-            List<List<string>> userTableContent = [["Sr. No", "Name", "Email"]];
-
-            foreach (var (user, index) in users.Select((user, index) => (user, index)))
-            {
-                userTableContent.Add([(index + 1).ToString(), user.Name, user.Email]);
-            }
-
-            return userTableContent;
-
-        }
-
-        public void ViewSharedCalendars()
+        public void ShowSharedCalendars()
         {
             try
             {
-                List<SharedCalendar> sharedCalendarsList = _calendarSharingService.GetSharedCalendars();
+                string sharedEventsTable = DesignSharedCalendarTable();
 
-                string sharedEvents = _calendarSharingService.DesignSharedCalendarDisplayFormat();
-
-                if (_calendarSharingService.GetSharedCalendarsCount() > 0)
+                if (sharedCalendarsList.Count > 0)
                 {
-                    Console.WriteLine("Calendars shared to you !");
-                    Console.WriteLine(sharedEvents);
+                    PrintHandler.PrintInfoMessage("Calendars shared to you !");
+                    Console.WriteLine(sharedEventsTable);
                 }
                 else
                 {
-                    Console.WriteLine("No calendars available !");
+                    PrintHandler.PrintWarningMessage("No calendars available !");
                     return;
                 }
 
-                string inputMessage = "Select Sr No. which calendar you want to see :- ";
+                int serialNumberOfSharedCalendar = GetInputToShowSpecificCalendar();
 
-                int serialNumberOfSharedCalendar = ValidatedInputProvider.GetValidatedIntegerBetweenRange(inputMessage
-                                                    , 1, sharedCalendarsList.Count);
+                int sharedCalendarId = sharedCalendarsList[serialNumberOfSharedCalendar - 1].Id;
 
-                ViewSpecificCalendar(sharedCalendarsList[serialNumberOfSharedCalendar - 1].Id);
+                ShowSpecificCalendar(sharedCalendarId);
 
+                List<EventCollaborator> sharedEvents = _calendarSharingService.GetSharedEventsFromSharedCalendarId(sharedCalendarId);
+
+                if (sharedEvents.Count == 0) return;
+
+                if (IsWantToCollaborate()) SharedEventCollaboration.GetInputToEventCollaboration(sharedEvents.Count, sharedEvents);
             }
             catch
             {
@@ -128,10 +131,103 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             }
         }
 
-        private void ViewSpecificCalendar(int sharedCalendarId)
+        private static bool IsWantToCollaborate()
         {
-            string calendar = _calendarSharingService.GetSharedEventsFromSharedCalendar(sharedCalendarId);
-            Console.WriteLine(calendar);
+            Console.WriteLine("\nAre you want to collaborate on any event ? \n1.Yes \n2.No");
+            int choice = ValidatedInputProvider.GetValidatedIntegerBetweenRange("\nEnter choice : ", 1, 2);
+
+            return choice == 1;
+        }
+
+        private int GetInputToShowSpecificCalendar()
+        {
+            string inputMessage = "Select Sr No. which calendar you want to see :- ";
+
+            int serialNumberOfSharedCalendar = ValidatedInputProvider.GetValidatedIntegerBetweenRange(inputMessage
+                                                , 1, sharedCalendarsList.Count);
+
+            return serialNumberOfSharedCalendar;
+        }
+
+        public void ShowSpecificCalendar(int sharedCalendarId)
+        {
+            List<EventCollaborator> sharedEvents = _calendarSharingService.GetSharedEventsFromSharedCalendarId(sharedCalendarId);
+
+            CalendarSharingService calendarSharingService = new();
+
+            SharedCalendar? sharedCalendar = calendarSharingService.GetSharedCalendarById(sharedCalendarId);
+
+            if (sharedCalendar == null) return;
+
+            string sharedEventsTable = GenerateTableForSharedEvents(sharedCalendar.FromDate, sharedCalendar.ToDate, sharedEvents);
+
+            Console.WriteLine(sharedEventsTable);
+        }
+
+        public string DesignSharedCalendarTable()
+        {
+            List<SharedCalendar> sharedCalendars = _calendarSharingService.GetSharedCalendars();
+
+            StringBuilder sharedEventsDisplayString = new();
+
+            List<List<string>> sharedEventsTableContent = sharedCalendars.InsertInto2DList(["Sr. NO", "Shared by", "From", "To"],
+            [
+                sharedCalendar => sharedCalendars.IndexOf(sharedCalendar) + 1,
+                sharedCalendar => GetUserName(sharedCalendar.SenderUserId),
+                sharedCalendar => sharedCalendar.FromDate,
+                sharedCalendar => sharedCalendar.ToDate
+            ]);
+
+            sharedEventsDisplayString.Append(PrintService.GenerateTable(sharedEventsTableContent));
+
+            return sharedEventsDisplayString.ToString();
+        }
+
+        private static string GetUserName(int userId)
+        {
+            UserRepository userService = new();
+
+            User? user = userService.GetById(data => new User(data), userId);
+
+            return user != null ? user.Name : "-";
+        }
+
+        private static string GenerateTableForSharedEvents(DateOnly startDate, DateOnly endDate, List<EventCollaborator> sharedEvents)
+        {
+            EventService eventService = new();
+            List<Event> events = eventService.GetAllEvents();
+
+            List<List<string>> sharedEventTableContent = [["Sr No.", "Event Title", "Event Description", "Event Date", "Event Duration"]];
+
+            int index = 0;
+
+            DateOnly currentDate = startDate;
+
+            while (currentDate <= endDate)
+            {
+                EventCollaborator? eventCollaborator = sharedEvents.Find(eventCollaborator => eventCollaborator.EventDate == currentDate);
+
+                if (eventCollaborator != null)
+                {
+                    Event? eventObj = events.Find(eventObj => eventObj.Id == eventCollaborator.EventId);
+
+                    sharedEventTableContent.Add([(index + 1).ToString(),
+                                                 eventObj.Title, eventObj.Description,
+                                                 eventCollaborator.EventDate.ToString(),
+                                                 DateTimeManager.ConvertTo12HourFormat(eventObj.EventStartHour)+" - "+
+                                                 DateTimeManager.ConvertTo12HourFormat(eventObj.EventEndHour)
+                                                ]);
+                    index++;
+                }
+                else
+                {
+                    sharedEventTableContent.Add(["-", "-", "-", currentDate.ToString(), "-"]);
+                }
+
+                currentDate = currentDate.AddDays(1);
+            }
+
+            return PrintService.GenerateTable(sharedEventTableContent);
         }
     }
 }

@@ -6,64 +6,32 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 {
     internal class CalendarSharingService
     {
-        private readonly SharedCalendarRepository _sharedEventsRepository = new();
-
-        public static List<EventCollaborator> availableSharedEventsToCollaborate = [];
+        private readonly SharedCalendarRepository _sharedCalendarRepository = new();
 
         public void AddSharedCalendar(SharedCalendar sharedEvent)
         {
-            _sharedEventsRepository.Insert(sharedEvent);
+            _sharedCalendarRepository.Insert(sharedEvent);
         }
 
         public List<SharedCalendar> GetSharedCalendars()
         {
-            return [.._sharedEventsRepository.GetAll(data => new SharedCalendar(data))
+            return [.._sharedCalendarRepository.GetAll(data => new SharedCalendar(data))
                                                                         .Where(sharedEvent =>
                                                                          sharedEvent.ReceiverUserId ==
                                                                          GlobalData.GetUser().Id)];
 
         }
 
-        public int GetSharedCalendarsCount()
+        public SharedCalendar? GetSharedCalendarById(int sharedCalendarId)
         {
-            return GetSharedCalendars().Count;
+            return _sharedCalendarRepository.GetById(data => new SharedCalendar(data), sharedCalendarId);
         }
 
-        public string DesignSharedCalendarDisplayFormat()
+        public List<EventCollaborator> GetSharedEventsFromSharedCalendarId(int sharedCalendarId)
         {
-            List<SharedCalendar> sharedCalendars = GetSharedCalendars();
+            SharedCalendar? sharedCalendar = GetSharedCalendarById(sharedCalendarId);
 
-            StringBuilder sharedEventsDisplayString = new();
-
-            List<List<string>> sharedEventsTableContent = InsertInto2DList(sharedCalendars);
-
-            sharedEventsDisplayString.Append(PrintService.GenerateTable(sharedEventsTableContent));
-
-            return sharedEventsDisplayString.ToString();
-        }
-
-        public static List<List<string>> InsertInto2DList(List<SharedCalendar> sharedCalendars)
-        {
-            List<List<string>> sharedEventsTableContent = [["Sr. NO", "Shared by", "From", "To"]];
-
-            UserRepository userService = new();
-
-            foreach (var (sharedCalendar, index) in sharedCalendars.Select((sharedCalendar, index) => (sharedCalendar, index)))
-            {
-                User? user = userService.GetById(data => new User(data), sharedCalendar.SenderUserId);
-
-                sharedEventsTableContent.Add([(index + 1).ToString(), user.Name, sharedCalendar.FromDate + ""
-                                              , sharedCalendar.ToDate + ""]);
-            };
-
-            return sharedEventsTableContent;
-        }
-
-        public string GetSharedEventsFromSharedCalendar(int sharedEventId)
-        {
-            SharedCalendar? sharedCalendar = _sharedEventsRepository.GetById(data => new SharedCalendar(data), sharedEventId);
-
-            if (sharedCalendar == null) return "";
+            if (sharedCalendar == null) return [];
 
             EventRepository eventRepository = new();
 
@@ -71,48 +39,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             HashSet<int> sharedEventIds = GetSharedEventIdsFromSharedCalendar(events, sharedCalendar);
 
-            List<EventCollaborator> eventCollaborators = GetSharedEventsFromSharedCalendars(sharedCalendar, sharedEventIds);
+            List<EventCollaborator> sharedEvents = GetSharedEventsFromSharedCalendar(sharedCalendar, sharedEventIds);
 
-            Dictionary<DateOnly, EventCollaborator?> dateAndEvent = GenerateListOfAvailableCollaborationEvents(sharedCalendar.FromDate,
-                                                                   sharedCalendar.ToDate, eventCollaborators);
-
-            availableSharedEventsToCollaborate.Clear();
-
-            return GenerateTableForSharedEventsFromSharedCalendar(events, dateAndEvent);
-        }
-
-        private static string GenerateTableForSharedEventsFromSharedCalendar(List<Event> events, Dictionary<DateOnly, EventCollaborator?> dateAndEvent)
-        {
-            StringBuilder sharedEventInfo = new();
-
-            List<List<string>> sharedEventTableContent = [["Sr No.", "Event Title", "Event Description", "Event Date", "Event Duration"]];
-
-            int index = 0;
-            foreach (var (date, eventCollaborator) in dateAndEvent.Select(x => (x.Key, x.Value)))
-            {
-                if (eventCollaborator != null)
-                {
-                    Event? eventObj = events.Find(eventObj => eventObj.Id == eventCollaborator.EventId);
-
-                    sharedEventTableContent.Add([(index + 1).ToString(),
-                                                 eventObj.Title, eventObj.Description,
-                                                 eventCollaborator.EventDate.ToString(),
-                                                 DateTimeManager.ConvertTo12HourFormat(eventObj.EventStartHour)+" - "+
-                                                 DateTimeManager.ConvertTo12HourFormat(eventObj.EventEndHour)
-                                                ]);
-
-                    availableSharedEventsToCollaborate.Add(eventCollaborator);
-                    index++;
-                }
-                else
-                {
-                    sharedEventTableContent.Add(["-", "-", "-", date.ToString(), "-"]);
-                }
-            }
-
-            sharedEventInfo.AppendLine(PrintService.GenerateTable(sharedEventTableContent));
-
-            return sharedEventInfo.ToString();
+            return sharedEvents;
         }
 
         private static HashSet<int> GetSharedEventIdsFromSharedCalendar(List<Event> events, SharedCalendar sharedCalendar)
@@ -124,7 +53,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return sharedEventIds;
         }
 
-        private static List<EventCollaborator> GetSharedEventsFromSharedCalendars(SharedCalendar sharedCalendar, HashSet<int> sharedEventIds)
+        private static List<EventCollaborator> GetSharedEventsFromSharedCalendar(SharedCalendar sharedCalendar, HashSet<int> sharedEventIds)
         {
             List<EventCollaborator> sharedEvents = GetAllSharedEventsBetweenGivenDate(sharedCalendar.FromDate, sharedCalendar.ToDate, sharedEventIds);
 
@@ -154,35 +83,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         private static bool IsSharedEvent(HashSet<int> sharedEventIds, int eventId)
         {
             return sharedEventIds.Contains(eventId);
-        }
-
-        private static Dictionary<DateOnly, EventCollaborator?> GenerateListOfAvailableCollaborationEvents(DateOnly startDate, DateOnly endDate, List<EventCollaborator> eventCollaborators)
-        {
-            Dictionary<DateOnly, EventCollaborator?> availableEventCollaboratorsonSpecificDate = [];
-
-            while (startDate <= endDate)
-            {
-                EventCollaborator? eventCollaborator = eventCollaborators.Find(eventCollaborator => eventCollaborator.EventDate == startDate);
-
-                if (eventCollaborator != null)
-                {
-                    availableEventCollaboratorsonSpecificDate.Add(startDate, eventCollaborator);
-                }
-                else
-                {
-                    availableEventCollaboratorsonSpecificDate.Add(startDate, null);
-                }
-
-                startDate = startDate.AddDays(1);
-            }
-
-            return availableEventCollaboratorsonSpecificDate;
-        }
-
-        public static List<EventCollaborator> GetAvailableEventCollaborations()
-        {
-
-            return availableSharedEventsToCollaborate;
         }
     }
 }

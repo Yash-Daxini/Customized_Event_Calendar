@@ -21,11 +21,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         { EventOperation.Update, GetInputToUpdateEvent },
         { EventOperation.View, CalendarView.ViewSelection },
         { EventOperation.ShareCalendar, _shareCalendar.GetDetailsToShareCalendar },
-        { EventOperation.ViewSharedCalendar, _shareCalendar.ViewSharedCalendars },
-        { EventOperation.SharedEventCollaboration, SharedEventCollaboration.ShowSharedEvents },
+        { EventOperation.ViewSharedCalendar, _shareCalendar.ShowSharedCalendars },
         { EventOperation.EventWithMultipleInvitees, () => GetInputForProposedEvent(null) },
         { EventOperation.GiveResponseToProposedEvent, ProposedEventResponseHandler.ShowProposedEvents},
-            { EventOperation.EventsTimeline , PrintEventWithTimeline} };
+        { EventOperation.EventsTimeline , PrintEventWithTimeline} };
 
         public static void PrintColorMessage(string message, ConsoleColor color)
         {
@@ -42,11 +41,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                 { "3. Delete Event",ConsoleColor.Red },{ "4. Update Event" , ConsoleColor.White } ,
                 { "5. See calendar view",ConsoleColor.Yellow} ,{ "6. Share calendar" , ConsoleColor.Cyan } ,
                 { "7. View Shared calendar" , ConsoleColor.Magenta } ,
-                { "8. Collaborate from shared calendar" , ConsoleColor.DarkGreen} ,
-                { "9. Add event with multiple invitees" , ConsoleColor.DarkGray } ,
-                { "10. Give response to proposed events" , ConsoleColor.DarkCyan} ,
-                { "11. See Events time line",ConsoleColor.DarkMagenta},
-                {"0. Back" , ConsoleColor.Gray }
+                { "8. Add event with multiple invitees" , ConsoleColor.DarkGray } ,
+                { "9. Give response to proposed events" , ConsoleColor.DarkCyan} ,
+                { "10. See Events time line",ConsoleColor.DarkGreen},
+                { "0.  Back" , ConsoleColor.Gray }
             };
 
             PrintHandler.PrintNewLine();
