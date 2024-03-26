@@ -2,7 +2,7 @@
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
 {
-    internal class PrintService
+    internal static class PrintService
     {
         public static string GenerateTable(List<List<string>> data)
         {

@@ -1,5 +1,4 @@
-﻿using System.Text;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories;
+﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
@@ -19,7 +18,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                                                                         .Where(sharedEvent =>
                                                                          sharedEvent.ReceiverUserId ==
                                                                          GlobalData.GetUser().Id)];
-
         }
 
         public SharedCalendar? GetSharedCalendarById(int sharedCalendarId)
@@ -72,7 +70,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                                                                     ];
 
             return sharedEvents;
-
         }
 
         private static bool IsDateBetweenRange(DateOnly startDate, DateOnly endDate, DateOnly checkingDate)

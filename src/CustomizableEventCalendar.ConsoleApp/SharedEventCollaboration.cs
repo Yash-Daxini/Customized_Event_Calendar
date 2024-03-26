@@ -5,6 +5,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {
     internal static class SharedEventCollaboration
     {
+
+        private static readonly SharedEventCollaborationService _sharedEventCollaborationService = new();
+
         public static void GetInputToEventCollaboration(int sharedEventsCount, List<EventCollaborator> sharedEvents)
         {
             try
@@ -24,8 +27,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         private static void CollaborateOnSharedEvent(EventCollaborator selectedEvent)
         {
-            SharedEventCollaborationService sharedEventCollaborationService = new();
-
             if (selectedEvent == null) return;
 
             int eventId = selectedEvent.EventId;
@@ -33,11 +34,35 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             EventCollaborator newEventCollaborator = new(eventId, GlobalData.GetUser().Id, "participant", null, null, null,
                                                         selectedEvent.EventDate);
 
-            if (!sharedEventCollaborationService.IsEligibleToCollaborate(newEventCollaborator)) return;
+            if (IsEligibleToCollaborate(newEventCollaborator)) return;
 
-            sharedEventCollaborationService.AddCollaborator(newEventCollaborator);
+            _sharedEventCollaborationService.AddCollaborator(newEventCollaborator);
 
             PrintHandler.PrintSuccessMessage($"Successfully collaborated on event");
+        }
+
+        public static bool IsEligibleToCollaborate(EventCollaborator eventCollaborator)
+        {
+            if (_sharedEventCollaborationService.IsEventAlreadyCollaborated(eventCollaborator))
+            {
+                PrintHandler.PrintWarningMessage("You already collaborated on this event");
+                return false;
+            }
+
+            EventCollaborator overlappedCollaboration = _sharedEventCollaborationService.GetCollaborationOverlap(eventCollaborator);
+
+            if (overlappedCollaboration != null)
+            {
+                EventService eventService = new();
+                Event eventObj = eventService.GetEventById(overlappedCollaboration.EventId);
+
+                PrintHandler.PrintWarningMessage($"Can't collaborate ! \nThe collaboration causes overlap with \"{eventObj.Title}\""
+                     + $" on {overlappedCollaboration.EventDate}, indicating that both events are scheduled concurrently.");
+
+                return false;
+            }
+
+            return true;
         }
     }
 }

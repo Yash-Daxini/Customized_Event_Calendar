@@ -182,9 +182,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public static void ShowNotification()
         {
-            NotificationService notificationService = new();
+            NotificationHandler notificationHandler = new ();
 
-            PrintHandler.PrintNotification(notificationService.GenerateNotification());
+            Console.ForegroundColor = ConsoleColor.Cyan;
+
+            notificationHandler.PrintNotifications();
+
+            Console.ResetColor();
         }
 
         public static void Logout()

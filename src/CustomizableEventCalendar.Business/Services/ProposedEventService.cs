@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
 {
@@ -46,7 +40,16 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             List<Event> proposedEvents = GetProposedEvents();
 
-            List<List<string>> outputRows = AddProposedEventDetailsIn2DList(proposedEvents);
+            List<List<string>> outputRows = proposedEvents.InsertInto2DList(["Sr No.", "Title", "Description", "Location", "StartHour", "EndHour", "StartDate"],
+                [
+                    eventObj => proposedEvents.IndexOf(eventObj) + 1,
+                    eventObj => eventObj.Title,
+                    eventObj => eventObj.Description,
+                    eventObj => eventObj.Location,
+                    eventObj => DateTimeManager.ConvertTo12HourFormat(eventObj.EventStartHour),
+                    eventObj => DateTimeManager.ConvertTo12HourFormat(eventObj.EventEndHour),
+                    eventObj => eventObj.EventStartDate.ToString()
+                ]);
 
             string eventTable = PrintService.GenerateTable(outputRows);
 
@@ -56,21 +59,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
 
             return "";
-        }
-
-        private static List<List<string>> AddProposedEventDetailsIn2DList(List<Event> proposedEvents)
-        {
-            List<List<string>> outputRows = [["Sr No.", "Title", "Description", "Location", "StartHour", "EndHour", "StartDate"]];
-
-            foreach (var (eventObj, index) in proposedEvents.Select((value, index) => (value, index)))
-            {
-                outputRows.Add([(index+1).ToString(), eventObj.Title, eventObj.Description, eventObj.Location,
-                                DateTimeManager.ConvertTo12HourFormat(eventObj.EventStartHour),
-                                DateTimeManager.ConvertTo12HourFormat(eventObj.EventEndHour),
-                                eventObj.EventStartDate.ToString()]);
-            }
-
-            return outputRows;
         }
     }
 }

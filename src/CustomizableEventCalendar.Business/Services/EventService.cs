@@ -1,5 +1,4 @@
 ﻿using System.Transactions;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 
@@ -8,7 +7,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
     internal class EventService
     {
         private readonly EventRepository _eventRepository = new();
+
         private readonly RecurrenceEngine _recurrenceEngine = new();
+
         private readonly EventCollaboratorService _eventCollaboratorsService = new();
 
         public int InsertEvent(Event eventObj)
@@ -56,7 +57,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
             catch
             {
-                PrintHandler.PrintErrorMessage("Some error occurred ! Delete operation failed.");
+                //PrintHandler.PrintErrorMessage("Some error occurred ! Delete operation failed.");
             }
         }
 
@@ -80,7 +81,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
             catch
             {
-                PrintHandler.PrintErrorMessage("Some error occurred ! Update operation failed.");
+                //PrintHandler.PrintErrorMessage("Some error occurred ! Update operation failed.");
             }
 
             return false;
@@ -94,38 +95,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         public List<Event> GetProposedEvents()
         {
             return [.. GetAllEvents().Where(eventObj => eventObj.IsProposed)];
-        }
-
-        public string GenerateEventTable()
-        {
-            List<Event> events = GetAllEventsOfLoggedInUser();
-
-            List<List<string>> outputRows = AddEventDetailsIn2DList(events);
-
-            string eventTable = PrintService.GenerateTable(outputRows);
-
-            if (events.Count > 0)
-            {
-                return eventTable;
-            }
-
-            return "";
-        }
-
-        private static List<List<string>> AddEventDetailsIn2DList(List<Event> events)
-        {
-            List<List<string>> outputRows = [["Event NO.", "Title", "Description", "Location", "Event Repetition", "Start Date", "End Date", "Duration"]];
-
-            foreach (var (eventObj, index) in events.Select((value, index) => (value, index)))
-            {
-                outputRows.Add([(index+1).ToString(), eventObj.Title, eventObj.Description, eventObj.Location,
-                                RecurrencePatternMessageGenerator.GenerateRecurrenceMessage(eventObj),
-                                eventObj.EventStartDate.ToString(),eventObj.EventEndDate.ToString(),
-                                DateTimeManager.ConvertTo12HourFormat(eventObj.EventStartHour)+" - "+
-                                DateTimeManager.ConvertTo12HourFormat(eventObj.EventEndHour)]);
-            }
-
-            return outputRows;
         }
 
         public void ConvertProposedEventToScheduleEvent(int eventId)

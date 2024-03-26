@@ -1,6 +1,4 @@
 ﻿// Ignore Spelling: username
-
-using System.Data.SqlClient;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 

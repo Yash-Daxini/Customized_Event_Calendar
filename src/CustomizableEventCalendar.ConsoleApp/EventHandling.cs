@@ -14,12 +14,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         private readonly static OverlappingEventService _overlappingEventService = new();
 
+        private readonly static CalendarView _calendarView = new();
+
         private static readonly Dictionary<EventOperation, Action> operationDictionary = new()
         {{ EventOperation.Add, GetInputToAddEvent },
         { EventOperation.Display, DisplayEvents },
         { EventOperation.Delete, DeleteEvent },
         { EventOperation.Update, GetInputToUpdateEvent },
-        { EventOperation.View, CalendarView.ViewSelection },
+        { EventOperation.View, _calendarView.ViewSelection },
         { EventOperation.ShareCalendar, _shareCalendar.GetDetailsToShareCalendar },
         { EventOperation.ViewSharedCalendar, _shareCalendar.ShowSharedCalendars },
         { EventOperation.EventWithMultipleInvitees, () => GetInputForProposedEvent(null) },
@@ -457,14 +459,41 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         private static void DisplayEvents()
         {
-            string events = _eventService.GenerateEventTable();
+            string events = GetEventTable();
             Console.WriteLine(events.Length == 0 ? "No events available !\n" : events);
         }
 
         private static bool IsEventsPresent()
         {
-            string events = _eventService.GenerateEventTable();
+            string events = GetEventTable();
             return events.Length > 0;
+        }
+
+        private static string GetEventTable()
+        {
+            List<Event> events = _eventService.GetAllEventsOfLoggedInUser();
+
+            List<List<string>> outputRows = events.InsertInto2DList(["Event NO.", "Title", "Description", "Location", "Event Repetition", "Start Date", "End Date", "Duration"],
+                [
+                    eventObj => events.IndexOf(eventObj) + 1,
+                    eventObj => eventObj.Title,
+                    eventObj => eventObj.Description,
+                    eventObj => eventObj.Location,
+                    eventObj => RecurrencePatternMessageGenerator.GenerateRecurrenceMessage(eventObj),
+                    eventObj => eventObj.EventStartDate.ToString(),
+                    eventObj => eventObj.EventEndDate.ToString(),
+                    eventObj => DateTimeManager.ConvertTo12HourFormat(eventObj.EventStartHour)+" - "+
+                                DateTimeManager.ConvertTo12HourFormat(eventObj.EventEndHour)
+                ]);
+
+            string eventTable = PrintService.GenerateTable(outputRows);
+
+            if (events.Count > 0)
+            {
+                return eventTable;
+            }
+
+            return "";
         }
 
         private static void DeleteEvent()

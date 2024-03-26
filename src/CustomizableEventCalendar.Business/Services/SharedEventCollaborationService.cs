@@ -1,5 +1,4 @@
-﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
 {
@@ -12,43 +11,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             _eventCollaboratorService.InsertEventCollaborators(eventCollaborator);
         }
 
-        public bool IsEligibleToCollaborate(EventCollaborator eventCollaborator)
-        {
-            if (IsEventAlreadyCollaborated(eventCollaborator))
-            {
-                PrintHandler.PrintWarningMessage("You already collaborated on this event");
-                return false;
-            }
-
-            if (IsOverlappedCollaboration(eventCollaborator)) return false;
-
-            return true;
-        }
-
         private List<EventCollaborator> GetAllEventCollaborators()
         {
             return _eventCollaboratorService.GetAllEventCollaborators();
         }
 
-        private bool IsOverlappedCollaboration(EventCollaborator eventCollaborator)
-        {
-            EventCollaborator overlappedCollaboration = GetCollaborationOverlap(eventCollaborator);
-
-            if (overlappedCollaboration != null)
-            {
-                EventService eventService = new();
-                Event eventObj = eventService.GetEventById(overlappedCollaboration.EventId);
-
-                PrintHandler.PrintWarningMessage($"Can't collaborate ! \nThe collaboration causes overlap with \"{eventObj.Title}\""
-                     + $" on {overlappedCollaboration.EventDate}, indicating that both events are scheduled concurrently.");
-
-                return true;
-            }
-
-            return false;
-        }
-
-        private bool IsEventAlreadyCollaborated(EventCollaborator newEventCollaborator)
+        public bool IsEventAlreadyCollaborated(EventCollaborator newEventCollaborator)
         {
             return GetAllEventCollaborators().Exists(eventCollaborator =>
                                                      eventCollaborator.UserId == newEventCollaborator.UserId
@@ -56,7 +24,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                                                      && eventCollaborator.EventDate == newEventCollaborator.EventDate);
         }
 
-        private EventCollaborator? GetCollaborationOverlap(EventCollaborator newEventCollaborator)
+        public EventCollaborator? GetCollaborationOverlap(EventCollaborator newEventCollaborator)
         {
             return GetAllEventCollaborators().Find(eventCollaborator =>
                                                    eventCollaborator.EventDate == newEventCollaborator.EventDate

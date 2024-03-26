@@ -17,16 +17,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             recurrenceMessage.Append(GetCombinationOfIntervalAndFrequency(eventObj));
 
-            if (eventObj.ByWeekDay != null && eventObj.WeekOrder == null)
-                recurrenceMessage.Append($"{GetWeekDays(eventObj.ByWeekDay)} ");
+            if (eventObj.ByWeekDay != null && eventObj.WeekOrder == null) recurrenceMessage.Append($"{GetWeekDays(eventObj.ByWeekDay)} ");
 
-            if (eventObj.ByMonthDay != null) recurrenceMessage.Append($"{GetMonthDay((int)
-                                                                      eventObj.ByMonthDay)} day ");
+            if (eventObj.ByMonthDay != null) recurrenceMessage.Append($"{GetMonthDay((int)eventObj.ByMonthDay)} day ");
 
             recurrenceMessage.Append(GetCombinationOfWeekOrderAndWeekDay(eventObj));
 
-            if (eventObj.ByMonth != null) recurrenceMessage.Append($"in {GetMonth((int)
-                                                                   eventObj.ByMonth)} ");
+            if (eventObj.ByMonth != null) recurrenceMessage.Append($"in {GetMonth((int)eventObj.ByMonth)} ");
 
             return recurrenceMessage.ToString();
         }
