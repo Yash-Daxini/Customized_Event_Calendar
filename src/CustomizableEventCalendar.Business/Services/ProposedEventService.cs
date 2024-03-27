@@ -32,7 +32,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             return proposedEventIds.Contains(eventCollaborator.EventId)
                    && eventCollaborator.UserId == GlobalData.GetUser().Id
+                   && eventCollaborator.ParticipantRole != null
                    && eventCollaborator.ParticipantRole.Equals("participant")
+                   && eventCollaborator.ConfirmationStatus != null
                    && eventCollaborator.ConfirmationStatus.Equals("pending");
         }
 

@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services;
-
-namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
+﻿namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {
     internal static class PrintHandler
     {

@@ -80,16 +80,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return GetStartDateOfWeek(todayDate).AddDays(6);
         }
 
-        public static DateTime GetStartDateOfWeek(DateTime todayDate)
-        {
-            return todayDate.AddDays(-(int)(todayDate.DayOfWeek - 1));
-        }
-
-        public static DateTime GetEndDateOfWeek(DateTime todayDate)
-        {
-            return GetStartDateOfWeek(todayDate).AddDays(6);
-        }
-
         public static DateOnly GetStartDateOfMonth(DateTime todayDate)
         {
             return ConvertToDateOnly(new(todayDate.Year, todayDate.Month, 1));

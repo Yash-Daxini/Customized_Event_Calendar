@@ -113,5 +113,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             return number >= start && number <= end;
         }
+
+        public static bool IsValidString(string? input)
+        {
+            return input != null && input.Length > 0;
+        }
     }
 }

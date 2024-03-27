@@ -35,59 +35,40 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return [.. GetAllEvents().Where(eventObj => eventObj.UserId == GlobalData.GetUser().Id)];
         }
 
-        public Event GetEventById(int eventId)
+        public Event? GetEventById(int eventId)
         {
-            Event listOfEvents = _eventRepository.GetById(data => new Event(data), eventId);
+            Event? listOfEvents = _eventRepository.GetById(data => new Event(data), eventId);
 
             return listOfEvents;
         }
 
         public void DeleteEvent(int eventId)
         {
-
             using var scope = new TransactionScope();
 
-            try
-            {
-                _eventCollaboratorsService.DeleteEventCollaboratorsByEventId(eventId);
+            _eventCollaboratorsService.DeleteEventCollaboratorsByEventId(eventId);
 
-                _eventRepository.Delete(eventId);
+            _eventRepository.Delete(eventId);
 
-                scope.Complete();
-            }
-            catch
-            {
-                //PrintHandler.PrintErrorMessage("Some error occurred ! Delete operation failed.");
-            }
+            scope.Complete();
         }
 
-        public bool UpdateEvent(Event eventObj, int eventId)
+        public void UpdateEvent(Event eventObj, int eventId)
         {
             using var scope = new TransactionScope();
 
-            try
-            {
-                _eventRepository.Update(eventObj, eventId);
+            _eventRepository.Update(eventObj, eventId);
 
-                _eventCollaboratorsService.DeleteEventCollaboratorsByEventId(eventId);
+            _eventCollaboratorsService.DeleteEventCollaboratorsByEventId(eventId);
 
-                eventObj.Id = eventId;
+            eventObj.Id = eventId;
 
-                _recurrenceEngine.ScheduleEvents(eventObj);
+            _recurrenceEngine.ScheduleEvents(eventObj);
 
-                scope.Complete();
-
-                return true;
-            }
-            catch
-            {
-                //PrintHandler.PrintErrorMessage("Some error occurred ! Update operation failed.");
-            }
-
-            return false;
+            scope.Complete();
         }
 
-        public void UpdateProposedEvent(Event eventObj,int eventId)
+        public void UpdateProposedEvent(Event eventObj, int eventId)
         {
             _eventRepository.Update(eventObj, eventId);
         }

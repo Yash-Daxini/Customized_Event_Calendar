@@ -14,19 +14,19 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         private readonly static OverlappingEventService _overlappingEventService = new();
 
-        private readonly static CalendarView _calendarView = new();
-
         private static readonly Dictionary<EventOperation, Action> operationDictionary = new()
-        {{ EventOperation.Add, GetInputToAddEvent },
-        { EventOperation.Display, DisplayEvents },
-        { EventOperation.Delete, DeleteEvent },
-        { EventOperation.Update, GetInputToUpdateEvent },
-        { EventOperation.View, _calendarView.ViewSelection },
-        { EventOperation.ShareCalendar, _shareCalendar.GetDetailsToShareCalendar },
-        { EventOperation.ViewSharedCalendar, _shareCalendar.ShowSharedCalendars },
-        { EventOperation.EventWithMultipleInvitees, () => GetInputForProposedEvent(null) },
-        { EventOperation.GiveResponseToProposedEvent, ProposedEventResponseHandler.ShowProposedEvents},
-        { EventOperation.EventsTimeline , PrintEventWithTimeline} };
+        {
+            { EventOperation.Add, GetInputToAddEvent },
+            { EventOperation.Display, DisplayEvents },
+            { EventOperation.Delete, DeleteEvent },
+            { EventOperation.Update, GetInputToUpdateEvent },
+            { EventOperation.View, CalendarView.ChooseView },
+            { EventOperation.ShareCalendar, _shareCalendar.GetDetailsToShareCalendar },
+            { EventOperation.ViewSharedCalendar, _shareCalendar.ShowSharedCalendars },
+            { EventOperation.EventWithMultipleInvitees, () => GetInputForProposedEvent(null) },
+            { EventOperation.GiveResponseToProposedEvent, ProposedEventResponseHandler.ShowProposedEvents},
+            { EventOperation.EventsTimeline , PrintEventWithTimeline}
+        };
 
         public static void PrintColorMessage(string message, ConsoleColor color)
         {
@@ -55,88 +55,68 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             {
                 PrintColorMessage(key, value);
             }
-
-            Console.Write("\nSelect Any Option :- ");
         }
 
         public static void AskForChoice()
         {
-            int choice = GetValidatedChoice();
-
-            EventOperation option = (EventOperation)choice;
-
-            if (operationDictionary.TryGetValue(option, out Action? actionMethod))
-            {
-                actionMethod.Invoke();
-                AskForChoice();
-            }
-            else if (option == EventOperation.Back)
-            {
-                Console.WriteLine("Going Back ...");
-            }
-            else
-            {
-                Console.WriteLine("Oops! Wrong choice");
-                AskForChoice();
-            }
-        }
-
-        private static int GetValidatedChoice()
-        {
-            ShowAllChoices();
-
-            string inputFromConsole = Console.ReadLine();
-            int choice;
-
-            while (!ValidationService.IsValidateInput(inputFromConsole, out choice, int.TryParse))
+            try
             {
                 ShowAllChoices();
 
-                inputFromConsole = Console.ReadLine();
+                int choice = ValidatedInputProvider.GetValidatedIntegerBetweenRange("\nEnter choice :- ", 0, 10);
+
+                EventOperation option = (EventOperation)choice;
+
+                if (operationDictionary.TryGetValue(option, out Action? actionMethod))
+                {
+                    actionMethod.Invoke();
+                }
+
+                if (option != EventOperation.Back)
+                {
+                    AskForChoice();
+                }
             }
-            return choice;
+            catch (Exception ex)
+            {
+                PrintHandler.PrintErrorMessage(ex.Message);
+                AskForChoice();
+            }
         }
 
         private static void GetInputForProposedEvent(Event? eventObj)
         {
-            try
+            if (GetInsensitiveUserInformationList().Count == 0)
             {
-                if (GetInsensitiveUserInformationList().Count == 0)
-                {
-                    PrintHandler.PrintWarningMessage("No invitees are available !");
-                    return;
-                }
-
-                eventObj ??= new();
-
-                GetEventDetailsFromUser(eventObj);
-
-                GetStartingAndEndingHourOfEvent(eventObj);
-
-                DateTime proposedDate = ValidatedInputProvider.GetValidatedDateTime("Enter date for the proposed event (Enter " +
-                                                                                  "date in dd-MM-yyyy) :- ");
-
-                eventObj.EventStartDate = DateOnly.FromDateTime(proposedDate);
-
-                eventObj.EventEndDate = DateOnly.FromDateTime(proposedDate);
-
-                eventObj.UserId = GlobalData.GetUser().Id;
-
-                string invitees = GetInviteesFromUser();
-
-                eventObj.IsProposed = true;
-
-                if (eventObj.Id > 0)
-                    UpdateEvent(eventObj.Id, eventObj);
-                else
-                    AddEvent(eventObj);
-
-                MultipleInviteesEventService.AddInviteesInProposedEvent(eventObj, invitees);
+                PrintHandler.PrintWarningMessage("No invitees are available !");
+                return;
             }
-            catch
-            {
-                PrintHandler.PrintErrorMessage("Some error occurred ! Proposed event addition failed");
-            }
+
+            eventObj ??= new();
+
+            GetEventDetailsFromUser(eventObj);
+
+            GetStartingAndEndingHourOfEvent(eventObj);
+
+            DateTime proposedDate = ValidatedInputProvider.GetValidatedDateTime("Enter date for the proposed event (Enter " +
+                                                                              "date in dd-MM-yyyy) :- ");
+
+            eventObj.EventStartDate = DateOnly.FromDateTime(proposedDate);
+
+            eventObj.EventEndDate = DateOnly.FromDateTime(proposedDate);
+
+            eventObj.UserId = GlobalData.GetUser().Id;
+
+            string invitees = GetInviteesFromUser();
+
+            eventObj.IsProposed = true;
+
+            if (eventObj.Id > 0)
+                UpdateEvent(eventObj.Id, eventObj);
+            else
+                AddEvent(eventObj);
+
+            MultipleInviteesEventService.AddInviteesInProposedEvent(eventObj, invitees);
         }
 
         private static T CastAnonymousObject<T>(object obj, T type) { return (T)obj; }
@@ -275,7 +255,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             {
                 foreach (var eventCollaborator in dateWiseEventCollaborators[date])
                 {
-                    Event eventObj = _eventService.GetEventById(eventCollaborator.EventId);
+                    Event? eventObj = events.Find(eventObj => eventObj.Id == eventCollaborator.EventId);
+
+                    if (eventObj == null) continue;
+
                     tableContentOfEventTimeLine.Add([date.ToString(), DateTimeManager.GetDayFromDateOnly(date),
                                                      eventObj.Title, eventObj.EventStartHour.ToString(),
                                                      eventObj.EventEndHour.ToString()]);
@@ -318,18 +301,15 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             Console.WriteLine("\nFill Details Related to Event : ");
 
-            Console.Write("Enter title : ");
-            eventObj.Title = Console.ReadLine();
+            eventObj.Title = ValidatedInputProvider.GetValidatedString("Enter title : ");
 
             PrintHandler.PrintNewLine();
 
-            Console.Write("Enter description : ");
-            eventObj.Description = Console.ReadLine();
+            eventObj.Description = ValidatedInputProvider.GetValidatedString("Enter description : ");
 
             PrintHandler.PrintNewLine();
 
-            Console.Write("Enter Location : ");
-            eventObj.Location = Console.ReadLine();
+            eventObj.Location = ValidatedInputProvider.GetValidatedString("Enter Location : ");
 
             eventObj.IsProposed = false;
         }
@@ -514,40 +494,32 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             {
                 PrintHandler.PrintErrorMessage("Oops ! Some error occurred!");
             }
-
         }
 
         private static void GetInputToUpdateEvent()
         {
 
-            try
+            DisplayEvents();
+
+            if (!IsEventsPresent()) return;
+
+            int serialNumber = GetSerialNumberForUpdateOrDelete(false);
+
+            Event eventObj = _eventService.GetEventById(_eventService.GetEventIdFromSerialNumber(serialNumber));
+
+            if (eventObj == null) return;
+
+            if (eventObj.IsProposed)
             {
-                DisplayEvents();
-
-                if (!IsEventsPresent()) return;
-
-                int serialNumber = GetSerialNumberForUpdateOrDelete(false);
-
-                Event eventObj = _eventService.GetEventById(_eventService.GetEventIdFromSerialNumber(serialNumber));
-
-                if (eventObj == null) return;
-
-                if (eventObj.IsProposed)
-                {
-                    GetInputForProposedEvent(eventObj);
-                    return;
-                }
-
-                AskForItemsToUpdate(eventObj);
-
-                eventObj.UserId = GlobalData.GetUser().Id;
-
-                UpdateEvent(eventObj.Id, eventObj);
+                GetInputForProposedEvent(eventObj);
+                return;
             }
-            catch
-            {
-                PrintHandler.PrintErrorMessage("Oops ! Some error occurred !");
-            }
+
+            AskForItemsToUpdate(eventObj);
+
+            eventObj.UserId = GlobalData.GetUser().Id;
+
+            UpdateEvent(eventObj.Id, eventObj);
         }
 
         private static void UpdateEvent(int id, Event eventObj)
@@ -556,9 +528,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             {
                 if (IsOverlappingEvent(eventObj, false)) return;
 
-                bool isUpdated = _eventService.UpdateEvent(eventObj, id);
+                _eventService.UpdateEvent(eventObj, id);
 
-                if (isUpdated) PrintHandler.PrintSuccessMessage("Event Updated Successfully");
+                PrintHandler.PrintSuccessMessage("Event Updated Successfully");
             }
             catch
             {

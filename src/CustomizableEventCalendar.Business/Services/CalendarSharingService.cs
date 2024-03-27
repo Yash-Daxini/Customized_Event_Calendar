@@ -65,6 +65,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             List<EventCollaborator> sharedEvents = [.. eventCollaboratorsRepository.GetAll(data => new EventCollaborator(data))
                                                                     .Where(sharedEvent =>
+                                                                      sharedEvent.UserId != GlobalData.GetUser().Id &&
                                                                       IsDateBetweenRange(fromDate,toDate,sharedEvent.EventDate) &&
                                                                       IsSharedEvent(sharedEventIds, sharedEvent.EventId))
                                                                     ];

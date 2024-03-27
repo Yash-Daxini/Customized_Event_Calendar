@@ -36,7 +36,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         private static string GetCombinationOfIntervalAndFrequency(Event eventObj)
         {
-            if (eventObj.Frequency.Equals("daily") && eventObj.Interval == null) return $"Every ";
+            if (eventObj.Frequency != null && eventObj.Frequency.Equals("daily") && eventObj.Interval == null) return $"Every ";
             return $"Every {GetInterval(eventObj.Interval)} {GetFrequency(eventObj.Frequency)} on ";
         }
 

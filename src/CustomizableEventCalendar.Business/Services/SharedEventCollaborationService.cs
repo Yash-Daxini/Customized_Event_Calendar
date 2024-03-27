@@ -27,7 +27,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         public EventCollaborator? GetCollaborationOverlap(EventCollaborator newEventCollaborator)
         {
             return GetAllEventCollaborators().Find(eventCollaborator =>
-                                                   eventCollaborator.EventDate == newEventCollaborator.EventDate
+                                                   eventCollaborator.UserId == newEventCollaborator.UserId
+                                                   && eventCollaborator.EventDate == newEventCollaborator.EventDate
                                                    && eventCollaborator.UserId == newEventCollaborator.UserId);
         }
     }

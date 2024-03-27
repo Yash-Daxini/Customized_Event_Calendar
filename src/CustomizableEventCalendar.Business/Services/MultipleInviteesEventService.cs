@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+using System.Linq;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
 {
@@ -68,13 +69,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             int[] proposedHours = new int[23];
 
-            foreach (var eventCollaborator in eventCollaborators)
+            foreach (var eventCollaborator in eventCollaborators.Where(IsNeedToConsiderProposedTime))
             {
-                if (IsNeedToConsiderProposedTime(eventCollaborator))
-                {
+                if (eventCollaborator.ProposedStartHour != null && eventCollaborator.ProposedEndHour != null)
                     CountProposeHours((int)eventCollaborator.ProposedStartHour, (int)eventCollaborator.ProposedEndHour, ref proposedHours);
-                }
-
             }
 
             FindMaximumMutualTimeBlock(proposedHours, eventObj);
@@ -92,10 +90,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         private static bool IsNeedToConsiderProposedTime(EventCollaborator eventCollaborator)
         {
-            return eventCollaborator.ParticipantRole.Equals("participant") &&
-                   eventCollaborator.ConfirmationStatus.Equals("reject") &&
-                   eventCollaborator.ProposedStartHour != null &&
-                   eventCollaborator.ProposedEndHour != null;
+            return eventCollaborator.ParticipantRole != null
+                   && eventCollaborator.ParticipantRole.Equals("participant")
+                   && eventCollaborator.ConfirmationStatus != null
+                   && eventCollaborator.ConfirmationStatus.Equals("reject")
+                   && eventCollaborator.ProposedStartHour != null
+                   && eventCollaborator.ProposedEndHour != null;
         }
 
         private static void CountProposeHours(int startHour, int endHour, ref int[] proposedHours)
@@ -136,15 +136,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             EventCollaboratorService eventCollaboratorService = new();
 
-            foreach (var eventCollaborator in eventCollaborators)
+            foreach (var eventCollaborator in eventCollaborators.Where(IsInviteePresentInEvent))
             {
-                if (IsInviteePresentInEvent(eventCollaborator))
-                {
-                    eventCollaborator.EventDate = date;
-                    eventCollaboratorService.UpdateEventCollaborators(eventCollaborator, eventCollaborator.Id);
-                }
+                eventCollaborator.EventDate = date;
+                eventCollaboratorService.UpdateEventCollaborators(eventCollaborator, eventCollaborator.Id);
             }
-
         }
 
         private static bool IsInviteePresentInEvent(EventCollaborator eventCollaborator)
@@ -162,7 +158,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             foreach (var eventCollaborator in eventCollaborators)
             {
-                if (eventCollaborator.ParticipantRole.Equals("organizer"))
+                if (eventCollaborator.ParticipantRole != null && eventCollaborator.ParticipantRole.Equals("organizer"))
                 {
                     eventCollaborator.ProposedStartHour = eventObj.EventStartHour;
                     eventCollaborator.ProposedEndHour = eventObj.EventEndHour;
@@ -188,13 +184,15 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         private static bool ConsiderableInvitees(EventCollaborator eventCollaborator)
         {
-            return eventCollaborator.ParticipantRole.Equals("organizer")
-                   || eventCollaborator.ConfirmationStatus.Equals("accept")
-                   || (eventCollaborator.ConfirmationStatus.Equals("reject")
+            return (eventCollaborator.ParticipantRole != null && eventCollaborator.ParticipantRole.Equals("organizer"))
+                   || (eventCollaborator.ConfirmationStatus != null && eventCollaborator.ConfirmationStatus.Equals("accept"))
+                   || (
+                        eventCollaborator.ConfirmationStatus != null
+                        && eventCollaborator.ConfirmationStatus.Equals("reject")
                         && eventCollaborator.ProposedStartHour != null
                         && eventCollaborator.ProposedEndHour != null
                       )
-                   || eventCollaborator.ConfirmationStatus.Equals("maybe");
+                   || (eventCollaborator.ConfirmationStatus != null && eventCollaborator.ConfirmationStatus.Equals("maybe"));
         }
 
         public static List<EventCollaborator> GetInviteesOfEvent(int eventId)

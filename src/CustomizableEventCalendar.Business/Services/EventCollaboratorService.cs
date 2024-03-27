@@ -38,7 +38,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         public EventCollaborator? GetEventCollaboratorFromEventIdAndUserId(int eventId)
         {
             EventCollaborator? eventCollaborator = GetAllEventCollaborators()
-                                                   .FirstOrDefault(eventCollaborator =>
+                                                   .Find(eventCollaborator =>
                                                                    eventCollaborator.UserId == GlobalData.GetUser().Id
                                                                    && eventCollaborator.EventId == eventId);
             return eventCollaborator;

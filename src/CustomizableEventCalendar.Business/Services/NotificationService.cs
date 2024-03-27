@@ -18,7 +18,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         private static bool IsEventOrganizer(EventCollaborator eventCollaborator)
         {
-            return eventCollaborator.ParticipantRole.Equals("organizer");
+            return eventCollaborator.ParticipantRole != null && eventCollaborator.ParticipantRole.Equals("organizer");
         }
         private List<EventCollaborator> GetConsiderableEventCollaborators()
         {

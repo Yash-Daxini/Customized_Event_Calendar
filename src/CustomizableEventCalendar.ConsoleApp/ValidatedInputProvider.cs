@@ -213,5 +213,18 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             }
             return number;
         }
+
+        public static string GetValidatedString(string inputMessage)
+        {
+            Console.WriteLine(inputMessage);
+            string? inputString = Console.ReadLine();
+            while (!ValidationService.IsValidString(inputString))
+            {
+                Console.WriteLine(inputMessage);
+                inputString = Console.ReadLine();
+            }
+
+            return inputString;
+        }
     }
 }

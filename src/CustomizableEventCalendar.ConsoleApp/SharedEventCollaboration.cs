@@ -34,7 +34,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             EventCollaborator newEventCollaborator = new(eventId, GlobalData.GetUser().Id, "participant", null, null, null,
                                                         selectedEvent.EventDate);
 
-            if (IsEligibleToCollaborate(newEventCollaborator)) return;
+            if (!IsEligibleToCollaborate(newEventCollaborator)) return;
 
             _sharedEventCollaborationService.AddCollaborator(newEventCollaborator);
 

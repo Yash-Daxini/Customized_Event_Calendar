@@ -15,7 +15,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         private Dictionary<int, Event> MapEachHourWithEvent()
         {
-            List<EventCollaborator> eventCollaborators = GetTodayEvents();
+            List<EventCollaborator> eventCollaborators = GetEventsOfToday();
 
             Dictionary<int, Event> hourEventMapping = [];
 
@@ -34,7 +34,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return _eventService.GetProposedEvents().Exists(eventObj => eventObj.Id == eventId);
         }
 
-        private List<EventCollaborator> GetTodayEvents()
+        private List<EventCollaborator> GetEventsOfToday()
         {
             return [.. _eventCollaboratorsService.GetAllEventCollaborators()
                    .Where(eventCollaborator => eventCollaborator.EventDate == DateOnly.FromDateTime(DateTime.Today)
@@ -45,7 +45,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         private static bool IsConsiderableEventCollaborators(EventCollaborator eventCollaborator)
         {
             return eventCollaborator.UserId == GlobalData.GetUser().Id
-                   && !(eventCollaborator.ConfirmationStatus.Equals("reject")
+                    && !(eventCollaborator.ConfirmationStatus != null && eventCollaborator.ConfirmationStatus.Equals("reject")
                         && eventCollaborator.ProposedStartHour == null
                         && eventCollaborator.ProposedEndHour == null
                        );
@@ -62,19 +62,28 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
         }
 
-        private Dictionary<DateOnly, List<int>> GetGivenWeekEventsWithDate(DateOnly startDateOfWeek, DateOnly endDateOfWeek)
+        public Dictionary<DateOnly, List<Event>> GetDateAndEventsForWeeklyView()
+        {
+            DateOnly startDateOfWeek = DateTimeManager.GetStartDateOfWeek(DateOnly.FromDateTime(DateTime.Today));
+            DateOnly endDateOfWeek = DateTimeManager.GetEndDateOfWeek(DateOnly.FromDateTime(DateTime.Today));
+
+            Dictionary<DateOnly, List<Event>> currentWeekEvents = GetGivenWeekEventsWithDate(startDateOfWeek, endDateOfWeek);
+
+            return currentWeekEvents;
+        }
+
+        private Dictionary<DateOnly, List<Event>> GetGivenWeekEventsWithDate(DateOnly startDateOfWeek, DateOnly endDateOfWeek)
         {
             List<EventCollaborator> eventCollaborators = _eventCollaboratorsService.GetAllEventCollaborators();
 
-            Dictionary<DateOnly, List<int>> currentWeekEvents = GenerateDictionaryOfDateOnlyAndEventIdFromList(GetGivenWeekEvents(eventCollaborators, startDateOfWeek, endDateOfWeek));
+            Dictionary<DateOnly, List<Event>> currentWeekEvents = GenerateDictionaryOfDateOnlyAndEventFromList(GetGivenWeekEvents(eventCollaborators, startDateOfWeek, endDateOfWeek));
 
             return currentWeekEvents;
         }
 
         private List<EventCollaborator> GetGivenWeekEvents(List<EventCollaborator> eventCollaborators, DateOnly startDateOfWeek, DateOnly endDateOfWeek)
         {
-            return [..eventCollaborators.Where(eventCollaborator => IsEventOccurInGivenWeek(startDateOfWeek,
-                                                                       endDateOfWeek, eventCollaborator))];
+            return [.. eventCollaborators.Where(eventCollaborator => IsEventOccurInGivenWeek(startDateOfWeek, endDateOfWeek, eventCollaborator))];
         }
 
         private bool IsEventOccurInGivenWeek(DateOnly startDateOfWeek, DateOnly endDateOfWeek, EventCollaborator eventCollaborator)
@@ -85,24 +94,31 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                    && !IsProposedEvent(eventCollaborator.EventId);
         }
 
-        public Dictionary<DateOnly, List<int>> GetDateAndEventsForWeeklyView()
-        {
-            DateOnly startDateOfWeek = DateTimeManager.GetStartDateOfWeek(DateOnly.FromDateTime(DateTime.Today));
-            DateOnly endDateOfWeek = DateTimeManager.GetEndDateOfWeek(DateOnly.FromDateTime(DateTime.Today));
-
-            Dictionary<DateOnly, List<int>> currentWeekEvents = GetGivenWeekEventsWithDate(startDateOfWeek, endDateOfWeek);
-
-            return currentWeekEvents;
-        }
-
-        public Dictionary<DateOnly, List<int>> GetGivenMonthEventsWithDate(DateOnly startDateOfMonth, DateOnly endDateOfMonth)
+        public Dictionary<DateOnly, List<Event>> GetGivenMonthEventsWithDate(DateOnly startDateOfMonth, DateOnly endDateOfMonth)
         {
             List<EventCollaborator> eventCollaborators = _eventCollaboratorsService.GetAllEventCollaborators();
 
-            Dictionary<DateOnly, List<int>> currentMonthEvents = GenerateDictionaryOfDateOnlyAndEventIdFromList
-                                    (GetGivenMonthEvents(eventCollaborators, startDateOfMonth, endDateOfMonth));
+            Dictionary<DateOnly, List<Event>> currentMonthEvents = GenerateDictionaryOfDateOnlyAndEventFromList(GetGivenMonthEvents(eventCollaborators, startDateOfMonth, endDateOfMonth));
 
             return currentMonthEvents;
+        }
+
+        private Dictionary<DateOnly, List<Event>> GenerateDictionaryOfDateOnlyAndEventFromList(List<EventCollaborator> eventCollaborators)
+        {
+            return eventCollaborators.GroupBy(eventCollaborator => eventCollaborator.EventDate)
+                                     .Select(eventCollaborator => new
+                                     {
+                                         ScheduleDate = eventCollaborator.Key,
+                                         eventObj = eventCollaborator.Select(eventCollaborator => _eventService.GetEventById(eventCollaborator.EventId))
+                                                                     .ToList()
+                                     })
+                                     .ToDictionary(key => key.ScheduleDate, val => val.eventObj);
+        }
+
+        private List<EventCollaborator> GetGivenMonthEvents(List<EventCollaborator> eventCollaborators, DateOnly startDateOfMonth, DateOnly endDateOfMonth)
+        {
+            return [..eventCollaborators.Where(eventCollaborator => IsEventOccurInGivenMonth
+                                                                    (startDateOfMonth, endDateOfMonth, eventCollaborator))];
         }
 
         private bool IsEventOccurInGivenMonth(DateOnly startDateOfMonth, DateOnly endDateOfMonth,
@@ -112,25 +128,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                    && eventCollaborator.EventDate <= endDateOfMonth
                    && IsConsiderableEventCollaborators(eventCollaborator)
                    && !IsProposedEvent(eventCollaborator.EventId);
-        }
-
-        private List<EventCollaborator> GetGivenMonthEvents(List<EventCollaborator> eventCollaborators, DateOnly startDateOfMonth, DateOnly endDateOfMonth)
-        {
-            return [..eventCollaborators.Where(eventCollaborator => IsEventOccurInGivenMonth
-                                                                    (startDateOfMonth, endDateOfMonth, eventCollaborator))];
-        }
-
-        private static Dictionary<DateOnly, List<int>> GenerateDictionaryOfDateOnlyAndEventIdFromList(List<EventCollaborator> eventCollaborators)
-        {
-            return eventCollaborators.GroupBy(eventCollaborator => eventCollaborator.EventDate)
-                                           .Select(eventCollaborator => new
-                                           {
-                                               ScheduleDate = eventCollaborator.Key,
-                                               EventCollaboratorIds = eventCollaborator.Select(eventCollaborator =>
-                                                                                               eventCollaborator.EventId)
-                                                                                       .ToList()
-                                           })
-                                           .ToDictionary(key => key.ScheduleDate, val => val.EventCollaboratorIds);
         }
     }
 }

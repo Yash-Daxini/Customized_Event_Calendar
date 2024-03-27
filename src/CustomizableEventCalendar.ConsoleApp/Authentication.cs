@@ -14,15 +14,22 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         public static void AuthenticationChoice()
         {
 
-            if (GlobalData.GetUser() != null)
+            try
             {
-                AskForChoiceToLoggedInUser();
+                if (GlobalData.GetUser() != null)
+                {
+                    AskForChoiceToLoggedInUser();
+                }
+                else
+                {
+                    AskForChoiceToLoggedOutUser();
+                }
             }
-            else
+            catch (Exception ex)
             {
-                AskForChoiceToLoggedOutUser();
+                PrintHandler.PrintErrorMessage(ex.Message);
+                AuthenticationChoice();
             }
-
         }
 
         public static void AskForChoiceToLoggedInUser()
@@ -75,9 +82,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             foreach (PropertyInfo property in properties)
             {
-
-                Console.Write($"Enter value for {property.Name}: ");
-                string value = Console.ReadLine();
+                string value = ValidatedInputProvider.GetValidatedString($"Enter value for {property.Name}: ");
 
                 if (property.Name.Equals("Email"))
                 {
@@ -101,37 +106,25 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 PrintHandler.PrintSuccessMessage("Sign up completed successfully");
 
                 Login();
-
-                return;
             }
             catch (SqlException ex)
             {
                 if (ex.Number == 2627 || ex.Number == 2601) //Check the unique key constraint
                 {
-                    PrintHandler.PrintErrorMessage("The user name you've entered is not available. Please choose another name.");
+                    throw new Exception("The user name you've entered is not available. Please choose another name.");
                 }
                 else
                 {
-                    PrintHandler.PrintErrorMessage("Some error occurred!" + " " + ex.Message);
+                    throw new Exception("Some error occurred!");
                 }
             }
-            catch (Exception ex)
-            {
-                PrintHandler.PrintErrorMessage("Some error occurred! " + ex.Message);
-            }
-
-            AuthenticationChoice();
         }
 
         public static void GetLoginDetails(out string userName, out string password)
         {
             Console.WriteLine("\nEnter Login Details");
-
-            Console.Write("Enter Name: ");
-            userName = Console.ReadLine();
-
-            Console.Write("Enter Password: ");
-            password = Console.ReadLine();
+            userName = ValidatedInputProvider.GetValidatedString("Enter Name: ");
+            password = ValidatedInputProvider.GetValidatedString("Enter Password: ");
         }
 
         public static void Login()
@@ -152,9 +145,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                     PrintHandler.PrintErrorMessage("Invalid user name or password! Please try again.");
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                PrintHandler.PrintErrorMessage("Some error occurred! " + ex.Message);
+                throw new Exception("Some error occurred! ");
             }
             AuthenticationChoice();
         }
@@ -182,7 +175,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public static void ShowNotification()
         {
-            NotificationHandler notificationHandler = new ();
+            NotificationHandler notificationHandler = new();
 
             Console.ForegroundColor = ConsoleColor.Cyan;
 

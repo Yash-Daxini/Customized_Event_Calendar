@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Ignore Spelling: sql
 using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories
 {
 
@@ -15,14 +10,18 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
         public SqlDataReader sqlDataReader { get; set; }
         public List<SqlParameter> sqlParameters { get; set; }
 
-        public BaseRepository()
-        {
-            this.connection = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString);
-        }
+        public BaseRepository() => this.connection = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString);
 
         public void Connect()
         {
-            connection.Open();
+            try
+            {
+                connection.Open();
+            }
+            catch (Exception)
+            {
+                throw new Exception("Oops! It seems there's an issue connecting to the database right now. We're working on it to get things back up and running smoothly. Thank you for your patience!");
+            }
         }
 
         public void Disconnect()
@@ -37,34 +36,46 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
 
         public void ExecuteQuery(string query)
         {
-            this.sqlCommand = connection.CreateCommand();
-            sqlCommand.CommandText = query;
-            sqlDataReader = sqlCommand.ExecuteReader();
+            try
+            {
+                this.sqlCommand = connection.CreateCommand();
+                sqlCommand.CommandText = query;
+                sqlDataReader = sqlCommand.ExecuteReader();
+            }
+            catch
+            {
+                throw new Exception("Sorry, we're unable to retrieve the data at the moment. Please try again later or contact support if the issue persists.");
+            }
         }
 
         public int ExecuteNonQuery(string query)
         {
-            this.sqlCommand = connection.CreateCommand();
-            sqlCommand.CommandText = query;
-
-            if (sqlParameters != null)
+            try
             {
-                if (sqlParameters.Count > 0)
+                this.sqlCommand = connection.CreateCommand();
+                sqlCommand.CommandText = query;
+
+                if (sqlParameters != null && sqlParameters.Count > 0)
                 {
-                    sqlCommand.Parameters.AddRange(sqlParameters.ToArray());
+                    sqlCommand.Parameters.AddRange([.. sqlParameters]);
                 }
+
+                int Id = -1;
+
+                sqlCommand.ExecuteNonQuery();
+
+                if (sqlCommand.Parameters.Count > 0 && sqlCommand.Parameters["@Id"].Value != DBNull.Value)
+                    Id = (int)sqlCommand.Parameters["@Id"].Value;
+
+                sqlParameters = [];
+
+                return Id;
+
             }
-
-            int Id = -1;
-
-            sqlCommand.ExecuteNonQuery();
-
-            if (sqlCommand.Parameters.Count > 0 && sqlCommand.Parameters["@Id"].Value != DBNull.Value)
-                Id = (int)sqlCommand.Parameters["@Id"].Value;
-
-            sqlParameters = new List<SqlParameter>();
-
-            return Id;
+            catch
+            {
+                throw new Exception("Oops ! Operation unsuccessful. Please try again later.");
+            }
         }
 
     }
