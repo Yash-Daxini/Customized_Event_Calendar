@@ -6,25 +6,37 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
     {
         private readonly EventCollaboratorService eventCollaboratorsService = new();
 
+        private readonly List<DateOnly> occurrences;
+
+        public RecurrenceEngine() => this.occurrences = [];
+
         public void ScheduleEvents(Event eventObj)
         {
-            if (eventObj.Frequency == null)
-            {
-                ScheduleNonRecurrenceEvents(eventObj);
-                return;
-            }
+            FindOccurrencesOfEvent(eventObj);
 
-            ScheduleEventsUsingFrequency(eventObj);
+            ScheduleEventsFromOccurrences(eventObj);
         }
 
-        private void ScheduleEventsUsingFrequency(Event eventObj)
+        public List<DateOnly> FindOccurrencesOfEvent(Event eventObj)
+        {
+            occurrences.Clear();
+
+            if (eventObj.Frequency == null)
+                FindOccurrenceOfNonRecurrenceEvents(eventObj);
+            else
+                FindOccurrencesOfEventUsingFrequency(eventObj);
+
+            return occurrences;
+        }
+
+        private void FindOccurrencesOfEventUsingFrequency(Event eventObj)
         {
             Dictionary<string, Action> frequencyActionDictionary = new()
             {
-                { "daily",()=> ScheduleDailyEvents(eventObj)},
-                { "weekly" , ()=> ScheduleWeeklyEvents(eventObj) },
-                { "monthly" , () => ScheduleMonthlyEvents(eventObj)},
-                { "yearly" , ()=> ScheduleYearlyEvents(eventObj)}
+                { "daily",()=> FindOccurrenceOfDailyEvents(eventObj)},
+                { "weekly" , ()=> FindOccurrencesOfWeeklyEvents(eventObj) },
+                { "monthly" , () => FindOccurrencesOfMonthlyEvents(eventObj)},
+                { "yearly" , ()=> FindOccurrencesOfYearlyEvents(eventObj)}
             };
 
             if (eventObj.Frequency == null) return;
@@ -35,19 +47,20 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
         }
 
-        private void ScheduleEvent(EventCollaborator eventCollaborators)
+        private void ScheduleEventsFromOccurrences(Event eventObj)
         {
-            eventCollaboratorsService.InsertEventCollaborators(eventCollaborators);
+            foreach (var occurrence in occurrences)
+            {
+                eventCollaboratorsService.InsertEventCollaborators(ConstructScheduleEventObject(eventObj, occurrence));
+            }
         }
 
-        private void ScheduleNonRecurrenceEvents(Event eventObj)
+        private void FindOccurrenceOfNonRecurrenceEvents(Event eventObj)
         {
-            EventCollaborator eventCollaborator = new(eventObj.Id, GlobalData.GetUser().Id, "organizer", "accept", eventObj.EventStartHour, eventObj.EventEndHour, eventObj.EventStartDate);
-
-            ScheduleEvent(eventCollaborator);
+            occurrences.Add(eventObj.EventStartDate);
         }
 
-        private void ScheduleDailyEvents(Event eventObj)
+        private void FindOccurrenceOfDailyEvents(Event eventObj)
         {
             HashSet<int> days = eventObj.ByWeekDay == null ? [] : [.. eventObj.ByWeekDay.Split(",").Select(day => Convert.ToInt32(day))];
 
@@ -59,13 +72,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                 if (IsDailyEventValidForScheduling(eventObj.Interval, days, day))
                 {
-                    ScheduleEvent(ConstructScheduleEventObject(eventObj, currentDate));
+                    occurrences.Add(currentDate);
                 }
                 currentDate = currentDate.AddDays(eventObj.Interval == null ? 1 : Convert.ToInt32(eventObj.Interval));
             }
         }
 
-        private EventCollaborator ConstructScheduleEventObject(Event eventObj, DateOnly eventDate)
+        private static EventCollaborator ConstructScheduleEventObject(Event eventObj, DateOnly eventDate)
         {
             return new(eventObj.Id, GlobalData.GetUser().Id, "organizer", "accept", eventObj.EventStartHour, eventObj.EventEndHour, eventDate);
         }
@@ -75,7 +88,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return eventInterval != null || days.Contains(day);
         }
 
-        private void ScheduleWeeklyEvents(Event eventObj)
+        private void FindOccurrencesOfWeeklyEvents(Event eventObj)
         {
             HashSet<int> weekDays = eventObj.ByWeekDay == null ? [] : [.. eventObj.ByWeekDay.Split(",").Select(weekDay => Convert.ToInt32(weekDay))];
 
@@ -90,7 +103,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                 if (weekDays.Contains(day) && IsDateInRange(eventObj.EventStartDate, eventObj.EventEndDate, currentDate))
                 {
-                    ScheduleEvent(ConstructScheduleEventObject(eventObj, currentDate));
+                    occurrences.Add(currentDate);
                 }
 
                 currentDate = currentDate.AddDays(1);
@@ -109,33 +122,33 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return dateToCheck >= startDate && dateToCheck <= endDate;
         }
 
-        private void ScheduleMonthlyEvents(Event eventObj)
+        private void FindOccurrencesOfMonthlyEvents(Event eventObj)
         {
 
             if (eventObj.ByMonthDay == null)
             {
-                ScheduleEventsUsingWeekOrderAndWeekDay(eventObj, true);
+                FindOccurrencesOfEventsUsingWeekOrderAndWeekDay(eventObj, true);
             }
             else
             {
-                ScheduleEventsUsingMonthDay(eventObj, true);
+                FindOccurrencesOfEventsUsingMonthDay(eventObj, true);
             }
 
         }
 
-        private void ScheduleYearlyEvents(Event eventObj)
+        private void FindOccurrencesOfYearlyEvents(Event eventObj)
         {
             if (eventObj.ByMonthDay == null)
             {
-                ScheduleEventsUsingWeekOrderAndWeekDay(eventObj, false);
+                FindOccurrencesOfEventsUsingWeekOrderAndWeekDay(eventObj, false);
             }
             else
             {
-                ScheduleEventsUsingMonthDay(eventObj, false);
+                FindOccurrencesOfEventsUsingMonthDay(eventObj, false);
             }
         }
 
-        private void ScheduleEventsUsingMonthDay(Event eventObj, bool isMonthly)
+        private void FindOccurrencesOfEventsUsingMonthDay(Event eventObj, bool isMonthly)
         {
             int day = (int)eventObj.ByMonthDay;
 
@@ -147,7 +160,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             while (currentDate <= eventObj.EventEndDate)
             {
-                ScheduleEvent(ConstructScheduleEventObject(eventObj, currentDate));
+                occurrences.Add(currentDate);
 
                 currentDate = isMonthly ? currentDate.AddMonths((int)eventObj.Interval) : currentDate.AddYears((int)eventObj.Interval);
 
@@ -162,7 +175,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return Math.Min(day, daysInMonth);
         }
 
-        private void ScheduleEventsUsingWeekOrderAndWeekDay(Event eventObj, bool isMonthly)
+        private void FindOccurrencesOfEventsUsingWeekOrderAndWeekDay(Event eventObj, bool isMonthly)
         {
             int weekOrder = (int)eventObj.WeekOrder;
 
@@ -183,7 +196,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                 if (nthWeekDay.Month == currentDate.Month && nthWeekDay <= eventObj.EventEndDate)
                 {
-                    ScheduleEvent(ConstructScheduleEventObject(eventObj, nthWeekDay));
+                    occurrences.Add(currentDate);
                 }
 
                 currentDate = isMonthly ? currentDate.AddMonths((int)eventObj.Interval) : currentDate.AddYears((int)eventObj.Interval);
