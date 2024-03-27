@@ -7,10 +7,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
     {
         public Object? GetOverlappedEventInformation(Event eventForVerify, bool isInsert)
         {
+            RecurrenceEngine recurrenceEngine = new();
 
-            List<DateTime> occurrencesOfEventForVerify = [];
-
-            FindOccurrencesForSpecificHour(eventForVerify, ref occurrencesOfEventForVerify);
+            List<DateOnly> occurrencesOfEventForVerify = recurrenceEngine.FindOccurrencesOfEvent(eventForVerify);
 
             EventService eventService = new();
 
@@ -20,46 +19,25 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             {
                 if (!isInsert && eventToCheckOverlap.Id == eventForVerify.Id) continue;
 
-                List<DateTime> occurrencesOfEventToCheckOverlap = [];
+                List<DateOnly> occurrencesOfEventToCheckOverlap = recurrenceEngine.FindOccurrencesOfEvent(eventToCheckOverlap);
 
-                FindOccurrencesForSpecificHour(eventToCheckOverlap, ref occurrencesOfEventToCheckOverlap);
+                DateOnly matchedDate = occurrencesOfEventToCheckOverlap.Intersect(occurrencesOfEventForVerify).FirstOrDefault();
 
-                foreach (var occurrence in occurrencesOfEventForVerify)
+                if (matchedDate == default) continue;
+
+                if (IsHourOvelapps(eventForVerify.EventStartHour, eventForVerify.EventEndHour, eventToCheckOverlap.EventStartHour, eventToCheckOverlap.EventEndHour))
                 {
-                    DateTime matchedDate = occurrencesOfEventToCheckOverlap.Find(singlOccurrence => singlOccurrence == occurrence);
-                    if (matchedDate != new DateTime())
-                    {
-                        return new { OverlappedEvent = eventToCheckOverlap, MatchedDate = DateOnly.FromDateTime(matchedDate) };
-                    }
+                    return new { OverlappedEvent = eventToCheckOverlap, MatchedDate = matchedDate };
                 }
-
             }
 
             return null;
         }
 
-        private static void FindOccurrencesForSpecificHour(Event eventObj, ref List<DateTime> occurrences)
+        private static bool IsHourOvelapps(int startHourOfFirstEvent, int endHourOfFirstEvent, int startHourOfSecondEvent, int endHourOfSecondEvent)
         {
-            RecurrenceEngine recurrenceEngine = new();
-
-            List<DateOnly> occurrencesInDateOnly = recurrenceEngine.FindOccurrencesOfEvent(eventObj);
-
-            foreach (var occurrenceInDateOnly in occurrencesInDateOnly)
-            {
-
-                DateOnly date = occurrenceInDateOnly;
-
-                int startHour = eventObj.EventStartHour;
-                int endHour = eventObj.EventEndHour;
-
-                while (startHour < endHour)
-                {
-                    occurrences.Add(new DateTime(date.Year, date.Month, date.Day, startHour, 0, 0));
-
-                    startHour++;
-                }
-            }
-
+            return startHourOfFirstEvent >= startHourOfSecondEvent || startHourOfFirstEvent <= endHourOfSecondEvent
+                   || endHourOfFirstEvent >= startHourOfSecondEvent || endHourOfFirstEvent <= endHourOfSecondEvent;
         }
     }
 }

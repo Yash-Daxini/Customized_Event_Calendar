@@ -26,7 +26,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             else
                 FindOccurrencesOfEventUsingFrequency(eventObj);
 
-            return occurrences;
+            return new(occurrences);
         }
 
         private void FindOccurrencesOfEventUsingFrequency(Event eventObj)
