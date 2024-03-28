@@ -21,7 +21,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return GetAllEventCollaborators().Exists(eventCollaborator =>
                                                      eventCollaborator.UserId == newEventCollaborator.UserId
                                                      && eventCollaborator.EventId == newEventCollaborator.EventId
-                                                     && eventCollaborator.EventDate == newEventCollaborator.EventDate);
+                                                     && eventCollaborator.EventDate == newEventCollaborator.EventDate
+                                                     && IsHourOvelapps(eventCollaborator, newEventCollaborator));
         }
 
         public EventCollaborator? GetCollaborationOverlap(EventCollaborator newEventCollaborator)
@@ -29,7 +30,17 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return GetAllEventCollaborators().Find(eventCollaborator =>
                                                    eventCollaborator.UserId == newEventCollaborator.UserId
                                                    && eventCollaborator.EventDate == newEventCollaborator.EventDate
-                                                   && eventCollaborator.UserId == newEventCollaborator.UserId);
+                                                   && eventCollaborator.UserId == newEventCollaborator.UserId
+                                                   && IsHourOvelapps(eventCollaborator, newEventCollaborator));
+        }
+
+        private static bool IsHourOvelapps(EventCollaborator eventCollaborator, EventCollaborator newEventCollaborator)
+        {
+            return (eventCollaborator.ProposedStartHour >= newEventCollaborator.ProposedStartHour && eventCollaborator.ProposedStartHour <      newEventCollaborator.ProposedEndHour)
+                || (eventCollaborator.ProposedEndHour > newEventCollaborator.ProposedStartHour && eventCollaborator.ProposedEndHour <= newEventCollaborator.ProposedEndHour)
+                || (newEventCollaborator.ProposedStartHour >= eventCollaborator.ProposedStartHour && newEventCollaborator.ProposedStartHour < eventCollaborator.ProposedEndHour)
+                || (newEventCollaborator.ProposedEndHour > eventCollaborator.ProposedStartHour && newEventCollaborator.ProposedEndHour <= eventCollaborator.ProposedEndHour);
+
         }
     }
 }

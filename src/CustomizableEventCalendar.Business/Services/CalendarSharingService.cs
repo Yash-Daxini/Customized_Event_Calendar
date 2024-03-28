@@ -44,9 +44,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         private static HashSet<int> GetSharedEventIdsFromSharedCalendar(List<Event> events, SharedCalendar sharedCalendar)
         {
-            HashSet<int> sharedEventIds = events.Where(eventObj => eventObj.UserId == sharedCalendar.SenderUserId)
-                                                .Select(eventObj => eventObj.Id)
-                                                .ToHashSet();
+            HashSet<int> sharedEventIds = [..events.Where(eventObj => eventObj.UserId == sharedCalendar.SenderUserId)
+                                                   .Select(eventObj => eventObj.Id)];
 
             return sharedEventIds;
         }
@@ -60,7 +59,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         private static List<EventCollaborator> GetAllSharedEventsBetweenGivenDate(DateOnly fromDate, DateOnly toDate, HashSet<int> sharedEventIds)
         {
-
             EventCollaboratorRepository eventCollaboratorsRepository = new();
 
             List<EventCollaborator> sharedEvents = [.. eventCollaboratorsRepository.GetAll(data => new EventCollaborator(data))

@@ -119,6 +119,31 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             MultipleInviteesEventService.AddInviteesInProposedEvent(eventObj, invitees);
         }
 
+        private static string GetInviteesFromUser()
+        {
+            bool isUsersAvailable = ShowAllUser();
+
+            if (!isUsersAvailable) return "";
+
+            string inviteesSerialNumber = ValidatedInputProvider.GetValidatedCommaSeparatedInputInRange("Enter users you want to Invite. (Enter users Sr No. comma separated Ex:- 1,2,3) : ", 1, GetInsensitiveUserInformationList().Count);
+
+            return GetInviteesUserIdFromSerialNumber(inviteesSerialNumber);
+        }
+
+        private static string GetInviteesUserIdFromSerialNumber(string inviteesSerialNumber)
+        {
+            List<User> users = GetInsensitiveUserInformationList();
+
+            StringBuilder invitees = new();
+
+            foreach (int inviteeSerialNumber in inviteesSerialNumber.Split(",").Select(number => Convert.ToInt32(number.Trim())))
+            {
+                invitees.Append(users[inviteeSerialNumber - 1].Id + ",");
+            }
+
+            return invitees.ToString()[..(invitees.Length - 1)];
+        }
+
         private static T CastAnonymousObject<T>(object obj, T type) { return (T)obj; }
 
         private static void HandleOverlappedEvent(Event eventForVerify, Object overlappedEventInformationObject, bool isInsert)
@@ -131,8 +156,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             if (!AskForRescheduleOverlappedEvent(eventForVerify)) return;
 
-            if (isInsert) AddEvent(eventForVerify);
-            else UpdateEvent(eventForVerify.Id, eventForVerify);
+            if (isInsert)
+                AddEvent(eventForVerify);
+            else
+                UpdateEvent(eventForVerify.Id, eventForVerify);
         }
 
         private static bool AskForRescheduleOverlappedEvent(Event eventObj)
@@ -145,8 +172,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             {
                 case 1:
                     GetStartingAndEndingHourOfEvent(eventObj);
-                    if (eventObj.IsProposed) RecurrenceHandling.GetRecurrenceForSingleEvent(eventObj);
-                    else RecurrenceHandling.AskForRecurrenceChoice(eventObj);
+
+                    if (eventObj.IsProposed)
+                        RecurrenceHandling.GetRecurrenceForSingleEvent(eventObj);
+                    else
+                        RecurrenceHandling.AskForRecurrenceChoice(eventObj);
                     return true;
                 case 2:
                     return false;
@@ -173,12 +203,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             if (users.Count != 0)
             {
-                List<List<string>> userTableContent = [["Sr. No", "Name", "Email"]];
-
-                foreach (var (user, index) in users.Select((user, index) => (user, index)))
-                {
-                    userTableContent.Add([(index + 1).ToString(), user.Name, user.Email]);
-                }
+                List<List<string>> userTableContent = users.InsertInto2DList(["Sr. No", "Name", "Email"],
+                                                      [
+                                                          user => users.IndexOf(user)+1,
+                                                          user => user.Name,
+                                                          user => user.Email,
+                                                      ]);
 
                 userInformation.AppendLine(PrintService.GenerateTable(userTableContent));
 
@@ -198,31 +228,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             List<User> users = userService.GetInsensitiveInformationOfUser();
 
             return users;
-        }
-
-        private static string GetInviteesFromUser()
-        {
-            bool isUsersAvailable = ShowAllUser();
-
-            if (!isUsersAvailable) return "";
-
-            string inviteesSerialNumber = ValidatedInputProvider.GetValidatedCommaSeparatedInputInRange("Enter users you want to Invite. (Enter users Sr No. comma separated Ex:- 1,2,3) : ", 1, GetInsensitiveUserInformationList().Count);
-
-            return GetInviteesUserIdFromSerialNumber(inviteesSerialNumber);
-        }
-
-        private static string GetInviteesUserIdFromSerialNumber(string inviteesSerialNumber)
-        {
-            List<User> users = GetInsensitiveUserInformationList();
-
-            StringBuilder invitees = new();
-
-            foreach (int inviteeSerialNumber in inviteesSerialNumber.Split(",").Select(number => Convert.ToInt32(number.Trim())))
-            {
-                invitees.Append(users[inviteeSerialNumber - 1].Id + ",");
-            }
-
-            return invitees.ToString()[..(invitees.Length - 1)];
         }
 
         private static DateOnly GetDate(string inputMessage)
@@ -284,7 +289,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                                                                              IsDateInRange(startDate, endDate, eventCollaborator.EventDate) &&
                                                                              currentDate == eventCollaborator.EventDate);
 
-                dateWiseEventCollaborators[currentDate] = eventCollaboratorBetweenGivenRange;
+                dateWiseEventCollaborators[currentDate] = new (eventCollaboratorBetweenGivenRange);
 
                 currentDate = currentDate.AddDays(1);
             }
@@ -498,7 +503,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         private static void GetInputToUpdateEvent()
         {
-
             DisplayEvents();
 
             if (!IsEventsPresent()) return;
@@ -556,9 +560,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                     GetStartingAndEndingHourOfEvent(eventObj);
                     RecurrenceHandling.AskForRecurrenceChoice(eventObj);
                     break;
-
             }
-
         }
 
         private static int GetSerialNumberForUpdateOrDelete(bool isDelete)

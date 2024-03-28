@@ -60,8 +60,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             weeklyView.AppendLine("\nSchedule from " + startDateOfWeek + " to " + endDateOfWeek + "\n");
 
-            List<List<string>> weeklyViewTableContent = Generate2DListForEvents(startDateOfWeek, endDateOfWeek,
-                                                                                              currentWeekEvents);
+            List<List<string>> weeklyViewTableContent = Generate2DListForEvents(startDateOfWeek, endDateOfWeek, currentWeekEvents);
 
             weeklyView.AppendLine(PrintService.GenerateTable(weeklyViewTableContent));
 
@@ -84,7 +83,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             List<List<string>> monthlyViewTableContent = Generate2DListForEvents(startDateOfMonth, endDateOfMonth, currentMonthEvents);
 
             monthlyView.Append(PrintService.GenerateTable(monthlyViewTableContent));
-
 
             Console.WriteLine(monthlyView);
         }

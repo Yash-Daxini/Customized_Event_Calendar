@@ -43,29 +43,28 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             upcommingEventsNotificationTable.AppendLine($"Your today's events :- \n{PrintService.GetHorizontalLine()}\n");
 
-            upcommingEventsNotificationTable.AppendLine(PrintService.GenerateTableForNotification(InsertUpcommingEventsInto2DList
-                                                        (upcommingEvents)));
+            upcommingEventsNotificationTable.AppendLine(PrintService.GenerateTableForNotification(upcommingEvents.InsertInto2DList(["Event", "Description", "Date", "Start Time", "End Time"],
+                                                     [
+                                                          eventCollaborator => GetEventTitle(eventCollaborator) ,
+                                                          eventCollaborator => GetEventDescription(eventCollaborator),
+                                                          eventCollaborator => eventCollaborator.EventDate,
+                                                          eventCollaborator => GetEventStartHour(eventCollaborator),
+                                                          eventCollaborator => GetEventEndHour(eventCollaborator),
+                                                     ])));
 
             if (upcommingEvents.Count == 0) return "";
 
-            return upcommingEventsNotificationTable.ToString(); 
+            return upcommingEventsNotificationTable.ToString();
         }
 
-        private List<List<string>> InsertUpcommingEventsInto2DList(List<EventCollaborator> upcommingEvents)
+        private string GetEventTitle(EventCollaborator eventCollaborator) => GetEventFromId(eventCollaborator.EventId)?.Title ?? "-";
+        private string GetEventDescription(EventCollaborator eventCollaborator) => GetEventFromId(eventCollaborator.EventId)?.Description ?? "-";
+        private string GetEventStartHour(EventCollaborator eventCollaborator) => GetEventFromId(eventCollaborator.EventId)?.EventStartHour.ToString() ?? "-";
+        private string GetEventEndHour(EventCollaborator eventCollaborator) => GetEventFromId(eventCollaborator.EventId)?.EventEndHour.ToString() ?? "-";
+
+        private Event? GetEventFromId(int eventId)
         {
-            List<List<string>> upcommingEventNotificationsTableContent = [["Event", "Description", "Date", "Start Time", "End Time"]];
-
-            foreach (EventCollaborator eventCollaborators in upcommingEvents)
-            {
-                Event? eventObj = events.FirstOrDefault(eventObj => eventObj.Id == eventCollaborators.EventId);
-
-                upcommingEventNotificationsTableContent.Add([eventObj.Title, eventObj.Description,
-                                                             eventCollaborators.EventDate.ToString(),
-                                                             DateTimeManager.ConvertTo12HourFormat(eventObj.EventStartHour),
-                                                             DateTimeManager.ConvertTo12HourFormat(eventObj.EventEndHour)]);
-            }
-
-            return upcommingEventNotificationsTableContent;
+            return events.Find(eventObj => eventObj.Id == eventId);
         }
 
         private string NotificationsForProposedEvents()
@@ -79,35 +78,24 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             proposedEventsNotificationTable.AppendLine($"Proposed Events : \n {PrintService.GetHorizontalLine()} \n");
 
-            proposedEventsNotificationTable.AppendLine(PrintService.GenerateTableForNotification(InsertProposedEventsInto2DList
-                                                      (proposedEventCollaborators)));
+            proposedEventsNotificationTable.AppendLine(PrintService.GenerateTableForNotification(proposedEventCollaborators.InsertInto2DList(["Event Proposed by", "Date", "Start Time", "End Time", "Event", "Description"],
+                                                     [
+                                                          eventCollaborator => GetUserName(eventCollaborator.UserId),
+                                                          eventCollaborator => eventCollaborator.EventDate,
+                                                          eventCollaborator => GetEventStartHour(eventCollaborator),
+                                                          eventCollaborator => GetEventEndHour(eventCollaborator),
+                                                          eventCollaborator => GetEventTitle(eventCollaborator) ,
+                                                          eventCollaborator => GetEventDescription(eventCollaborator),
+                                                     ])));
 
             return proposedEventsNotificationTable.ToString();
         }
 
-        private List<List<string>> InsertProposedEventsInto2DList(List<EventCollaborator> proposedEventCollabprators)
+        private string GetUserName(int userId)
         {
-            List<List<string>> propsedEventNotificationsTableContent = [["Event Proposed by", "Date", "Start Time", "End Time",
-                                                                         "Event","Description"]];
-
             UserService userService = new();
 
-            foreach (var eventCollaborator in proposedEventCollabprators)
-            {
-                Event eventObj = _eventService.GetEventById(eventCollaborator.EventId);
-
-                User? eventProposer = userService.Read(eventObj.UserId);
-
-                propsedEventNotificationsTableContent.Add([eventProposer.Name,
-                                                           eventObj.EventStartDate.ToString(),
-                                                           DateTimeManager.ConvertTo12HourFormat(eventObj.EventStartHour),
-                                                           DateTimeManager.ConvertTo12HourFormat(eventObj.EventEndHour),
-                                                           eventObj.Title, eventObj.Description
-                                                           ]
-                                                         );
-            }
-
-            return propsedEventNotificationsTableContent;
+            return userService.Read(userId)?.Name ?? "-";
         }
     }
 }

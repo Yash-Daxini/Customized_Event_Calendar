@@ -13,7 +13,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             {
                 List<Event> proposedEvents = _proposedEventService.GetProposedEvents();
 
-                string tableOfProposedEvents = _proposedEventService.GenerateProposedEventTable();
+                string tableOfProposedEvents = GenerateProposedEventTable();
 
                 if (proposedEvents.Count == 0)
                 {
@@ -33,17 +33,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
                     if (eventCollaborator != null)
                     {
-                        TakeInputToGiveResponse(eventCollaborator, eventObj);
+                        GetInputToGiveResponse(eventCollaborator, eventObj);
 
                         eventCollaboratorService.UpdateEventCollaborators(eventCollaborator, eventCollaborator.Id);
 
                     }
-
                     PrintHandler.PrintSuccessMessage("Your response successfully shared with organizer of event.");
-
                 }
-
-
             }
             catch
             {
@@ -51,7 +47,32 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             }
         }
 
-        public static int SelectEventForResponse(int endRange)
+        private static string GenerateProposedEventTable()
+        {
+            List<Event> proposedEvents = _proposedEventService.GetProposedEvents();
+
+            List<List<string>> outputRows = proposedEvents.InsertInto2DList(["Sr No.", "Title", "Description", "Location", "StartHour", "EndHour", "StartDate"],
+                [
+                    eventObj => proposedEvents.IndexOf(eventObj) + 1,
+                    eventObj => eventObj.Title,
+                    eventObj => eventObj.Description,
+                    eventObj => eventObj.Location,
+                    eventObj => DateTimeManager.ConvertTo12HourFormat(eventObj.EventStartHour),
+                    eventObj => DateTimeManager.ConvertTo12HourFormat(eventObj.EventEndHour),
+                    eventObj => eventObj.EventStartDate.ToString()
+                ]);
+
+            string eventTable = PrintService.GenerateTable(outputRows);
+
+            if (proposedEvents.Count > 0)
+            {
+                return eventTable;
+            }
+
+            return "";
+        }
+
+        private static int SelectEventForResponse(int endRange)
         {
             Console.WriteLine("\nChoose an event to respond (Please enter Sr no. )");
 
@@ -60,7 +81,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return serialNumberOfEvent;
         }
 
-        public static void TakeInputToGiveResponse(EventCollaborator eventCollaborator, Event eventObj)
+        private static void GetInputToGiveResponse(EventCollaborator eventCollaborator, Event eventObj)
         {
             Console.WriteLine("\nEnter your response : ");
             Console.WriteLine("1. Accept 2. Reject 3. May be ");
@@ -76,7 +97,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                     break;
                 case 2:
                     eventCollaborator.ConfirmationStatus = "reject";
-                    TakeInputToGetProposedTime(eventCollaborator);
+                    GetInputToGetProposedTime(eventCollaborator);
                     break;
                 case 3:
                     eventCollaborator.ConfirmationStatus = "maybe";
@@ -86,7 +107,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             }
         }
 
-        public static void TakeInputToGetProposedTime(EventCollaborator eventCollaborator)
+        private static void GetInputToGetProposedTime(EventCollaborator eventCollaborator)
         {
             Console.WriteLine("\nDo you want to propose time ? \n1. Yes \n0. No");
 
@@ -96,7 +117,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             {
                 case 1:
                     Console.WriteLine($"\nEnter your proposed timings for {eventCollaborator.EventDate}");
-                    TakeStartingAndEndingHourOfProposedEvent(eventCollaborator);
+                    GetStartingAndEndingHourOfProposedEvent(eventCollaborator);
                     break;
                 case 0:
                     eventCollaborator.ProposedStartHour = null;
@@ -106,7 +127,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             }
         }
 
-        public static void TakeStartingAndEndingHourOfProposedEvent(EventCollaborator eventCollaborator)
+        private static void GetStartingAndEndingHourOfProposedEvent(EventCollaborator eventCollaborator)
         {
             Console.WriteLine("\nHow would you like to enter the time? : ");
             Console.WriteLine("\n1.Choose 24-hour format (1 to 24 hours) \n2.Choose 12-hour format (1 to 12 hours and AM/PM)");
@@ -117,20 +138,20 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             {
                 case 1:
                     PrintHandler.PrintInfoMessage("You've selected the 24-hour format.");
-                    TakeHourIn24HourFormat(eventCollaborator);
+                    GetHourIn24HourFormat(eventCollaborator);
                     break;
                 case 2:
                     PrintHandler.PrintInfoMessage("You've selected the 12-hour format.");
-                    TakeHourIn12HourFormat(eventCollaborator);
+                    GetHourIn12HourFormat(eventCollaborator);
                     break;
                 default:
-                    TakeStartingAndEndingHourOfProposedEvent(eventCollaborator);
+                    GetStartingAndEndingHourOfProposedEvent(eventCollaborator);
                     break;
             }
 
         }
 
-        public static void TakeHourIn24HourFormat(EventCollaborator eventCollaborator)
+        private static void GetHourIn24HourFormat(EventCollaborator eventCollaborator)
         {
             PrintHandler.PrintNewLine();
 
@@ -145,23 +166,23 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             if (!ValidationService.IsValidStartAndEndHour((int)eventCollaborator.ProposedStartHour, (int)eventCollaborator.ProposedEndHour))
             {
                 PrintHandler.PrintWarningMessage("Invalid input ! Start hour must less than the end hour.");
-                TakeHourIn24HourFormat(eventCollaborator);
+                GetHourIn24HourFormat(eventCollaborator);
             }
         }
 
-        public static void TakeHourIn12HourFormat(EventCollaborator eventCollaborator)
+        private static void GetHourIn12HourFormat(EventCollaborator eventCollaborator)
         {
             PrintHandler.PrintNewLine();
 
             eventCollaborator.ProposedStartHour = ValidatedInputProvider.GetValidated12HourFormatTime("Enter Start Hour for the event (From 1 to 12) : ");
 
-            string startHourAbbreviation = ValidatedInputProvider.GetValidatedAbbreviations();
+            string startHourAbbreviation = GetChoiceOfAbbreviation();
 
             PrintHandler.PrintNewLine();
 
             eventCollaborator.ProposedEndHour = ValidatedInputProvider.GetValidated12HourFormatTime("Enter End Hour for the event (From 1 to 12) : ");
 
-            string endHourAbbreviation = ValidatedInputProvider.GetValidatedAbbreviations();
+            string endHourAbbreviation = GetChoiceOfAbbreviation();
 
             eventCollaborator.ProposedStartHour += startHourAbbreviation.Equals("PM") && eventCollaborator.ProposedStartHour != 12 ? 12 : 0;
 
@@ -172,8 +193,16 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             if (!ValidationService.IsValidStartAndEndHour((int)eventCollaborator.ProposedStartHour, (int)eventCollaborator.ProposedEndHour))
             {
                 PrintHandler.PrintWarningMessage("Invalid input ! Start hour must less than the end hour.");
-                TakeHourIn12HourFormat(eventCollaborator);
+                GetHourIn12HourFormat(eventCollaborator);
             }
+        }
+
+        private static string GetChoiceOfAbbreviation()
+        {
+            Console.WriteLine("Enter choice for AM or PM \n1. AM \n2. PM");
+            int choice = ValidatedInputProvider.GetValidatedIntegerBetweenRange("Enter choice : ", 1, 2);
+
+            return choice == 1 ? "AM" : "PM";
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
 {
@@ -28,7 +29,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                                                                            (proposedEventIds,eventCollaborator))];
         }
 
-        private bool IsLoggedInUserHasPendingResponseForProposedEvent(HashSet<int> proposedEventIds, EventCollaborator eventCollaborator)
+        private static bool IsLoggedInUserHasPendingResponseForProposedEvent(HashSet<int> proposedEventIds, EventCollaborator eventCollaborator)
         {
             return proposedEventIds.Contains(eventCollaborator.EventId)
                    && eventCollaborator.UserId == GlobalData.GetUser().Id
@@ -36,31 +37,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                    && eventCollaborator.ParticipantRole.Equals("participant")
                    && eventCollaborator.ConfirmationStatus != null
                    && eventCollaborator.ConfirmationStatus.Equals("pending");
-        }
-
-        public string GenerateProposedEventTable()
-        {
-            List<Event> proposedEvents = GetProposedEvents();
-
-            List<List<string>> outputRows = proposedEvents.InsertInto2DList(["Sr No.", "Title", "Description", "Location", "StartHour", "EndHour", "StartDate"],
-                [
-                    eventObj => proposedEvents.IndexOf(eventObj) + 1,
-                    eventObj => eventObj.Title,
-                    eventObj => eventObj.Description,
-                    eventObj => eventObj.Location,
-                    eventObj => DateTimeManager.ConvertTo12HourFormat(eventObj.EventStartHour),
-                    eventObj => DateTimeManager.ConvertTo12HourFormat(eventObj.EventEndHour),
-                    eventObj => eventObj.EventStartDate.ToString()
-                ]);
-
-            string eventTable = PrintService.GenerateTable(outputRows);
-
-            if (proposedEvents.Count > 0)
-            {
-                return eventTable;
-            }
-
-            return "";
         }
     }
 }

@@ -11,13 +11,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         private readonly static UserService _userService = new();
 
-        public List<SharedCalendar> sharedCalendarsList;
-
-        public ShareCalendar()
-        {
-            sharedCalendarsList = _calendarSharingService.GetSharedCalendars();
-        }
-
+        public List<SharedCalendar> sharedCalendarsList = [];
         public void GetDetailsToShareCalendar()
         {
             try
@@ -98,6 +92,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         public void ShowSharedCalendars()
         {
+
+            sharedCalendarsList = _calendarSharingService.GetSharedCalendars();
+
+            _ = sharedCalendarsList.OrderBy(sharedCalendar => sharedCalendar.ToDate);
+
             try
             {
                 string sharedEventsTable = DesignSharedCalendarTable();
@@ -119,7 +118,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
                 ShowSpecificCalendar(sharedCalendarId);
 
-                List<EventCollaborator> sharedEvents = _calendarSharingService.GetSharedEventsFromSharedCalendarId(sharedCalendarId);
+                List<EventCollaborator> sharedEvents = [.._calendarSharingService.GetSharedEventsFromSharedCalendarId(sharedCalendarId)
+                                                                              .OrderBy(sharedEvent => sharedEvent.EventDate)];
 
                 if (sharedEvents.Count == 0) return;
 
@@ -205,21 +205,25 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             while (currentDate <= endDate)
             {
-                EventCollaborator? eventCollaborator = sharedEvents.Find(eventCollaborator => eventCollaborator.EventDate == currentDate);
+                List<EventCollaborator> eventCollaboratorList = sharedEvents.FindAll(eventCollaborator => eventCollaborator.EventDate == currentDate);
 
-                if (eventCollaborator != null)
+                foreach (var eventCollaborator in eventCollaboratorList)
                 {
-                    Event? eventObj = events.Find(eventObj => eventObj.Id == eventCollaborator.EventId);
+                    if (eventCollaborator != null)
+                    {
+                        Event? eventObj = events.Find(eventObj => eventObj.Id == eventCollaborator.EventId);
 
-                    sharedEventTableContent.Add([(index + 1).ToString(),
-                                                 eventObj.Title, eventObj.Description,
-                                                 eventCollaborator.EventDate.ToString(),
-                                                 DateTimeManager.ConvertTo12HourFormat(eventObj.EventStartHour)+" - "+
-                                                 DateTimeManager.ConvertTo12HourFormat(eventObj.EventEndHour)
-                                                ]);
-                    index++;
+                        sharedEventTableContent.Add([(index + 1).ToString(),
+                                                     eventObj.Title, eventObj.Description,
+                                                     eventCollaborator.EventDate.ToString(),
+                                                     DateTimeManager.ConvertTo12HourFormat(eventObj.EventStartHour)+" - "+
+                                                     DateTimeManager.ConvertTo12HourFormat(eventObj.EventEndHour)
+                                                    ]);
+                        index++;
+                    }
                 }
-                else
+
+                if (eventCollaboratorList.Count == 0)
                 {
                     sharedEventTableContent.Add(["-", "-", "-", currentDate.ToString(), "-"]);
                 }

@@ -22,7 +22,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             {
                 PrintHandler.PrintErrorMessage("Some error occurred ! Can't collaborate on event");
             }
-
         }
 
         private static void CollaborateOnSharedEvent(EventCollaborator selectedEvent)
@@ -31,8 +30,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             int eventId = selectedEvent.EventId;
 
-            EventCollaborator newEventCollaborator = new(eventId, GlobalData.GetUser().Id, "participant", null, null, null,
-                                                        selectedEvent.EventDate);
+            EventService eventService = new EventService();
+
+            Event? eventObj = eventService.GetEventById(eventId);
+
+            if (eventObj == null) return;
+
+            EventCollaborator newEventCollaborator = new(eventId, GlobalData.GetUser().Id, "participant", null, eventObj.EventStartHour, eventObj.EventEndHour, selectedEvent.EventDate);
 
             if (!IsEligibleToCollaborate(newEventCollaborator)) return;
 
@@ -57,7 +61,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                 Event eventObj = eventService.GetEventById(overlappedCollaboration.EventId);
 
                 PrintHandler.PrintWarningMessage($"Can't collaborate ! \nThe collaboration causes overlap with \"{eventObj.Title}\""
-                     + $" on {overlappedCollaboration.EventDate}, indicating that both events are scheduled concurrently.");
+                     + $" on {overlappedCollaboration.EventDate} at {overlappedCollaboration.ProposedStartHour} to {overlappedCollaboration.ProposedEndHour}, indicating that both events are scheduled concurrently.");
 
                 return false;
             }

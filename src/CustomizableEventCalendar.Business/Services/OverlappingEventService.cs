@@ -25,7 +25,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                 if (matchedDate == default) continue;
 
-                if (IsHourOvelapps(eventForVerify.EventStartHour, eventForVerify.EventEndHour, eventToCheckOverlap.EventStartHour, eventToCheckOverlap.EventEndHour))
+                if (IsHourOverlaps(eventForVerify.EventStartHour, eventForVerify.EventEndHour, eventToCheckOverlap.EventStartHour, eventToCheckOverlap.EventEndHour))
                 {
                     return new { OverlappedEvent = eventToCheckOverlap, MatchedDate = matchedDate };
                 }
@@ -34,10 +34,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return null;
         }
 
-        private static bool IsHourOvelapps(int startHourOfFirstEvent, int endHourOfFirstEvent, int startHourOfSecondEvent, int endHourOfSecondEvent)
+        private static bool IsHourOverlaps(int startHourOfFirstEvent, int endHourOfFirstEvent, int startHourOfSecondEvent, int endHourOfSecondEvent)
         {
-            return startHourOfFirstEvent >= startHourOfSecondEvent || startHourOfFirstEvent <= endHourOfSecondEvent
-                   || endHourOfFirstEvent >= startHourOfSecondEvent || endHourOfFirstEvent <= endHourOfSecondEvent;
+            return (startHourOfFirstEvent >= startHourOfSecondEvent && startHourOfFirstEvent < endHourOfSecondEvent)
+                || (endHourOfFirstEvent > startHourOfSecondEvent && endHourOfFirstEvent <= endHourOfSecondEvent)
+                || (startHourOfSecondEvent >= startHourOfFirstEvent && startHourOfSecondEvent < endHourOfFirstEvent)
+                || (endHourOfSecondEvent > startHourOfFirstEvent && endHourOfSecondEvent <= endHourOfFirstEvent);
         }
+
     }
 }
