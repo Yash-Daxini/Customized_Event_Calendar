@@ -59,8 +59,20 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         private string GetEventTitle(EventCollaborator eventCollaborator) => GetEventFromId(eventCollaborator.EventId)?.Title ?? "-";
         private string GetEventDescription(EventCollaborator eventCollaborator) => GetEventFromId(eventCollaborator.EventId)?.Description ?? "-";
-        private string GetEventStartHour(EventCollaborator eventCollaborator) => GetEventFromId(eventCollaborator.EventId)?.EventStartHour.ToString() ?? "-";
-        private string GetEventEndHour(EventCollaborator eventCollaborator) => GetEventFromId(eventCollaborator.EventId)?.EventEndHour.ToString() ?? "-";
+        private string GetEventStartHour(EventCollaborator eventCollaborator)
+        {
+            Event? eventObj = GetEventFromId(eventCollaborator.EventId);
+
+            if (eventObj == null) return "-";
+            return DateTimeManager.ConvertTo12HourFormat(eventObj.EventStartHour).ToString();
+        }
+        private string GetEventEndHour(EventCollaborator eventCollaborator)
+        {
+            Event? eventObj = GetEventFromId(eventCollaborator.EventId);
+
+            if (eventObj == null) return "-";
+            return DateTimeManager.ConvertTo12HourFormat(eventObj.EventEndHour).ToString();
+        }
 
         private Event? GetEventFromId(int eventId)
         {

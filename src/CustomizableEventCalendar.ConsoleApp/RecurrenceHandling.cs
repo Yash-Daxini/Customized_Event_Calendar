@@ -188,7 +188,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             PrintHandler.PrintNewLine();
 
-            Console.WriteLine("1.Select specific Day of the Month\n2.Select day of the month and its position ");
+            Console.WriteLine("1.Select specific Day of the Month\n2.Select week day and week number ");
 
             int choice = ValidatedInputProvider.GetValidatedIntegerBetweenRange("\nEnter your choice : ", 1, 2);
 
@@ -270,7 +270,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             PrintHandler.PrintNewLine();
 
             Console.WriteLine("Enter the order number (e.g., 'first' or 'second' or 'third' or 'fourth' or 'last')");
-            Console.WriteLine("\n1. First \n2. Second \n3. Third \n4. Fourth \n5. Fifth");
+            Console.WriteLine("\n1. First \n2. Second \n3. Third \n4. Fourth \n5. Last");
 
             WeekOrder choice = (WeekOrder)ValidatedInputProvider.GetValidatedIntegerBetweenRange("\nEnter choice :", 1, 5);
 
@@ -288,7 +288,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                 case WeekOrder.Fourth:
                     eventObj.WeekOrder = 4;
                     break;
-                case WeekOrder.Fifth:
+                case WeekOrder.Last:
                     eventObj.WeekOrder = 5;
                     break;
                 default:
@@ -305,7 +305,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             eventObj.Interval = ValidatedInputProvider.GetValidatedIntegerBetweenRange("Please specify how often you'd like to repeat " +
                                                                            "the event (in years) : ", 1, 5);
 
-            Console.WriteLine("1.Select specific Day of the Month \n2.Select day of the month and its position ");
+            Console.WriteLine("1.Select specific Day of the Month \n2.Select week day and week number ");
 
             int choice = ValidatedInputProvider.GetValidatedIntegerBetweenRange("\nEnter your choice : ", 1, 2);
 

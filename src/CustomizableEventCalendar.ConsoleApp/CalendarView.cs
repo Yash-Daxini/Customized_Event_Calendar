@@ -99,7 +99,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
                 hourEventMapping.TryGetValue(curHour, out Event? eventObj);
 
-                dailyViewTableContent.Add([DateTimeManager.GetDateWithAbbreviationFromDateTime(today), eventObj == null ? "-" : eventObj.Title]);
+                dailyViewTableContent.Add([DateTimeManager.GetDateWithAbbreviationFromDateTime(today) + " - " + DateTimeManager.GetDateWithAbbreviationFromDateTime(today.AddHours(1)), eventObj == null ? "-" : eventObj.Title]);
 
                 today = today.AddHours(1);
             }

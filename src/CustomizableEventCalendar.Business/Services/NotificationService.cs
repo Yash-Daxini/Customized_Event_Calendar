@@ -38,7 +38,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public List<EventCollaborator> GetUpcomingEvents()
         {
-            List<EventCollaborator> scheduleEvents = GetConsiderableEventCollaborators();
+            List<EventCollaborator> scheduleEvents = [.. GetConsiderableEventCollaborators().OrderBy(eventCollaborator => eventCollaborator.EventDate)];
 
             List<EventCollaborator> upcommingEvents = [..scheduleEvents.Where(eventCollaborators =>
                                                                             eventCollaborators.EventDate==DateOnly.FromDateTime(DateTime.Now))];
@@ -55,7 +55,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                                                   .Select(eventObj => eventObj.Id)
                                                   .ToHashSet();
 
-            List<EventCollaborator> proposedEventCollabprators = _eventCollaboratorsService.GetAllEventCollaborators();
+            List<EventCollaborator> proposedEventCollabprators = [.. _eventCollaboratorsService.GetAllEventCollaborators().OrderBy(eventCollaborator => eventCollaborator.EventDate)];
 
             proposedEventCollabprators = [..proposedEventCollabprators.Where(eventCollaborator => proposedEventIds
                                                                       .Contains(eventCollaborator.EventId) && eventCollaborator.UserId == GlobalData.GetUser().Id)];

@@ -56,7 +56,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             int startHour = eventObj.EventStartHour;
             int endHour = eventObj.EventEndHour;
 
-            for (int i = startHour; i <= endHour; i++)
+            for (int i = startHour; i < endHour; i++)
             {
                 eventRecordByHour[i] = eventObj;
             }
@@ -110,6 +110,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                                      {
                                          ScheduleDate = eventCollaborator.Key,
                                          eventObj = eventCollaborator.Select(eventCollaborator => _eventService.GetEventById(eventCollaborator.EventId))
+                                                                     .OrderBy(eventObj => eventObj.EventStartHour)
                                                                      .ToList()
                                      })
                                      .ToDictionary(key => key.ScheduleDate, val => val.eventObj);

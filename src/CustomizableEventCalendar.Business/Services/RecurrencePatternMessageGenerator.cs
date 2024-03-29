@@ -33,7 +33,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         private static string GetCombinationOfIntervalAndFrequency(Event eventObj)
         {
             if (eventObj.Frequency != null && eventObj.Frequency.Equals("daily") && eventObj.Interval == null) return $"Every ";
-            return $"Every {GetInterval(eventObj.Interval)} {GetFrequency(eventObj.Frequency)} on ";
+            return $"Every {GetInterval(eventObj.Interval)} {GetFrequency(eventObj.Frequency)} ";
         }
 
         private static string GetCombinationOfWeekOrderAndWeekDay(Event eventObj)
@@ -51,7 +51,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         private static string GetFrequency(string frequency)
         {
             if (frequency.Equals("daily")) return "day";
-            return frequency[..^2];
+            return frequency[..^2] + " on";
         }
 
         private static string GetWeekDays(string days)

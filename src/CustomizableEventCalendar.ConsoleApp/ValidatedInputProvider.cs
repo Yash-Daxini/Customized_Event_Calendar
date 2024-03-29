@@ -220,6 +220,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             string? inputString = Console.ReadLine();
             while (!ValidationService.IsValidString(inputString))
             {
+                PrintHandler.PrintWarningMessage($"Invalid Input ! Please enter valid input");
                 Console.WriteLine(inputMessage);
                 inputString = Console.ReadLine();
             }

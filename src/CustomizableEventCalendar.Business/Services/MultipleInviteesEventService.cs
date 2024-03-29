@@ -111,7 +111,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             int max = 0;
 
-            int maxHour = 0;
+            int maxHour = eventObj.EventStartHour;
 
             for (int i = 0; i < proposedHours.Length; i++)
             {
