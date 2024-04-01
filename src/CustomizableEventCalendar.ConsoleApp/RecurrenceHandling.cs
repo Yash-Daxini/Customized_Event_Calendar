@@ -115,7 +115,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             PrintHandler.PrintNewLine();
 
-            Console.WriteLine("How often does this event occur? \n1.Every Weekday \n2.Every n days (You need to specify the value of n)");
+            Console.WriteLine("How often does this event occur? \n1.Every day \n2.Every Weekday \n3.Every n days (You need to specify the value of n)");
             int choice = ValidatedInputProvider.GetValidatedIntegerBetweenRange("\nEnter choice : ", 1, 2);
 
             string days;
@@ -123,10 +123,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             switch (choice)
             {
                 case 1:
-                    eventObj.ByWeekDay = "1,2,3,4,5";
+                    eventObj.ByWeekDay = "1,2,3,4,5,6,7";
                     eventObj.Interval = null;
                     break;
                 case 2:
+                    eventObj.ByWeekDay = "1,2,3,4,5";
+                    eventObj.Interval = null;
+                    break;
+                case 3:
                     int interval = ValidatedInputProvider.GetValidatedIntegerBetweenRange("Please specify how often you'd like to repeat the event" +
                                                                               "(in days) : ", 1, 5);
                     eventObj.Interval = interval;

@@ -56,6 +56,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             PrintHandler.PrintNewLine();
 
             sharedCalendar.ToDate = ValidatedInputProvider.GetValidatedDateOnly("Enter end date in dd-MM-yyyy format :-  ");
+
+            if (!ValidationService.IsValidStartAndEndDate(sharedCalendar.FromDate, sharedCalendar.ToDate))
+            {
+                PrintHandler.PrintWarningMessage("Invalid input ! Start date must less than or equal to the end date ");
+                GetDatesFromUser(sharedCalendar);
+            }
         }
 
         private static User GetUserFromSerialNumber(int serialNumber)

@@ -239,6 +239,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             startDate = GetDate("Please enter start date from you want to see events : ");
             endDate = GetDate("Please enter end date from you want to see events : ");
+
+            if (!ValidationService.IsValidStartAndEndDate(startDate, endDate))
+            {
+                PrintHandler.PrintWarningMessage("Invalid input ! Start date must less than or equal to the end date ");
+                GetDatesToPrintEventWithTimeline(out startDate, out endDate);
+            }
         }
 
         private static void PrintEventWithTimeline()
@@ -247,9 +253,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             GetDatesToPrintEventWithTimeline(out DateOnly startDate, out DateOnly endDate);
 
             EventCollaboratorService eventCollaboratorService = new();
-            List<EventCollaborator> eventCollaborators = eventCollaboratorService.GetAllEventCollaborators()
+            List<EventCollaborator> eventCollaborators = [..eventCollaboratorService.GetAllEventCollaborators()
                                                                                  .FindAll(eventCollaborator => eventCollaborator.UserId
-                                                                                  == GlobalData.GetUser().Id);
+                                                                                  == GlobalData.GetUser().Id)
+                                                                                 .OrderBy(eventCollaborator => eventCollaborator.EventDate)
+                                                                                 .ThenBy(eventCollaborator => eventCollaborator.ProposedStartHour)];
+
             List<Event> events = _eventService.GetAllEvents();
 
             List<List<string>> tableContentOfEventTimeLine = [["Date", "Day", "Event Name", "Start Time", "End Time"]];
@@ -265,8 +274,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                     if (eventObj == null) continue;
 
                     tableContentOfEventTimeLine.Add([date.ToString(), DateTimeManager.GetDayFromDateOnly(date),
-                                                     eventObj.Title, eventObj.EventStartHour.ToString(),
-                                                     eventObj.EventEndHour.ToString()]);
+                                                     eventObj.Title,
+                                                     DateTimeManager.ConvertTo12HourFormat(eventObj.EventStartHour),
+                                                     DateTimeManager.ConvertTo12HourFormat(eventObj.EventEndHour)]);
                 }
                 if (dateWiseEventCollaborators[date].Count == 0) tableContentOfEventTimeLine.Add([date.ToString(),
                                                                                                   DateTimeManager.GetDayFromDateOnly(date),
@@ -289,7 +299,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                                                                              IsDateInRange(startDate, endDate, eventCollaborator.EventDate) &&
                                                                              currentDate == eventCollaborator.EventDate);
 
-                dateWiseEventCollaborators[currentDate] = new (eventCollaboratorBetweenGivenRange);
+                dateWiseEventCollaborators[currentDate] = new(eventCollaboratorBetweenGivenRange);
 
                 currentDate = currentDate.AddDays(1);
             }
@@ -456,7 +466,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         private static string GetEventTable()
         {
-            List<Event> events = _eventService.GetAllEventsOfLoggedInUser();
+            List<Event> events = [.._eventService.GetAllEventsOfLoggedInUser()
+                                              .OrderBy(eventObj => eventObj.EventStartDate)
+                                              .ThenBy(eventObj => eventObj.EventStartHour)];
 
             List<List<string>> outputRows = events.InsertInto2DList(["Event NO.", "Title", "Description", "Location", "Event Repetition", "Start Date", "End Date", "Duration"],
                 [

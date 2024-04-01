@@ -37,7 +37,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         private string NotificationForUpcommingEvents()
         {
-            List<EventCollaborator> upcommingEvents = _notificationService.GetUpcomingEvents();
+            List<EventCollaborator> upcommingEvents = [.._notificationService.GetUpcomingEvents()
+                                                                          .OrderBy(eventCollaborator=>eventCollaborator.EventDate)
+                                                                          .ThenBy(eventCollaborator =>eventCollaborator.ProposedStartHour)];
 
             StringBuilder upcommingEventsNotificationTable = new();
 
@@ -57,8 +59,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return upcommingEventsNotificationTable.ToString();
         }
 
+        private int GetEventOrganizer(EventCollaborator eventCollaborator) => GetEventFromId(eventCollaborator.Id).UserId;
+
         private string GetEventTitle(EventCollaborator eventCollaborator) => GetEventFromId(eventCollaborator.EventId)?.Title ?? "-";
+
         private string GetEventDescription(EventCollaborator eventCollaborator) => GetEventFromId(eventCollaborator.EventId)?.Description ?? "-";
+
         private string GetEventStartHour(EventCollaborator eventCollaborator)
         {
             Event? eventObj = GetEventFromId(eventCollaborator.EventId);
@@ -66,6 +72,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             if (eventObj == null) return "-";
             return DateTimeManager.ConvertTo12HourFormat(eventObj.EventStartHour).ToString();
         }
+
         private string GetEventEndHour(EventCollaborator eventCollaborator)
         {
             Event? eventObj = GetEventFromId(eventCollaborator.EventId);
@@ -92,7 +99,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             proposedEventsNotificationTable.AppendLine(PrintService.GenerateTableForNotification(proposedEventCollaborators.InsertInto2DList(["Event Proposed by", "Date", "Start Time", "End Time", "Event", "Description"],
                                                      [
-                                                          eventCollaborator => GetUserName(eventCollaborator.UserId),
+                                                          eventCollaborator => GetUserName(GetEventOrganizer(eventCollaborator)),
                                                           eventCollaborator => eventCollaborator.EventDate,
                                                           eventCollaborator => GetEventStartHour(eventCollaborator),
                                                           eventCollaborator => GetEventEndHour(eventCollaborator),
