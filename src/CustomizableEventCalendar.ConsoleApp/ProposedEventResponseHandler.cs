@@ -97,21 +97,23 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                     break;
                 case 2:
                     eventCollaborator.ConfirmationStatus = "reject";
-                    GetInputToGetProposedTime(eventCollaborator);
+                    eventCollaborator.ProposedStartHour = null;
+                    eventCollaborator.ProposedEndHour = null;
                     break;
                 case 3:
                     eventCollaborator.ConfirmationStatus = "maybe";
                     eventCollaborator.ProposedStartHour = eventObj.EventStartHour;
                     eventCollaborator.ProposedEndHour = eventObj.EventEndHour;
+                    GetInputToGetProposedTime(eventCollaborator);
                     break;
             }
         }
 
         private static void GetInputToGetProposedTime(EventCollaborator eventCollaborator)
         {
-            Console.WriteLine("\nDo you want to propose time ? \n1. Yes \n0. No");
+            Console.WriteLine("\nDo you want to propose time ? \n1. Yes \n2. No");
 
-            int choice = ValidatedInputProvider.GetValidatedIntegerBetweenRange("Enter choice : ", 0, 1);
+            int choice = ValidatedInputProvider.GetValidatedIntegerBetweenRange("Enter choice : ", 1, 2);
 
             switch (choice)
             {
@@ -119,9 +121,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                     Console.WriteLine($"\nEnter your proposed timings for {eventCollaborator.EventDate}");
                     GetStartingAndEndingHourOfProposedEvent(eventCollaborator);
                     break;
-                case 0:
-                    eventCollaborator.ProposedStartHour = null;
-                    eventCollaborator.ProposedEndHour = null;
+                case 2:
                     break;
 
             }

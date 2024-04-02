@@ -255,7 +255,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             EventCollaboratorService eventCollaboratorService = new();
             List<EventCollaborator> eventCollaborators = [..eventCollaboratorService.GetAllEventCollaborators()
                                                                                  .FindAll(eventCollaborator => eventCollaborator.UserId
-                                                                                  == GlobalData.GetUser().Id)
+                                                                                  == GlobalData.GetUser().Id && eventCollaborator.ConfirmationStatus != null && !eventCollaborator.ConfirmationStatus.Equals("reject"))
                                                                                  .OrderBy(eventCollaborator => eventCollaborator.EventDate)
                                                                                  .ThenBy(eventCollaborator => eventCollaborator.ProposedStartHour)];
 

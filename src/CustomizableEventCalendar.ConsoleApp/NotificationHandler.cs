@@ -59,7 +59,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return upcommingEventsNotificationTable.ToString();
         }
 
-        private int GetEventOrganizer(EventCollaborator eventCollaborator) => GetEventFromId(eventCollaborator.Id).UserId;
+        private int GetEventOrganizer(EventCollaborator eventCollaborator) => GetEventFromId(eventCollaborator.EventId).UserId;
 
         private string GetEventTitle(EventCollaborator eventCollaborator) => GetEventFromId(eventCollaborator.EventId)?.Title ?? "-";
 

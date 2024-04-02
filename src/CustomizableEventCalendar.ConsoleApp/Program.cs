@@ -23,7 +23,7 @@ public class Program
 
         SetWindowPos(handle, HWND_TOP, -5, -5, 0, 0, SWP_SHOWWINDOW);
 
-        Console.SetWindowSize(Console.LargestWindowWidth,Console.LargestWindowHeight-1);
+        Console.SetWindowSize(Console.LargestWindowWidth, Console.LargestWindowHeight - 1);
 
         try
         {

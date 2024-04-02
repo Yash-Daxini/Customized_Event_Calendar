@@ -93,9 +93,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return eventCollaborator.ParticipantRole != null
                    && eventCollaborator.ParticipantRole.Equals("participant")
                    && eventCollaborator.ConfirmationStatus != null
-                   && eventCollaborator.ConfirmationStatus.Equals("reject")
-                   && eventCollaborator.ProposedStartHour != null
-                   && eventCollaborator.ProposedEndHour != null;
+                   && eventCollaborator.ConfirmationStatus.Equals("maybe");
         }
 
         private static void CountProposeHours(int startHour, int endHour, ref int[] proposedHours)
@@ -109,22 +107,44 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         private static void FindMaximumMutualTimeBlock(int[] proposedHours, Event eventObj)
         {
-            int max = 0;
+            int max = proposedHours.Max();
+            max = max > 1 ? max : -1;
+            int startHour = -1;
+            int endHour = -1;
+            int timeBlock = eventObj.EventEndHour - eventObj.EventStartHour;
 
-            int maxHour = eventObj.EventStartHour;
+            foreach (var item in proposedHours)
+            {
+                Console.WriteLine(item);
+            }
 
             for (int i = 0; i < proposedHours.Length; i++)
             {
-                if (proposedHours[i] > max)
+                if (proposedHours[i] == max && startHour == -1)
                 {
-                    max = proposedHours[i];
-                    maxHour = i;
+                    startHour = i;
+                    endHour = i + 1;
+                    int j = i;
+
+                    Console.WriteLine(i);
+
+                    while (j < proposedHours.Length && (endHour - startHour) < timeBlock)
+                    {
+                        if (proposedHours[j] == max) endHour++;
+                        else break;
+                        Console.WriteLine(j);
+                        j++;
+                    }
                 }
             }
 
-            if (proposedHours.Max() == 1) return;
+            if (startHour == -1 && endHour == -1)
+            {
+                startHour = eventObj.EventStartHour;
+                endHour = eventObj.EventEndHour;
+            }
 
-            UpdateEventTimeBlockToMutualTimeBlock(eventObj, maxHour, maxHour + 1);
+            UpdateEventTimeBlockToMutualTimeBlock(eventObj, startHour, endHour);
 
         }
 
@@ -188,9 +208,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                    || (eventCollaborator.ConfirmationStatus != null && eventCollaborator.ConfirmationStatus.Equals("accept"))
                    || (
                         eventCollaborator.ConfirmationStatus != null
-                        && eventCollaborator.ConfirmationStatus.Equals("reject")
-                        && eventCollaborator.ProposedStartHour != null
-                        && eventCollaborator.ProposedEndHour != null
+                        && !eventCollaborator.ConfirmationStatus.Equals("reject")
                       )
                    || (eventCollaborator.ConfirmationStatus != null && eventCollaborator.ConfirmationStatus.Equals("maybe"));
         }
