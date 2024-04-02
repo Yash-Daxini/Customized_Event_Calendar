@@ -144,13 +144,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return invitees.ToString()[..(invitees.Length - 1)];
         }
 
-        private static T CastAnonymousObject<T>(object obj, T type) { return (T)obj; }
-
-        private static void HandleOverlappedEvent(Event eventForVerify, Object overlappedEventInformationObject, bool isInsert)
+        private static void HandleOverlappedEvent(Event eventForVerify, OverlappingEventData overlappedEventInformation, bool isInsert)
         {
-            var overlappedEventInformation = CastAnonymousObject(overlappedEventInformationObject, new { OverlappedEvent = new Event(), MatchedDate = new DateOnly() });
-
-            string overlapEventMessage = GetOverlapMessageFromEvents(eventForVerify, overlappedEventInformation.OverlappedEvent, overlappedEventInformation.MatchedDate);
+            string overlapEventMessage = GetOverlapMessageFromEvents(eventForVerify, overlappedEventInformation.EventInformation, overlappedEventInformation.MatchedDate);
 
             PrintHandler.PrintWarningMessage(overlapEventMessage);
 
@@ -442,11 +438,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         private static bool IsOverlappingEvent(Event eventObj, bool isInsert)
         {
-            var overlappedEventInformationObject = _overlappingEventService.GetOverlappedEventInformation(eventObj, isInsert);
+            OverlappingEventData? overlappedEventInformation = _overlappingEventService.GetOverlappedEventInformation(eventObj, isInsert);
 
-            if (overlappedEventInformationObject != null)
+            if (overlappedEventInformation != null)
             {
-                HandleOverlappedEvent(eventObj, overlappedEventInformationObject, isInsert);
+                HandleOverlappedEvent(eventObj, overlappedEventInformation, isInsert);
                 return true;
             }
             return false;

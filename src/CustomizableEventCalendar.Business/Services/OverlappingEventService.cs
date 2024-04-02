@@ -5,7 +5,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 {
     internal class OverlappingEventService
     {
-        public Object? GetOverlappedEventInformation(Event eventForVerify, bool isInsert)
+        public OverlappingEventData? GetOverlappedEventInformation(Event eventForVerify, bool isInsert)
         {
             RecurrenceEngine recurrenceEngine = new();
 
@@ -27,7 +27,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
                 if (IsHourOverlaps(eventForVerify.EventStartHour, eventForVerify.EventEndHour, eventToCheckOverlap.EventStartHour, eventToCheckOverlap.EventEndHour))
                 {
-                    return new { OverlappedEvent = eventToCheckOverlap, MatchedDate = matchedDate };
+                    return new OverlappingEventData(eventToCheckOverlap, matchedDate);
                 }
             }
 
