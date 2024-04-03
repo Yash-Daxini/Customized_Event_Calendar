@@ -1,12 +1,7 @@
-﻿using System.Reflection;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Channels;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services;
+﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp.InputMessageStore;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums;
-using Ical.Net.DataTypes;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {

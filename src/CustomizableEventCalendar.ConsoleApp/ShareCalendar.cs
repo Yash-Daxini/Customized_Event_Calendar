@@ -101,8 +101,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             sharedCalendarsList = _calendarSharingService.GetSharedCalendars();
 
-            _ = sharedCalendarsList.OrderBy(sharedCalendar => sharedCalendar.ToDate);
-
             try
             {
                 string sharedEventsTable = DesignSharedCalendarTable();
@@ -124,8 +122,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
                 ShowSpecificCalendar(sharedCalendarId);
 
-                List<EventCollaborator> sharedEvents = [.._calendarSharingService.GetSharedEventsFromSharedCalendarId(sharedCalendarId)
-                                                                              .OrderBy(sharedEvent => sharedEvent.EventDate)];
+                List<EventCollaborator> sharedEvents = _calendarSharingService.GetSharedEventsFromSharedCalendarId(sharedCalendarId);
 
                 if (sharedEvents.Count == 0) return;
 

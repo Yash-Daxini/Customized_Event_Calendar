@@ -119,7 +119,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             {
                 case 1:
                     Console.WriteLine($"\nEnter your proposed timings for {eventCollaborator.EventDate}");
-                    GetStartingAndEndingHourOfProposedEvent(eventCollaborator);
+                    TimeHandler.GetStartingAndEndingHourOfEvent(eventCollaborator);
                     break;
                 case 2:
                     break;
@@ -127,82 +127,5 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             }
         }
 
-        private static void GetStartingAndEndingHourOfProposedEvent(EventCollaborator eventCollaborator)
-        {
-            Console.WriteLine("\nHow would you like to enter the time? : ");
-            Console.WriteLine("\n1.Choose 24-hour format (1 to 24 hours) \n2.Choose 12-hour format (1 to 12 hours and AM/PM)");
-
-            int choice = ValidatedInputProvider.GetValidatedInteger("Enter choice : ");
-
-            switch (choice)
-            {
-                case 1:
-                    PrintHandler.PrintInfoMessage("You've selected the 24-hour format.");
-                    GetHourIn24HourFormat(eventCollaborator);
-                    break;
-                case 2:
-                    PrintHandler.PrintInfoMessage("You've selected the 12-hour format.");
-                    GetHourIn12HourFormat(eventCollaborator);
-                    break;
-                default:
-                    GetStartingAndEndingHourOfProposedEvent(eventCollaborator);
-                    break;
-            }
-
-        }
-
-        private static void GetHourIn24HourFormat(EventCollaborator eventCollaborator)
-        {
-            PrintHandler.PrintNewLine();
-
-            eventCollaborator.ProposedStartHour = ValidatedInputProvider.GetValidated24HourFormatTime("Enter Start Hour for the event : ");
-
-            PrintHandler.PrintNewLine();
-
-            eventCollaborator.ProposedEndHour = ValidatedInputProvider.GetValidated24HourFormatTime("Enter End Hour for the event : ");
-
-            PrintHandler.PrintNewLine();
-
-            if (!ValidationService.IsValidStartAndEndHour((int)eventCollaborator.ProposedStartHour, (int)eventCollaborator.ProposedEndHour))
-            {
-                PrintHandler.PrintWarningMessage("Invalid input ! Start hour must less than the end hour.");
-                GetHourIn24HourFormat(eventCollaborator);
-            }
-        }
-
-        private static void GetHourIn12HourFormat(EventCollaborator eventCollaborator)
-        {
-            PrintHandler.PrintNewLine();
-
-            eventCollaborator.ProposedStartHour = ValidatedInputProvider.GetValidated12HourFormatTime("Enter Start Hour for the event (From 1 to 12) : ");
-
-            string startHourAbbreviation = GetChoiceOfAbbreviation();
-
-            PrintHandler.PrintNewLine();
-
-            eventCollaborator.ProposedEndHour = ValidatedInputProvider.GetValidated12HourFormatTime("Enter End Hour for the event (From 1 to 12) : ");
-
-            string endHourAbbreviation = GetChoiceOfAbbreviation();
-
-            eventCollaborator.ProposedStartHour += startHourAbbreviation.Equals("PM") && eventCollaborator.ProposedStartHour != 12 ? 12 : 0;
-
-            eventCollaborator.ProposedEndHour += endHourAbbreviation.Equals("PM") && eventCollaborator.ProposedEndHour != 12 ? 12 : 0;
-
-            PrintHandler.PrintNewLine();
-
-            if (!ValidationService.IsValidStartAndEndHour((int)eventCollaborator.ProposedStartHour, (int)eventCollaborator.ProposedEndHour))
-            {
-                PrintHandler.PrintWarningMessage("Invalid input ! Start hour must less than the end hour.");
-                GetHourIn12HourFormat(eventCollaborator);
-            }
-        }
-
-        private static string GetChoiceOfAbbreviation()
-        {
-            Console.WriteLine("Enter choice for AM or PM \n1. AM \n2. PM");
-            int choice = ValidatedInputProvider.GetValidatedIntegerBetweenRange("Enter choice : ", 1, 2);
-
-            return choice == 1 ? "AM" : "PM";
-        }
     }
 }

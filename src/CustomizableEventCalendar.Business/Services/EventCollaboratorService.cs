@@ -9,7 +9,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public List<EventCollaborator> GetAllEventCollaborators()
         {
-            List<EventCollaborator> eventCollaborators = _eventCollaboratorsRepository.GetAll(data => new EventCollaborator(data));
+            List<EventCollaborator> eventCollaborators = [.._eventCollaboratorsRepository.GetAll(data => new EventCollaborator(data))
+                                                         .OrderBy(eventCollaborator => eventCollaborator.EventDate)
+                                                         .ThenBy(eventCollaborator => eventCollaborator.ProposedStartHour)];
             return eventCollaborators;
         }
 

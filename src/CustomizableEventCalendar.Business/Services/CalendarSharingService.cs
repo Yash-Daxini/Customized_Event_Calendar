@@ -17,7 +17,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return [.._sharedCalendarRepository.GetAll(data => new SharedCalendar(data))
                                                                         .Where(sharedEvent =>
                                                                          sharedEvent.ReceiverUserId ==
-                                                                         GlobalData.GetUser().Id)];
+                                                                         GlobalData.GetUser().Id)
+                                                                        .OrderBy(sharedCalendar => sharedCalendar.ToDate)];
         }
 
         public SharedCalendar? GetSharedCalendarById(int sharedCalendarId)
@@ -66,6 +67,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                                                                       sharedEvent.UserId != GlobalData.GetUser().Id &&
                                                                       IsDateBetweenRange(fromDate,toDate,sharedEvent.EventDate) &&
                                                                       IsSharedEvent(sharedEventIds, sharedEvent.EventId))
+                                                                     .OrderBy(sharedEvent => sharedEvent.EventDate)
                                                                     ];
 
             return sharedEvents;

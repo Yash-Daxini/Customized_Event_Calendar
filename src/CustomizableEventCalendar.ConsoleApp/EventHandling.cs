@@ -1,5 +1,4 @@
 ﻿using System.Data;
-using System.Text;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums;
@@ -12,8 +11,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         private readonly static ShareCalendar _shareCalendar = new();
 
-        private readonly static OverlappingEventService _overlappingEventService = new();
-
         private static readonly Dictionary<EventOperation, Action> operationDictionary = new()
         {
             { EventOperation.Add, GetInputToAddEvent },
@@ -23,9 +20,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             { EventOperation.View, CalendarView.ChooseView },
             { EventOperation.ShareCalendar, _shareCalendar.GetDetailsToShareCalendar },
             { EventOperation.ViewSharedCalendar, _shareCalendar.ShowSharedCalendars },
-            { EventOperation.EventWithMultipleInvitees, () => GetInputForProposedEvent(null) },
+            { EventOperation.EventWithMultipleInvitees, () => ProposedEventHandler.GetInputForProposedEvent(null) },
             { EventOperation.GiveResponseToProposedEvent, ProposedEventResponseHandler.ShowProposedEvents},
-            { EventOperation.EventsTimeline , PrintEventWithTimeline}
+            { EventOperation.EventsTimeline , EventTimeLinePrinter.PrintEventWithTimeLine}
         };
 
         public static void PrintColorMessage(string message, ConsoleColor color)
@@ -84,234 +81,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             }
         }
 
-        private static void GetInputForProposedEvent(Event? eventObj)
-        {
-            if (GetInsensitiveUserInformationList().Count == 0)
-            {
-                PrintHandler.PrintWarningMessage("No invitees are available !");
-                return;
-            }
-
-            eventObj ??= new();
-
-            GetEventDetailsFromUser(eventObj);
-
-            GetStartingAndEndingHourOfEvent(eventObj);
-
-            DateTime proposedDate = ValidatedInputProvider.GetValidatedDateTime("Enter date for the proposed event (Enter " +
-                                                                              "date in dd-MM-yyyy) :- ");
-
-            eventObj.EventStartDate = DateOnly.FromDateTime(proposedDate);
-
-            eventObj.EventEndDate = DateOnly.FromDateTime(proposedDate);
-
-            eventObj.UserId = GlobalData.GetUser().Id;
-
-            string invitees = GetInviteesFromUser();
-
-            eventObj.IsProposed = true;
-
-            if (eventObj.Id > 0)
-                UpdateEvent(eventObj.Id, eventObj);
-            else
-                AddEvent(eventObj);
-
-            MultipleInviteesEventService.AddInviteesInProposedEvent(eventObj, invitees);
-        }
-
-        private static string GetInviteesFromUser()
-        {
-            bool isUsersAvailable = ShowAllUser();
-
-            if (!isUsersAvailable) return "";
-
-            string inviteesSerialNumber = ValidatedInputProvider.GetValidatedCommaSeparatedInputInRange("Enter users you want to Invite. (Enter users Sr No. comma separated Ex:- 1,2,3) : ", 1, GetInsensitiveUserInformationList().Count);
-
-            return GetInviteesUserIdFromSerialNumber(inviteesSerialNumber);
-        }
-
-        private static string GetInviteesUserIdFromSerialNumber(string inviteesSerialNumber)
-        {
-            List<User> users = GetInsensitiveUserInformationList();
-
-            StringBuilder invitees = new();
-
-            foreach (int inviteeSerialNumber in inviteesSerialNumber.Split(",").Select(number => Convert.ToInt32(number.Trim())))
-            {
-                invitees.Append(users[inviteeSerialNumber - 1].Id + ",");
-            }
-
-            return invitees.ToString()[..(invitees.Length - 1)];
-        }
-
-        private static void HandleOverlappedEvent(Event eventForVerify, OverlappingEventData overlappedEventInformation, bool isInsert)
-        {
-            string overlapEventMessage = GetOverlapMessageFromEvents(eventForVerify, overlappedEventInformation.EventInformation, overlappedEventInformation.MatchedDate);
-
-            PrintHandler.PrintWarningMessage(overlapEventMessage);
-
-            if (!AskForRescheduleOverlappedEvent(eventForVerify)) return;
-
-            if (isInsert)
-                AddEvent(eventForVerify);
-            else
-                UpdateEvent(eventForVerify.Id, eventForVerify);
-        }
-
-        private static bool AskForRescheduleOverlappedEvent(Event eventObj)
-        {
-            Console.WriteLine("\nAre you want to reschedule event ? \n1. Yes \n2. No");
-
-            int choice = ValidatedInputProvider.GetValidatedIntegerBetweenRange("\nEnter choice : ", 1, 2);
-
-            switch (choice)
-            {
-                case 1:
-                    GetStartingAndEndingHourOfEvent(eventObj);
-
-                    if (eventObj.IsProposed)
-                        RecurrenceHandling.GetRecurrenceForSingleEvent(eventObj);
-                    else
-                        RecurrenceHandling.AskForRecurrenceChoice(eventObj);
-                    return true;
-                case 2:
-                    return false;
-            }
-            return false;
-        }
-
-        private static string GetOverlapMessageFromEvents(Event eventForVerify, Event eventToCheckOverlap, DateOnly matchedDate)
-        {
-            return $"\"{eventForVerify.Title}\" overlaps with \"{eventToCheckOverlap.Title}\" at {matchedDate} on following duration\n" +
-                   $"1. {DateTimeManager.ConvertTo12HourFormat(eventForVerify.EventStartHour)} " +
-                   $"- {DateTimeManager.ConvertTo12HourFormat(eventForVerify.EventEndHour)} \n" +
-                   $"overlaps with " +
-                   $"\n2. {DateTimeManager.ConvertTo12HourFormat(eventToCheckOverlap.EventStartHour)} " +
-                   $"- {DateTimeManager.ConvertTo12HourFormat(eventToCheckOverlap.EventEndHour)} \n" +
-                   $"\nPlease choose another date time !";
-        }
-
-        private static bool ShowAllUser()
-        {
-            List<User> users = GetInsensitiveUserInformationList();
-
-            StringBuilder userInformation = new();
-
-            if (users.Count != 0)
-            {
-                List<List<string>> userTableContent = users.InsertInto2DList(["Sr. No", "Name", "Email"],
-                                                      [
-                                                          user => users.IndexOf(user)+1,
-                                                          user => user.Name,
-                                                          user => user.Email,
-                                                      ]);
-
-                userInformation.AppendLine(PrintService.GenerateTable(userTableContent));
-
-                Console.WriteLine(userInformation);
-            }
-            else
-            {
-                Console.WriteLine("No Users are available!");
-            }
-            return users.Count > 0;
-
-        }
-
-        private static List<User> GetInsensitiveUserInformationList()
-        {
-            UserService userService = new();
-            List<User> users = userService.GetInsensitiveInformationOfUser();
-
-            return users;
-        }
-
-        private static DateOnly GetDate(string inputMessage)
-        {
-            return ValidatedInputProvider.GetValidatedDateOnly(inputMessage);
-        }
-
-        private static void GetDatesToPrintEventWithTimeline(out DateOnly startDate, out DateOnly endDate)
-        {
-            startDate = GetDate("Please enter start date from you want to see events : ");
-            endDate = GetDate("Please enter end date from you want to see events : ");
-
-            if (!ValidationService.IsValidStartAndEndDate(startDate, endDate))
-            {
-                PrintHandler.PrintWarningMessage("Invalid input ! Start date must less than or equal to the end date ");
-                GetDatesToPrintEventWithTimeline(out startDate, out endDate);
-            }
-        }
-
-        private static void PrintEventWithTimeline()
-        {
-
-            GetDatesToPrintEventWithTimeline(out DateOnly startDate, out DateOnly endDate);
-
-            EventCollaboratorService eventCollaboratorService = new();
-            List<EventCollaborator> eventCollaborators = [..eventCollaboratorService.GetAllEventCollaborators()
-                                                                                 .FindAll(eventCollaborator => eventCollaborator.UserId
-                                                                                  == GlobalData.GetUser().Id && eventCollaborator.ConfirmationStatus != null && !eventCollaborator.ConfirmationStatus.Equals("reject"))
-                                                                                 .OrderBy(eventCollaborator => eventCollaborator.EventDate)
-                                                                                 .ThenBy(eventCollaborator => eventCollaborator.ProposedStartHour)];
-
-            List<Event> events = _eventService.GetAllEvents();
-
-            List<List<string>> tableContentOfEventTimeLine = [["Date", "Day", "Event Name", "Start Time", "End Time"]];
-
-            Dictionary<DateOnly, List<EventCollaborator>> dateWiseEventCollaborators = GetDateWiseEventCollaborators(startDate, endDate, eventCollaborators);
-
-            foreach (var date in dateWiseEventCollaborators.Keys)
-            {
-                foreach (var eventCollaborator in dateWiseEventCollaborators[date])
-                {
-                    Event? eventObj = events.Find(eventObj => eventObj.Id == eventCollaborator.EventId);
-
-                    if (eventObj == null) continue;
-
-                    tableContentOfEventTimeLine.Add([date.ToString(), DateTimeManager.GetDayFromDateOnly(date),
-                                                     eventObj.Title,
-                                                     DateTimeManager.ConvertTo12HourFormat(eventObj.EventStartHour),
-                                                     DateTimeManager.ConvertTo12HourFormat(eventObj.EventEndHour)]);
-                }
-                if (dateWiseEventCollaborators[date].Count == 0) tableContentOfEventTimeLine.Add([date.ToString(),
-                                                                                                  DateTimeManager.GetDayFromDateOnly(date),
-                                                                                                  "-", "-", "-"]);
-            }
-
-            Console.WriteLine("\n" + PrintService.GenerateTable(tableContentOfEventTimeLine));
-
-        }
-
-        private static Dictionary<DateOnly, List<EventCollaborator>> GetDateWiseEventCollaborators(DateOnly startDate, DateOnly endDate, List<EventCollaborator> eventCollaborators)
-        {
-            Dictionary<DateOnly, List<EventCollaborator>> dateWiseEventCollaborators = [];
-
-            DateOnly currentDate = startDate;
-
-            while (currentDate <= endDate)
-            {
-                List<EventCollaborator> eventCollaboratorBetweenGivenRange = eventCollaborators.FindAll(eventCollaborator =>
-                                                                             IsDateInRange(startDate, endDate, eventCollaborator.EventDate) &&
-                                                                             currentDate == eventCollaborator.EventDate);
-
-                dateWiseEventCollaborators[currentDate] = new(eventCollaboratorBetweenGivenRange);
-
-                currentDate = currentDate.AddDays(1);
-            }
-
-            return dateWiseEventCollaborators;
-        }
-
-        private static bool IsDateInRange(DateOnly startDate, DateOnly endDate, DateOnly dateToCheck)
-        {
-            return dateToCheck >= startDate && dateToCheck <= endDate;
-        }
-
-        private static void GetEventDetailsFromUser(Event eventObj)
+        public static void GetEventDetailsFromUser(Event eventObj)
         {
             Console.WriteLine("\nFill Details Related to Event : ");
-
+                
             eventObj.Title = ValidatedInputProvider.GetValidatedString("Enter title : ");
 
             PrintHandler.PrintNewLine();
@@ -325,92 +98,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             eventObj.IsProposed = false;
         }
 
-        private static void GetStartingAndEndingHourOfEvent(Event eventObj)
-        {
-            Console.WriteLine("\nHow would you like to enter the time? : ");
-            Console.WriteLine("\n1.Choose 24-hour format (1 to 24 hours) \n2.Choose 12-hour format (1 to 12 hours and AM/PM)");
-
-            int choice = ValidatedInputProvider.GetValidatedInteger("Enter choice : ");
-
-            switch (choice)
-            {
-                case 1:
-                    PrintHandler.PrintInfoMessage("You've selected the 24-hour format.");
-                    GetHourIn24HourFormat(eventObj);
-                    break;
-                case 2:
-                    PrintHandler.PrintInfoMessage("You've selected the 12-hour format.");
-                    GetHourIn12HourFormat(eventObj);
-                    break;
-                default:
-                    GetStartingAndEndingHourOfEvent(eventObj);
-                    break;
-            }
-
-        }
-
-        private static void GetHourIn24HourFormat(Event eventObj)
-        {
-            PrintHandler.PrintNewLine();
-
-            eventObj.EventStartHour = ValidatedInputProvider.GetValidated24HourFormatTime("Enter Start Hour for the event : ");
-
-            PrintHandler.PrintNewLine();
-
-            eventObj.EventEndHour = ValidatedInputProvider.GetValidated24HourFormatTime("Enter End Hour for the event : ");
-
-            PrintHandler.PrintNewLine();
-
-            if (!ValidationService.IsValidStartAndEndHour(eventObj.EventStartHour, eventObj.EventEndHour))
-            {
-                PrintHandler.PrintWarningMessage("Invalid input ! Start hour must less than the end hour.");
-                GetHourIn24HourFormat(eventObj);
-            }
-        }
-
-        private static void GetHourIn12HourFormat(Event eventObj)
-        {
-            PrintHandler.PrintNewLine();
-
-            eventObj.EventStartHour = ValidatedInputProvider.GetValidated12HourFormatTime("Enter Start Hour for the event (From 1 to 12) : ");
-
-            string startHourAbbreviation = GetChoiceOfAbbreviation();
-
-            PrintHandler.PrintNewLine();
-
-            eventObj.EventEndHour = ValidatedInputProvider.GetValidated12HourFormatTime("Enter End Hour for the event (From 1 to 12) : ");
-
-            string endHourAbbreviation = GetChoiceOfAbbreviation();
-
-            eventObj.EventStartHour += startHourAbbreviation.Equals("PM") && eventObj.EventStartHour != 12 ? 12 : 0;
-
-            eventObj.EventEndHour += endHourAbbreviation.Equals("PM") && eventObj.EventEndHour != 12 ? 12 : 0;
-
-            PrintHandler.PrintNewLine();
-
-            if (!ValidationService.IsValidStartAndEndHour(eventObj.EventStartHour, eventObj.EventEndHour))
-            {
-                PrintHandler.PrintWarningMessage("Invalid input ! Start hour must less than the end hour.");
-                GetHourIn12HourFormat(eventObj);
-            }
-        }
-
-        private static string GetChoiceOfAbbreviation()
-        {
-            Console.WriteLine("Enter choice for AM or PM \n1. AM \n2. PM");
-            int choice = ValidatedInputProvider.GetValidatedIntegerBetweenRange("Enter choice : ", 1, 2);
-
-            return choice == 1 ? "AM" : "PM";
-        }
-
-
         private static void GetInputToAddEvent()
         {
             Event eventObj = new();
 
             GetEventDetailsFromUser(eventObj);
 
-            GetStartingAndEndingHourOfEvent(eventObj);
+            TimeHandler.GetStartingAndEndingHourOfEvent(eventObj);
 
             eventObj.UserId = GlobalData.GetUser().Id;
 
@@ -419,11 +113,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             AddEvent(eventObj);
         }
 
-        private static void AddEvent(Event eventObj)
+        public static void AddEvent(Event eventObj)
         {
             try
             {
-                if (IsOverlappingEvent(eventObj, true)) return;
+                if (OverlapHandler.IsOverlappingEvent(eventObj, true)) return;
 
                 eventObj.Id = _eventService.InsertEvent(eventObj);
 
@@ -434,18 +128,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             {
                 PrintHandler.PrintErrorMessage("Oops Some error occurred !");
             }
-        }
-
-        private static bool IsOverlappingEvent(Event eventObj, bool isInsert)
-        {
-            OverlappingEventData? overlappedEventInformation = _overlappingEventService.GetOverlappedEventInformation(eventObj, isInsert);
-
-            if (overlappedEventInformation != null)
-            {
-                HandleOverlappedEvent(eventObj, overlappedEventInformation, isInsert);
-                return true;
-            }
-            return false;
         }
 
         private static void DisplayEvents()
@@ -462,9 +144,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         private static string GetEventTable()
         {
-            List<Event> events = [.._eventService.GetAllEventsOfLoggedInUser()
-                                              .OrderBy(eventObj => eventObj.EventStartDate)
-                                              .ThenBy(eventObj => eventObj.EventStartHour)];
+            List<Event> events = _eventService.GetAllEventsOfLoggedInUser();
 
             List<List<string>> outputRows = events.InsertInto2DList(["Event NO.", "Title", "Description", "Location", "Event Repetition", "Start Date", "End Date", "Duration"],
                 [
@@ -523,7 +203,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             if (eventObj.IsProposed)
             {
-                GetInputForProposedEvent(eventObj);
+                ProposedEventHandler.GetInputForProposedEvent(eventObj);
                 return;
             }
 
@@ -534,11 +214,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             UpdateEvent(eventObj.Id, eventObj);
         }
 
-        private static void UpdateEvent(int id, Event eventObj)
+        public static void UpdateEvent(int id, Event eventObj)
         {
             try
             {
-                if (IsOverlappingEvent(eventObj, false)) return;
+                if (OverlapHandler.IsOverlappingEvent(eventObj, false)) return;
 
                 _eventService.UpdateEvent(eventObj, id);
 
@@ -565,7 +245,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                     GetEventDetailsFromUser(eventObj);
                     break;
                 case 2:
-                    GetStartingAndEndingHourOfEvent(eventObj);
+                    TimeHandler.GetStartingAndEndingHourOfEvent(eventObj);
                     RecurrenceHandling.AskForRecurrenceChoice(eventObj);
                     break;
             }

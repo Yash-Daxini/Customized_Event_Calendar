@@ -32,7 +32,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public List<Event> GetAllEventsOfLoggedInUser()
         {
-            return [.. GetAllEvents().Where(eventObj => eventObj.UserId == GlobalData.GetUser().Id)];
+            return [.. GetAllEvents().Where(eventObj => eventObj.UserId == GlobalData.GetUser().Id)
+                                     .OrderBy(eventObj => eventObj.EventStartDate)
+                                     .ThenBy(eventObj => eventObj.EventStartHour)];
         }
 
         public Event? GetEventById(int eventId)
