@@ -27,24 +27,31 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             }
         }
 
-        private static Dictionary<DateOnly, List<EventCollaborator>> GetDateWiseEventCollaborators(DateOnly startDate, DateOnly endDate, List<EventCollaborator> eventCollaborators)
+        private static List<EventByDate> GetDateWiseEventCollaborators(DateOnly startDate, DateOnly endDate, List<EventCollaborator> eventCollaborators)
         {
-            Dictionary<DateOnly, List<EventCollaborator>> dateWiseEventCollaborators = [];
+            List<EventCollaborator> eventCollaboratorsInGivenDateRange = GetEventCollaboratorsInGivenDateRange(startDate, endDate, eventCollaborators);
 
-            DateOnly currentDate = startDate;
+            List<EventByDate> eventsByDate = [];
 
-            while (currentDate <= endDate)
+            List<Event> events = _eventService.GetAllEvents();
+
+            foreach (var eventCollaborator in eventCollaboratorsInGivenDateRange)
             {
-                List<EventCollaborator> eventCollaboratorBetweenGivenRange = eventCollaborators.FindAll(eventCollaborator =>
-                                                                             IsDateInRange(startDate, endDate, eventCollaborator.EventDate) &&
-                                                                             currentDate == eventCollaborator.EventDate);
+                Event? eventObj = events.Find(eventObj => eventObj.Id == eventCollaborator.EventId);
 
-                dateWiseEventCollaborators[currentDate] = new(eventCollaboratorBetweenGivenRange);
+                if (eventObj is null) continue;
 
-                currentDate = currentDate.AddDays(1);
+                eventsByDate.Add(new EventByDate(eventCollaborator.EventDate, eventObj));
             }
 
-            return dateWiseEventCollaborators;
+            return eventsByDate;
+        }
+
+        private static List<EventCollaborator> GetEventCollaboratorsInGivenDateRange(DateOnly startDate, DateOnly endDate, List<EventCollaborator> eventCollaborators)
+        {
+            return [..eventCollaborators.FindAll(eventCollaborator => IsDateInRange(startDate, endDate, eventCollaborator.EventDate))
+                                        .OrderBy(eventCollaborator=>eventCollaborator.EventDate)
+                                        .ThenBy(eventCollaborator => eventCollaborator.ProposedStartHour)];
         }
 
         private static bool IsDateInRange(DateOnly startDate, DateOnly endDate, DateOnly dateToCheck)
@@ -54,43 +61,35 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         public static void PrintEventWithTimeLine()
         {
-
             GetDatesToPrintEventWithTimeline(out DateOnly startDate, out DateOnly endDate);
 
+            List<EventCollaborator> eventCollaborators = GetEventCollaborators();
+
+            List<EventByDate> eventsByDate = GetDateWiseEventCollaborators(startDate, endDate, eventCollaborators);
+
+            List<List<string>> tableContentOfEventTimeLine = eventsByDate.InsertInto2DList(["Date", "Day", "Event Name", "Start Time", "End Time"], 
+                [
+                    eventByDate => eventByDate.Date,
+                    eventByDate => eventByDate.Event.Title,
+                    eventByDate => DateTimeManager.ConvertTo12HourFormat(eventByDate.Event.EventStartHour),
+                    eventByDate => DateTimeManager.ConvertTo12HourFormat(eventByDate.Event.EventEndHour),
+                ]);
+
+            Console.WriteLine("\n" + PrintService.GenerateTable(tableContentOfEventTimeLine));
+
+        }
+
+        private static List<EventCollaborator> GetEventCollaborators()
+        {
             EventCollaboratorService eventCollaboratorService = new();
+
             List<EventCollaborator> eventCollaborators = [..eventCollaboratorService.GetAllEventCollaborators()
                                                                                  .FindAll(eventCollaborator =>
                                                                                             eventCollaborator.UserId == GlobalData.GetUser().Id
                                                                                             && eventCollaborator.ConfirmationStatus != null
                                                                                             && !eventCollaborator.ConfirmationStatus.Equals("reject")
                                                                                          )];
-
-            List<Event> events = _eventService.GetAllEvents();
-
-            List<List<string>> tableContentOfEventTimeLine = [["Date", "Day", "Event Name", "Start Time", "End Time"]];
-
-            Dictionary<DateOnly, List<EventCollaborator>> dateWiseEventCollaborators = GetDateWiseEventCollaborators(startDate, endDate, eventCollaborators);
-
-            foreach (var date in dateWiseEventCollaborators.Keys)
-            {
-                foreach (var eventCollaborator in dateWiseEventCollaborators[date])
-                {
-                    Event? eventObj = events.Find(eventObj => eventObj.Id == eventCollaborator.EventId);
-
-                    if (eventObj == null) continue;
-
-                    tableContentOfEventTimeLine.Add([date.ToString(), DateTimeManager.GetDayFromDateOnly(date),
-                                                     eventObj.Title,
-                                                     DateTimeManager.ConvertTo12HourFormat(eventObj.EventStartHour),
-                                                     DateTimeManager.ConvertTo12HourFormat(eventObj.EventEndHour)]);
-                }
-                if (dateWiseEventCollaborators[date].Count == 0) tableContentOfEventTimeLine.Add([date.ToString(),
-                                                                                                  DateTimeManager.GetDayFromDateOnly(date),
-                                                                                                  "-", "-", "-"]);
-            }
-
-            Console.WriteLine("\n" + PrintService.GenerateTable(tableContentOfEventTimeLine));
-
+            return eventCollaborators;
         }
     }
 }

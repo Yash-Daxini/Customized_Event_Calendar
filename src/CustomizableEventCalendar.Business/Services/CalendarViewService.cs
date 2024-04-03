@@ -8,25 +8,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         private readonly EventService _eventService = new();
         private readonly EventCollaboratorService _eventCollaboratorsService = new();
 
-        public Dictionary<int, Event> GetHourAndEventsForDailyView()
+        public List<EventByDate> GetEventsFroDailyView()
         {
-            return MapEachHourWithEvent();
-        }
+            List<EventCollaborator> todaysEvents = GetEventsOfToday();
 
-        private Dictionary<int, Event> MapEachHourWithEvent()
-        {
-            List<EventCollaborator> eventCollaborators = GetEventsOfToday();
-
-            Dictionary<int, Event> hourEventMapping = [];
-
-            foreach (var eventCollaborator in eventCollaborators)
-            {
-                Event eventObj = _eventService.GetEventById(eventCollaborator.EventId);
-
-                AssignEventToSpecificHour(ref hourEventMapping, eventObj);
-            }
-
-            return hourEventMapping;
+            return GetListOfEventByDate(todaysEvents);
         }
 
         private bool IsProposedEvent(int eventId)
@@ -48,35 +34,24 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                     && !(eventCollaborator.ConfirmationStatus != null && eventCollaborator.ConfirmationStatus.Equals("reject")
                         && eventCollaborator.ProposedStartHour == null
                         && eventCollaborator.ProposedEndHour == null
-                       );
+                        );
         }
 
-        private static void AssignEventToSpecificHour(ref Dictionary<int, Event> eventRecordByHour, Event eventObj)
-        {
-            int startHour = eventObj.EventStartHour;
-            int endHour = eventObj.EventEndHour;
-
-            for (int i = startHour; i < endHour; i++)
-            {
-                eventRecordByHour[i] = eventObj;
-            }
-        }
-
-        public Dictionary<DateOnly, List<Event>> GetDateAndEventsForWeeklyView()
+        public List<EventByDate> GetDateAndEventsForWeeklyView()
         {
             DateOnly startDateOfWeek = DateTimeManager.GetStartDateOfWeek(DateOnly.FromDateTime(DateTime.Today));
             DateOnly endDateOfWeek = DateTimeManager.GetEndDateOfWeek(DateOnly.FromDateTime(DateTime.Today));
 
-            Dictionary<DateOnly, List<Event>> currentWeekEvents = GetGivenWeekEventsWithDate(startDateOfWeek, endDateOfWeek);
+            List<EventByDate> currentWeekEvents = GetGivenWeekEventsWithDate(startDateOfWeek, endDateOfWeek);
 
             return currentWeekEvents;
         }
 
-        private Dictionary<DateOnly, List<Event>> GetGivenWeekEventsWithDate(DateOnly startDateOfWeek, DateOnly endDateOfWeek)
+        private List<EventByDate> GetGivenWeekEventsWithDate(DateOnly startDateOfWeek, DateOnly endDateOfWeek)
         {
             List<EventCollaborator> eventCollaborators = _eventCollaboratorsService.GetAllEventCollaborators();
 
-            Dictionary<DateOnly, List<Event>> currentWeekEvents = GenerateDictionaryOfDateOnlyAndEventFromList(GetGivenWeekEvents(eventCollaborators, startDateOfWeek, endDateOfWeek));
+            List<EventByDate> currentWeekEvents = GetListOfEventByDate(GetGivenWeekEvents(eventCollaborators, startDateOfWeek, endDateOfWeek));
 
             return currentWeekEvents;
         }
@@ -94,26 +69,32 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                    && !IsProposedEvent(eventCollaborator.EventId);
         }
 
-        public Dictionary<DateOnly, List<Event>> GetGivenMonthEventsWithDate(DateOnly startDateOfMonth, DateOnly endDateOfMonth)
+        public List<EventByDate> GetGivenMonthEventsWithDate(DateOnly startDateOfMonth, DateOnly endDateOfMonth)
         {
             List<EventCollaborator> eventCollaborators = _eventCollaboratorsService.GetAllEventCollaborators();
 
-            Dictionary<DateOnly, List<Event>> currentMonthEvents = GenerateDictionaryOfDateOnlyAndEventFromList(GetGivenMonthEvents(eventCollaborators, startDateOfMonth, endDateOfMonth));
+            List<EventByDate> currentMonthEvents = GetListOfEventByDate(GetGivenMonthEvents(eventCollaborators, startDateOfMonth, endDateOfMonth));
 
             return currentMonthEvents;
         }
 
-        private Dictionary<DateOnly, List<Event>> GenerateDictionaryOfDateOnlyAndEventFromList(List<EventCollaborator> eventCollaborators)
+        private List<EventByDate> GetListOfEventByDate(List<EventCollaborator> eventCollaborators)
         {
-            return eventCollaborators.GroupBy(eventCollaborator => eventCollaborator.EventDate)
-                                     .Select(eventCollaborator => new
-                                     {
-                                         ScheduleDate = eventCollaborator.Key,
-                                         eventObj = eventCollaborator.Select(eventCollaborator => _eventService.GetEventById(eventCollaborator.EventId))
-                                                                     .OrderBy(eventObj => eventObj.EventStartHour)
-                                                                     .ToList()
-                                     })
-                                     .ToDictionary(key => key.ScheduleDate, val => val.eventObj);
+
+            List<EventByDate> eventsByDateList = [];
+
+            List<Event> events = _eventService.GetAllEvents();
+
+            foreach (var eventCollaborator in eventCollaborators)
+            {
+                Event? eventObj = events.Find(eventObj => eventObj.Id == eventCollaborator.EventId);
+
+                if (eventObj is null) continue;
+
+                eventsByDateList.Add(new EventByDate(eventCollaborator.EventDate, eventObj));
+            }
+
+            return [.. eventsByDateList.OrderBy(eventByDate => eventByDate.Date).ThenBy(eventByDate => eventByDate.Event.EventStartHour)];
         }
 
         private List<EventCollaborator> GetGivenMonthEvents(List<EventCollaborator> eventCollaborators, DateOnly startDateOfMonth, DateOnly endDateOfMonth)

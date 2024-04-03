@@ -32,7 +32,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         public static void PrintDailyView()
         {
-            Dictionary<int, Event> hourEventMapping = _calendarViewService.GetHourAndEventsForDailyView();
+            List<EventByDate> currentDayEvents = _calendarViewService.GetEventsFroDailyView();
+
+            if(currentDayEvents.Count == 0)
+            {
+                PrintHandler.PrintWarningMessage("No events available !");
+                return;
+            }
 
             StringBuilder dailyView = new();
 
@@ -40,7 +46,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             dailyView.AppendLine("\nSchedule of " + DateTimeManager.GetDateFromDateTime(DateTime.Today) + "\n");
 
-            List<List<string>> dailyViewTableContent = InsertTodayEventsWithDateIn2DList(hourEventMapping);
+            List<List<string>> dailyViewTableContent = currentDayEvents.InsertInto2DList(["Time Block", "Event Title"],
+                [
+                    eventByDate => DateTimeManager.ConvertTo12HourFormat(eventByDate.Event.EventStartHour) + " - " +                                                 DateTimeManager.ConvertTo12HourFormat(eventByDate.Event.EventEndHour),
+                    eventByDate => eventByDate.Event.Title,
+                ]);
 
             dailyView.AppendLine(PrintService.GenerateTable(dailyViewTableContent));
 
@@ -52,7 +62,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             DateOnly startDateOfWeek = DateTimeManager.GetStartDateOfWeek(DateOnly.FromDateTime(DateTime.Today));
             DateOnly endDateOfWeek = DateTimeManager.GetEndDateOfWeek(DateOnly.FromDateTime(DateTime.Today));
 
-            Dictionary<DateOnly, List<Event>> currentWeekEvents = _calendarViewService.GetDateAndEventsForWeeklyView();
+            List<EventByDate> currentWeekEvents = _calendarViewService.GetDateAndEventsForWeeklyView();
+
+            if (currentWeekEvents.Count == 0)
+            {
+                PrintHandler.PrintWarningMessage("No events available !");
+                return;
+            }
 
             StringBuilder weeklyView = new();
 
@@ -60,12 +76,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             weeklyView.AppendLine("\nSchedule from " + startDateOfWeek + " to " + endDateOfWeek + "\n");
 
-            List<List<string>> weeklyViewTableContent = Generate2DListForEvents(startDateOfWeek, endDateOfWeek, currentWeekEvents);
-
-            weeklyView.AppendLine(PrintService.GenerateTable(weeklyViewTableContent));
+            weeklyView.AppendLine(PrintService.GenerateTable(Get2DListForWeeklyAndMonthlyView(currentWeekEvents)));
 
             Console.WriteLine(weeklyView);
         }
+
 
         public static void PrintMonthlyView()
         {
@@ -74,74 +89,34 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             DateOnly startDateOfMonth = DateTimeManager.GetStartDateOfMonth(DateTime.Now);
             DateOnly endDateOfMonth = DateTimeManager.GetEndDateOfMonth(DateTime.Now);
 
-            Dictionary<DateOnly, List<Event>> currentMonthEvents = _calendarViewService.GetGivenMonthEventsWithDate(startDateOfMonth, endDateOfMonth);
+            List<EventByDate> currentMonthEvents = _calendarViewService.GetGivenMonthEventsWithDate(startDateOfMonth, endDateOfMonth);
+
+            if (currentMonthEvents.Count == 0)
+            {
+                PrintHandler.PrintWarningMessage("No events available !");
+                return;
+            }
 
             monthlyView.AppendLine(PrintService.GetHorizontalLine());
 
             monthlyView.AppendLine("\nSchedule from " + startDateOfMonth + " to " + endDateOfMonth + "\n");
 
-            List<List<string>> monthlyViewTableContent = Generate2DListForEvents(startDateOfMonth, endDateOfMonth, currentMonthEvents);
-
-            monthlyView.Append(PrintService.GenerateTable(monthlyViewTableContent));
+            monthlyView.Append(PrintService.GenerateTable(Get2DListForWeeklyAndMonthlyView(currentMonthEvents)));
 
             Console.WriteLine(monthlyView);
         }
 
-        private static List<List<string>> InsertTodayEventsWithDateIn2DList(Dictionary<int, Event> hourEventMapping)
+        private static List<List<string>> Get2DListForWeeklyAndMonthlyView(List<EventByDate> currentWeekEvents)
         {
-            List<List<string>> dailyViewTableContent = [["Hour", "Event Title"]];
-
-            DateTime today = DateTime.Today;
-
-            while (today.Date <= DateTime.Today.Date)
-            {
-                int curHour = today.Hour;
-
-                hourEventMapping.TryGetValue(curHour, out Event? eventObj);
-
-                dailyViewTableContent.Add([DateTimeManager.GetDateWithAbbreviationFromDateTime(today) + " - " + DateTimeManager.GetDateWithAbbreviationFromDateTime(today.AddHours(1)), eventObj == null ? "-" : eventObj.Title]);
-
-                today = today.AddHours(1);
-            }
-
-            return dailyViewTableContent;
+            return currentWeekEvents.InsertInto2DList(["Date", "Day", "Event Title", "Start Time", "End Time"],
+                [
+                    eventByDate => eventByDate.Date,
+                    eventByDate => DateTimeManager.GetDayFromDateTime(eventByDate.Date),
+                    eventByDate => eventByDate.Event.Title,
+                    eventByDate => DateTimeManager.ConvertTo12HourFormat(eventByDate.Event.EventStartHour),
+                    eventByDate => DateTimeManager.ConvertTo12HourFormat(eventByDate.Event.EventEndHour)
+                ]);
         }
 
-        private static List<List<string>> Generate2DListForEvents(DateOnly startDate, DateOnly endDate, Dictionary<DateOnly, List<Event>> dateEventDictionary)
-        {
-            List<List<string>> tableContent = [["Date", "Day", "Event Title", "Start Time", "End Time"]];
-
-            DateOnly currentDate = startDate;
-
-            while (currentDate <= endDate)
-            {
-                InsertGivenEventsWithDateIn2DList(currentDate, dateEventDictionary, tableContent);
-
-                currentDate = currentDate.AddDays(1);
-            }
-
-            return tableContent;
-        }
-
-        private static void InsertGivenEventsWithDateIn2DList(DateOnly currentDate, Dictionary<DateOnly, List<Event>> dateEventDictionary, List<List<string>> tableContent)
-        {
-            if (dateEventDictionary.TryGetValue(currentDate, out List<Event>? events))
-            {
-                foreach (var eventObj in events)
-                {
-                    tableContent.Add([currentDate.ToString(),
-                                                DateTimeManager.GetDayFromDateTime(currentDate),
-                                                eventObj.Title,
-                                                DateTimeManager.ConvertTo12HourFormat(eventObj.EventStartHour),
-                                                DateTimeManager.ConvertTo12HourFormat(eventObj.EventEndHour)]);
-                }
-            }
-            else
-            {
-                tableContent.Add([currentDate.ToString(),
-                                            DateTimeManager.GetDayFromDateTime(currentDate),
-                                            "-","-","-"]);
-            }
-        }
     }
 }

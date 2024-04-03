@@ -6,16 +6,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {
     internal class NotificationHandler
     {
-        private readonly EventService _eventService = new();
 
         private readonly NotificationService _notificationService = new();
-
-        private readonly List<Event> events;
-
-        public NotificationHandler()
-        {
-            events = _eventService.GetAllEvents();
-        }
 
         public void PrintNotifications()
         {
@@ -37,9 +29,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         private string NotificationForUpcommingEvents()
         {
-            List<EventCollaborator> upcommingEvents = [.._notificationService.GetUpcomingEvents()
-                                                                          .OrderBy(eventCollaborator=>eventCollaborator.EventDate)
-                                                                          .ThenBy(eventCollaborator =>eventCollaborator.ProposedStartHour)];
+            List<EventByDate> upcommingEvents = _notificationService.GetUpcomingEvents();
 
             StringBuilder upcommingEventsNotificationTable = new();
 
@@ -47,11 +37,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             upcommingEventsNotificationTable.AppendLine(PrintService.GenerateTableForNotification(upcommingEvents.InsertInto2DList(["Event", "Description", "Date", "Start Time", "End Time"],
                                                      [
-                                                          eventCollaborator => GetEventTitle(eventCollaborator) ,
-                                                          eventCollaborator => GetEventDescription(eventCollaborator),
-                                                          eventCollaborator => eventCollaborator.EventDate,
-                                                          eventCollaborator => GetEventStartHour(eventCollaborator),
-                                                          eventCollaborator => GetEventEndHour(eventCollaborator),
+                                                          eventByDate => eventByDate.Event.Title,
+                                                          eventByDate => eventByDate.Event.Description,
+                                                          eventByDate => eventByDate.Date,
+                                                          eventByDate => DateTimeManager.ConvertTo12HourFormat(eventByDate.Event.EventStartHour),
+                                                          eventByDate => DateTimeManager.ConvertTo12HourFormat(eventByDate.Event.EventEndHour)
                                                      ])));
 
             if (upcommingEvents.Count == 0) return "";
@@ -59,37 +49,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return upcommingEventsNotificationTable.ToString();
         }
 
-        private int GetEventOrganizer(EventCollaborator eventCollaborator) => GetEventFromId(eventCollaborator.EventId).UserId;
-
-        private string GetEventTitle(EventCollaborator eventCollaborator) => GetEventFromId(eventCollaborator.EventId)?.Title ?? "-";
-
-        private string GetEventDescription(EventCollaborator eventCollaborator) => GetEventFromId(eventCollaborator.EventId)?.Description ?? "-";
-
-        private string GetEventStartHour(EventCollaborator eventCollaborator)
-        {
-            Event? eventObj = GetEventFromId(eventCollaborator.EventId);
-
-            if (eventObj == null) return "-";
-            return DateTimeManager.ConvertTo12HourFormat(eventObj.EventStartHour).ToString();
-        }
-
-        private string GetEventEndHour(EventCollaborator eventCollaborator)
-        {
-            Event? eventObj = GetEventFromId(eventCollaborator.EventId);
-
-            if (eventObj == null) return "-";
-            return DateTimeManager.ConvertTo12HourFormat(eventObj.EventEndHour).ToString();
-        }
-
-        private Event? GetEventFromId(int eventId)
-        {
-            return events.Find(eventObj => eventObj.Id == eventId);
-        }
-
         private string NotificationsForProposedEvents()
         {
 
-            List<EventCollaborator> proposedEventCollaborators = _notificationService.GetProposedEvents();
+            List<EventByDate> proposedEventCollaborators = _notificationService.GetProposedEvents();
 
             if (proposedEventCollaborators.Count == 0) return "";
 
@@ -99,18 +62,18 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             proposedEventsNotificationTable.AppendLine(PrintService.GenerateTableForNotification(proposedEventCollaborators.InsertInto2DList(["Event Proposed by", "Date", "Start Time", "End Time", "Event", "Description"],
                                                      [
-                                                          eventCollaborator => GetUserName(GetEventOrganizer(eventCollaborator)),
-                                                          eventCollaborator => eventCollaborator.EventDate,
-                                                          eventCollaborator => GetEventStartHour(eventCollaborator),
-                                                          eventCollaborator => GetEventEndHour(eventCollaborator),
-                                                          eventCollaborator => GetEventTitle(eventCollaborator) ,
-                                                          eventCollaborator => GetEventDescription(eventCollaborator),
+                                                          eventByDate => GetUserName(eventByDate.Event.UserId),
+                                                          eventByDate => eventByDate.Date,
+                                                          eventByDate => DateTimeManager.ConvertTo12HourFormat(eventByDate.Event.EventStartHour),
+                                                          eventByDate => DateTimeManager.ConvertTo12HourFormat(eventByDate.Event.EventEndHour),
+                                                          eventByDate => eventByDate.Event.Title,
+                                                          eventByDate => eventByDate.Event.Description,
                                                      ])));
 
             return proposedEventsNotificationTable.ToString();
         }
 
-        private string GetUserName(int userId)
+        private static string GetUserName(int userId)
         {
             UserService userService = new();
 

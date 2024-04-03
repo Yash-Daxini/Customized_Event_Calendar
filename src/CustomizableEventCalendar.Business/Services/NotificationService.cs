@@ -18,7 +18,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         private static bool IsEventOrganizer(EventCollaborator eventCollaborator)
         {
-            return eventCollaborator.ParticipantRole != null && eventCollaborator.ParticipantRole.Equals("organizer");
+            return eventCollaborator.ParticipantRole is not null && eventCollaborator.ParticipantRole.Equals("organizer");
         }
         private List<EventCollaborator> GetConsiderableEventCollaborators()
         {
@@ -26,43 +26,72 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                                                  .Where(eventCollaborator => eventCollaborator.UserId == GlobalData.GetUser().Id &&
                                                  (IsEventOrganizer(eventCollaborator)
                                                  || (!IsEventOrganizer(eventCollaborator)
-                                                      && eventCollaborator.ConfirmationStatus != null
+                                                      && eventCollaborator.ConfirmationStatus is not null
                                                       && !(eventCollaborator.ConfirmationStatus.Equals("reject")
-                                                            && eventCollaborator.ProposedStartHour == null
-                                                            && eventCollaborator.ProposedEndHour == null
+                                                            && eventCollaborator.ProposedStartHour is null
+                                                            && eventCollaborator.ProposedEndHour is null
                                                           )
                                                     )
                                                     && !_eventService.GetProposedEvents().Exists(eventObj=>eventObj.Id == eventCollaborator.EventId)
                                                  ))];
         }
 
-        public List<EventCollaborator> GetUpcomingEvents()
+        public List<EventByDate> GetUpcomingEvents()
         {
-            List<EventCollaborator> scheduleEvents = [.. GetConsiderableEventCollaborators().OrderBy(eventCollaborator => eventCollaborator.EventDate)];
+            List<EventCollaborator> scheduleEvents = [.. GetConsiderableEventCollaborators()
+                                                         .Where(eventCollaborator => eventCollaborator.EventDate == DateOnly.FromDateTime(DateTime.Now))
+                                                         .OrderBy(eventCollaborator => eventCollaborator.EventDate)
+                                                         .ThenBy(eventCollaborator =>eventCollaborator.ProposedStartHour)];
 
-            List<EventCollaborator> upcommingEvents = [..scheduleEvents.Where(eventCollaborators =>
-                                                                            eventCollaborators.EventDate==DateOnly.FromDateTime(DateTime.Now))];
+            List<EventByDate> upcommingEvents = [];
+
+            foreach (var scheduleEvent in scheduleEvents)
+            {
+                Event? eventObj = events.Find(eventObj => eventObj.Id == scheduleEvent.EventId);
+
+                if (eventObj is null) continue;
+
+                upcommingEvents.Add(new EventByDate(scheduleEvent.EventDate, eventObj));
+            }
 
             return upcommingEvents;
         }
 
-
-
-        public List<EventCollaborator> GetProposedEvents()
+        public List<EventByDate> GetProposedEvents()
         {
-            HashSet<int> proposedEventIds = events.Where(eventObj => eventObj.IsProposed
-                                                         && eventObj.EventStartDate >= DateOnly.FromDateTime(DateTime.Now))
-                                                  .Select(eventObj => eventObj.Id)
-                                                  .ToHashSet();
+            HashSet<int> proposedEventIds = GetProposedEventIds();
 
-            List<EventCollaborator> proposedEventCollabprators = [.. _eventCollaboratorsService.GetAllEventCollaborators().OrderBy(eventCollaborator => eventCollaborator.EventDate)];
+            List<EventCollaborator> proposedEventCollaborators = GetProposedEventCollaborators(proposedEventIds);
 
-            proposedEventCollabprators = [..proposedEventCollabprators.Where(eventCollaborator => proposedEventIds
-                                                                      .Contains(eventCollaborator.EventId) && eventCollaborator.UserId == GlobalData.GetUser().Id)];
+            List<EventByDate> proposedEventsWithDate = [];
 
-            return proposedEventCollabprators;
+            foreach (var proposedEventCollaborator in proposedEventCollaborators)
+            {
+                Event? eventObj = events.Find(eventObj => eventObj.Id == proposedEventCollaborator.EventId);
+
+                if (eventObj is null) continue;
+
+                proposedEventsWithDate.Add(new EventByDate(proposedEventCollaborator.EventDate, eventObj));
+            }
+
+            return proposedEventsWithDate;
         }
 
+        private List<EventCollaborator> GetProposedEventCollaborators(HashSet<int> proposedEventIds)
+        {
+            List<EventCollaborator> proposedEventCollaborators = [.. _eventCollaboratorsService.GetAllEventCollaborators()
+                                                                 .Where(eventCollaborator => proposedEventIds.Contains(eventCollaborator.EventId)
+                                                                        && eventCollaborator.UserId == GlobalData.GetUser().Id)
+                                                                 .OrderBy(eventCollaborator => eventCollaborator.EventDate)
+                                                                 .ThenBy(eventCollaborator =>eventCollaborator.ProposedStartHour)];
+            return proposedEventCollaborators;
+        }
 
+        private HashSet<int> GetProposedEventIds()
+        {
+            return events.Where(eventObj => eventObj.IsProposed && eventObj.EventStartDate >= DateOnly.FromDateTime(DateTime.Now))
+                         .Select(eventObj => eventObj.Id)
+                         .ToHashSet();
+        }
     }
 }

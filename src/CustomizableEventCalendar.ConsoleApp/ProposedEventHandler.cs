@@ -7,7 +7,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {
     internal static class ProposedEventHandler
     {
-
         public static void GetInputForProposedEvent(Event? eventObj)
         {
             if (GetInsensitiveUserInformationList().Count == 0)
