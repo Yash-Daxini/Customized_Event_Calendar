@@ -8,21 +8,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         private readonly static OverlappingEventService _overlappingEventService = new();
 
-        private static bool AskForRescheduleOverlappedEvent(Event eventObj)
+        private static bool AskForRescheduleOverlappedEvent()
         {
             Console.WriteLine("\nAre you want to reschedule event ? \n1. Yes \n2. No");
 
             int choice = ValidatedInputProvider.GetValidatedIntegerBetweenRange("\nEnter choice : ", 1, 2);
 
-            switch (choice)
-            {
-                case 1:
-                    RescheduleOverlappedEvent(eventObj);
-                    return true;
-                case 2:
-                    return false;
-            }
-            return false;
+            return choice == 1;
         }
 
         private static string GetOverlapMessageFromEvents(Event eventForVerify, Event eventToCheckOverlap, DateOnly matchedDate)
@@ -42,7 +34,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             PrintHandler.PrintWarningMessage(overlapEventMessage);
 
-            if (!AskForRescheduleOverlappedEvent(eventForVerify)) return;
+            if (!AskForRescheduleOverlappedEvent()) return;
+
+            GetInputToRescheduleOverlappedEvent(eventForVerify);
 
             if (isInsert)
                 EventHandling.AddEvent(eventForVerify);
@@ -62,7 +56,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return false;
         }
 
-        private static void RescheduleOverlappedEvent(Event eventObj)
+        private static void GetInputToRescheduleOverlappedEvent(Event eventObj)
         {
             TimeHandler.GetStartingAndEndingHourOfEvent(eventObj);
 

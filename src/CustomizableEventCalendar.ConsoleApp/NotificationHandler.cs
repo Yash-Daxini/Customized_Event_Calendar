@@ -35,18 +35,23 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             upcommingEventsNotificationTable.AppendLine($"Your today's events :- \n{PrintService.GetHorizontalLine()}\n");
 
-            upcommingEventsNotificationTable.AppendLine(PrintService.GenerateTableForNotification(upcommingEvents.InsertInto2DList(["Event", "Description", "Date", "Start Time", "End Time"],
-                                                     [
+            upcommingEventsNotificationTable.AppendLine(PrintService.GenerateTableForNotification(GetUpCommingEventInformation(upcommingEvents)));
+
+            if (upcommingEvents.Count == 0) return "";
+
+            return upcommingEventsNotificationTable.ToString();
+        }
+
+        private static List<List<string>> GetUpCommingEventInformation(List<EventByDate> upcommingEvents)
+        {
+            return upcommingEvents.InsertInto2DList(["Event", "Description", "Date", "Start Time", "End Time"],
+                                                    [
                                                           eventByDate => eventByDate.Event.Title,
                                                           eventByDate => eventByDate.Event.Description,
                                                           eventByDate => eventByDate.Date,
                                                           eventByDate => DateTimeManager.ConvertTo12HourFormat(eventByDate.Event.EventStartHour),
                                                           eventByDate => DateTimeManager.ConvertTo12HourFormat(eventByDate.Event.EventEndHour)
-                                                     ])));
-
-            if (upcommingEvents.Count == 0) return "";
-
-            return upcommingEventsNotificationTable.ToString();
+                                                    ]);
         }
 
         private string NotificationsForProposedEvents()
@@ -60,17 +65,22 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             proposedEventsNotificationTable.AppendLine($"Proposed Events : \n {PrintService.GetHorizontalLine()} \n");
 
-            proposedEventsNotificationTable.AppendLine(PrintService.GenerateTableForNotification(proposedEventCollaborators.InsertInto2DList(["Event Proposed by", "Date", "Start Time", "End Time", "Event", "Description"],
-                                                     [
-                                                          eventByDate => GetUserName(eventByDate.Event.UserId),
-                                                          eventByDate => eventByDate.Date,
-                                                          eventByDate => DateTimeManager.ConvertTo12HourFormat(eventByDate.Event.EventStartHour),
-                                                          eventByDate => DateTimeManager.ConvertTo12HourFormat(eventByDate.Event.EventEndHour),
-                                                          eventByDate => eventByDate.Event.Title,
-                                                          eventByDate => eventByDate.Event.Description,
-                                                     ])));
+            proposedEventsNotificationTable.AppendLine(PrintService.GenerateTableForNotification(GetProposedEventInformation(proposedEventCollaborators)));
 
             return proposedEventsNotificationTable.ToString();
+        }
+
+        private static List<List<string>> GetProposedEventInformation(List<EventByDate> proposedEventCollaborators)
+        {
+            return proposedEventCollaborators.InsertInto2DList(["Event Proposed by", "Date", "Start Time", "End Time", "Event", "Description"],
+                                                               [
+                                                                 eventByDate => GetUserName(eventByDate.Event.UserId),
+                                                                 eventByDate => eventByDate.Date,
+                                                                 eventByDate => DateTimeManager.ConvertTo12HourFormat(eventByDate.Event.EventStartHour),
+                                                                 eventByDate => DateTimeManager.ConvertTo12HourFormat(eventByDate.Event.EventEndHour),
+                                                                 eventByDate => eventByDate.Event.Title,
+                                                                 eventByDate => eventByDate.Event.Description,
+                                                                ]);
         }
 
         private static string GetUserName(int userId)

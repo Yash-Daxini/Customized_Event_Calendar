@@ -60,17 +60,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         private static List<EventCollaborator> GetAllSharedEventsBetweenGivenDate(DateOnly fromDate, DateOnly toDate, HashSet<int> sharedEventIds)
         {
-            EventCollaboratorRepository eventCollaboratorsRepository = new();
-
-            List<EventCollaborator> sharedEvents = [.. eventCollaboratorsRepository.GetAll(data => new EventCollaborator(data))
-                                                                    .Where(sharedEvent =>
-                                                                      sharedEvent.UserId != GlobalData.GetUser().Id &&
-                                                                      IsDateBetweenRange(fromDate,toDate,sharedEvent.EventDate) &&
-                                                                      IsSharedEvent(sharedEventIds, sharedEvent.EventId))
-                                                                     .OrderBy(sharedEvent => sharedEvent.EventDate)
-                                                                    ];
-
-            return sharedEvents;
+            return [.. new EventCollaboratorRepository().GetAll(data => new EventCollaborator(data))
+                                                        .Where(sharedEvent => sharedEvent.UserId != GlobalData.GetUser().Id
+                                                               &&IsDateBetweenRange(fromDate,toDate,sharedEvent.EventDate)
+                                                               &&IsSharedEvent(sharedEventIds, sharedEvent.EventId))
+                                                        .OrderBy(sharedEvent => sharedEvent.EventDate)];
         }
 
         private static bool IsDateBetweenRange(DateOnly startDate, DateOnly endDate, DateOnly checkingDate)

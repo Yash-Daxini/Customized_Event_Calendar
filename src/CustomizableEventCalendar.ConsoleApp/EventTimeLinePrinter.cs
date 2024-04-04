@@ -70,6 +70,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             List<List<string>> tableContentOfEventTimeLine = eventsByDate.InsertInto2DList(["Date", "Day", "Event Name", "Start Time", "End Time"], 
                 [
                     eventByDate => eventByDate.Date,
+                    eventByDate => DateTimeManager.GetDayFromDateOnly(eventByDate.Date),
                     eventByDate => eventByDate.Event.Title,
                     eventByDate => DateTimeManager.ConvertTo12HourFormat(eventByDate.Event.EventStartHour),
                     eventByDate => DateTimeManager.ConvertTo12HourFormat(eventByDate.Event.EventEndHour),

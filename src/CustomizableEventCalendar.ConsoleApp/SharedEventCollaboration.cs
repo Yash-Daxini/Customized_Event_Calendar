@@ -8,11 +8,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         private static readonly SharedEventCollaborationService _sharedEventCollaborationService = new();
 
-        public static void GetInputToEventCollaboration(int sharedEventsCount, List<EventCollaborator> sharedEvents)
+        public static void GetInputToEventCollaboration(List<EventCollaborator> sharedEvents)
         {
             try
             {
-                int serialNumberOfSharedEvent = ValidatedInputProvider.GetValidatedIntegerBetweenRange("Enter Sr.No of the event which you want to collaborate :- ", 1, sharedEventsCount);
+                int serialNumberOfSharedEvent = ValidatedInputProvider.GetValidatedIntegerBetweenRange("Enter Sr.No of the event which you want to collaborate :- ", 1, sharedEvents.Count);
 
                 EventCollaborator selectedEvent = sharedEvents[serialNumberOfSharedEvent - 1];
 
@@ -26,15 +26,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         private static void CollaborateOnSharedEvent(EventCollaborator selectedEvent)
         {
-            if (selectedEvent == null) return;
+            if (selectedEvent is null) return;
 
             int eventId = selectedEvent.EventId;
 
-            EventService eventService = new EventService();
+            Event? eventObj = new EventService().GetEventById(eventId);
 
-            Event? eventObj = eventService.GetEventById(eventId);
-
-            if (eventObj == null) return;
+            if (eventObj is null) return;
 
             EventCollaborator newEventCollaborator = new(eventId, GlobalData.GetUser().Id, "participant", null, eventObj.EventStartHour, eventObj.EventEndHour, selectedEvent.EventDate);
 
@@ -47,24 +45,32 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         public static bool IsEligibleToCollaborate(EventCollaborator eventCollaborator)
         {
+            return !(IsAlreadyCollaborated(eventCollaborator) || IsCollaborationOverlap(eventCollaborator));
+
+        }
+
+        private static bool IsAlreadyCollaborated(EventCollaborator eventCollaborator)
+        {
             if (_sharedEventCollaborationService.IsEventAlreadyCollaborated(eventCollaborator))
             {
                 PrintHandler.PrintWarningMessage("You already collaborated on this event");
-                return false;
+                return true;
             }
 
-            EventCollaborator overlappedCollaboration = _sharedEventCollaborationService.GetCollaborationOverlap(eventCollaborator);
+            return false;
+        }
 
-            if (overlappedCollaboration != null)
-            {
-                EventService eventService = new();
-                Event eventObj = eventService.GetEventById(overlappedCollaboration.EventId);
+        private static bool IsCollaborationOverlap(EventCollaborator eventCollaborator)
+        {
+            EventCollaborator? overlappedCollaboration = _sharedEventCollaborationService.GetCollaborationOverlap(eventCollaborator);
 
-                PrintHandler.PrintWarningMessage($"Can't collaborate ! \nThe collaboration causes overlap with \"{eventObj.Title}\""
-                     + $" on {overlappedCollaboration.EventDate} at {overlappedCollaboration.ProposedStartHour} to {overlappedCollaboration.ProposedEndHour}, indicating that both events are scheduled concurrently.");
+            if (overlappedCollaboration is null) return false;
 
-                return false;
-            }
+            Event? eventObj = new EventService().GetEventById(overlappedCollaboration.EventId);
+
+            if (eventObj is null) return true;
+
+            PrintHandler.PrintWarningMessage($"Can't collaborate ! \nThe collaboration causes overlap with \"{eventObj.Title}\" on {overlappedCollaboration.EventDate} at {overlappedCollaboration.ProposedStartHour} to {overlappedCollaboration.ProposedEndHour}, indicating that both events are scheduled concurrently.");
 
             return true;
         }

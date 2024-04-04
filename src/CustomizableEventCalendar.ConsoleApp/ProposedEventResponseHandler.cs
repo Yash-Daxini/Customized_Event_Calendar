@@ -7,6 +7,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
     {
         private readonly static ProposedEventService _proposedEventService = new();
 
+        private readonly static EventCollaboratorService _eventCollaboratorService = new();
+
         public static void ShowProposedEvents()
         {
             try
@@ -15,36 +17,58 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
                 string tableOfProposedEvents = GenerateProposedEventTable();
 
-                if (proposedEvents.Count == 0)
-                {
-                    Console.WriteLine("No events available !");
-                }
-                else
-                {
-                    Console.WriteLine(tableOfProposedEvents);
+                if (IsMessagePrintedOnUnavailabilityOfProposedEvents(proposedEvents)) return;
 
-                    int serialNumber = SelectEventForResponse(proposedEvents.Count);
+                Console.WriteLine(tableOfProposedEvents);
 
-                    Event eventObj = proposedEvents[serialNumber - 1];
-
-                    EventCollaboratorService eventCollaboratorService = new();
-
-                    EventCollaborator eventCollaborator = eventCollaboratorService.GetEventCollaboratorFromEventIdAndUserId(eventObj.Id);
-
-                    if (eventCollaborator != null)
-                    {
-                        GetInputToGiveResponse(eventCollaborator, eventObj);
-
-                        eventCollaboratorService.UpdateEventCollaborators(eventCollaborator, eventCollaborator.Id);
-
-                    }
-                    PrintHandler.PrintSuccessMessage("Your response successfully shared with organizer of event.");
-                }
+                HandleResponse(proposedEvents);
             }
             catch
             {
                 PrintHandler.PrintErrorMessage("Some error occurred ! Can't share your response.");
             }
+        }
+
+        private static void HandleResponse(List<Event> proposedEvents)
+        {
+            int serialNumber = GetEventSerialNumberToGiveResponse(proposedEvents.Count);
+
+            Event eventObj = GetEventFromSerialNumber(proposedEvents, serialNumber);
+
+            GetCollaboratorsInformation(eventObj, out EventCollaborator? eventCollaborator);
+
+            if (eventCollaborator is null) return;
+
+            GetAndSaveResponse(eventObj, eventCollaborator);
+
+            PrintHandler.PrintSuccessMessage("Your response successfully shared with organizer of event.");
+        }
+
+        private static void GetAndSaveResponse(Event eventObj, EventCollaborator eventCollaborator)
+        {
+            GetInputToGiveResponse(eventCollaborator, eventObj);
+
+            _eventCollaboratorService.UpdateEventCollaborators(eventCollaborator, eventCollaborator.Id);
+        }
+
+        private static void GetCollaboratorsInformation(Event eventObj, out EventCollaborator? eventCollaborator)
+        {
+            eventCollaborator = _eventCollaboratorService.GetEventCollaboratorFromEventIdAndUserId(eventObj.Id);
+        }
+
+        private static Event GetEventFromSerialNumber(List<Event> proposedEvents, int serialNumber)
+        {
+            return proposedEvents[serialNumber - 1];
+        }
+
+        private static bool IsMessagePrintedOnUnavailabilityOfProposedEvents(List<Event> proposedEvents)
+        {
+            if (proposedEvents.Count == 0)
+            {
+                Console.WriteLine("No events available !");
+                return true;
+            }
+            return false;
         }
 
         private static string GenerateProposedEventTable()
@@ -72,7 +96,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return "";
         }
 
-        private static int SelectEventForResponse(int endRange)
+        private static int GetEventSerialNumberToGiveResponse(int endRange)
         {
             Console.WriteLine("\nChoose an event to respond (Please enter Sr no. )");
 
@@ -92,21 +116,24 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             {
                 case 1:
                     eventCollaborator.ConfirmationStatus = "accept";
-                    eventCollaborator.ProposedStartHour = eventObj.EventStartHour;
-                    eventCollaborator.ProposedEndHour = eventObj.EventEndHour;
+                    SetProposedHours(eventCollaborator, eventObj.EventStartHour, eventObj.EventEndHour);
                     break;
                 case 2:
                     eventCollaborator.ConfirmationStatus = "reject";
-                    eventCollaborator.ProposedStartHour = null;
-                    eventCollaborator.ProposedEndHour = null;
+                    SetProposedHours(eventCollaborator, null, null);
                     break;
                 case 3:
                     eventCollaborator.ConfirmationStatus = "maybe";
-                    eventCollaborator.ProposedStartHour = eventObj.EventStartHour;
-                    eventCollaborator.ProposedEndHour = eventObj.EventEndHour;
+                    SetProposedHours(eventCollaborator, eventObj.EventStartHour, eventObj.EventEndHour);
                     GetInputToGetProposedTime(eventCollaborator);
                     break;
             }
+        }
+
+        private static void SetProposedHours(EventCollaborator eventCollaborator, int? startHour, int? endHour)
+        {
+            eventCollaborator.ProposedStartHour = startHour;
+            eventCollaborator.ProposedEndHour = endHour;
         }
 
         private static void GetInputToGetProposedTime(EventCollaborator eventCollaborator)

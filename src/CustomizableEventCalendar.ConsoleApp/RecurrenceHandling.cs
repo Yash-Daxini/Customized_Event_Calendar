@@ -232,28 +232,28 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             Console.WriteLine("\n1. Monday \n2. Tuesday \n3. Wednesday \n4. Thursday \n5. Friday \n6. Saturday \n7. " +
                               "Sunday");
 
-            Domain.Enums.WeekDay choice = (Domain.Enums.WeekDay)ValidatedInputProvider.GetValidatedIntegerBetweenRange("\nEnter choice :", 1, 7);
+            WeekDay choice = (WeekDay)ValidatedInputProvider.GetValidatedIntegerBetweenRange("\nEnter choice :", 1, 7);
             switch (choice)
             {
-                case Domain.Enums.WeekDay.Monday:
+                case WeekDay.Monday:
                     eventObj.ByWeekDay = "1";
                     break;
-                case Domain.Enums.WeekDay.Tuesday:
+                case WeekDay.Tuesday:
                     eventObj.ByWeekDay = "2";
                     break;
-                case Domain.Enums.WeekDay.Wednesday:
+                case WeekDay.Wednesday:
                     eventObj.ByWeekDay = "3";
                     break;
-                case Domain.Enums.WeekDay.Thursday:
+                case WeekDay.Thursday:
                     eventObj.ByWeekDay = "4";
                     break;
-                case Domain.Enums.WeekDay.Friday:
+                case WeekDay.Friday:
                     eventObj.ByWeekDay = "5";
                     break;
-                case Domain.Enums.WeekDay.Saturday:
+                case WeekDay.Saturday:
                     eventObj.ByWeekDay = "6";
                     break;
-                case Domain.Enums.WeekDay.Sunday:
+                case WeekDay.Sunday:
                     eventObj.ByWeekDay = "7";
                     break;
                 default:

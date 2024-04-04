@@ -34,11 +34,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             List<EventByDate> currentDayEvents = _calendarViewService.GetEventsFroDailyView();
 
-            if(currentDayEvents.Count == 0)
-            {
-                PrintHandler.PrintWarningMessage("No events available !");
-                return;
-            }
+            if (IsMessagePrintedOnEventUnavailability(currentDayEvents)) return;
 
             StringBuilder dailyView = new();
 
@@ -48,13 +44,24 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             List<List<string>> dailyViewTableContent = currentDayEvents.InsertInto2DList(["Time Block", "Event Title"],
                 [
-                    eventByDate => DateTimeManager.ConvertTo12HourFormat(eventByDate.Event.EventStartHour) + " - " +                                                 DateTimeManager.ConvertTo12HourFormat(eventByDate.Event.EventEndHour),
+                    eventByDate => DateTimeManager.ConvertTo12HourFormat(eventByDate.Event.EventStartHour) + " - " +                                 DateTimeManager.ConvertTo12HourFormat(eventByDate.Event.EventEndHour),
                     eventByDate => eventByDate.Event.Title,
                 ]);
 
             dailyView.AppendLine(PrintService.GenerateTable(dailyViewTableContent));
 
             Console.WriteLine(dailyView);
+        }
+
+        private static bool IsMessagePrintedOnEventUnavailability(List<EventByDate> currentDayEvents)
+        {
+            if (currentDayEvents.Count == 0)
+            {
+                PrintHandler.PrintWarningMessage("No events available !");
+                return true;
+            }
+
+            return false;
         }
 
         public static void PrintWeeklyView()
@@ -64,11 +71,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             List<EventByDate> currentWeekEvents = _calendarViewService.GetDateAndEventsForWeeklyView();
 
-            if (currentWeekEvents.Count == 0)
-            {
-                PrintHandler.PrintWarningMessage("No events available !");
-                return;
-            }
+            if (IsMessagePrintedOnEventUnavailability(currentWeekEvents)) return;
 
             StringBuilder weeklyView = new();
 
@@ -91,11 +94,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             List<EventByDate> currentMonthEvents = _calendarViewService.GetGivenMonthEventsWithDate(startDateOfMonth, endDateOfMonth);
 
-            if (currentMonthEvents.Count == 0)
-            {
-                PrintHandler.PrintWarningMessage("No events available !");
-                return;
-            }
+            if (IsMessagePrintedOnEventUnavailability(currentMonthEvents)) return;
 
             monthlyView.AppendLine(PrintService.GetHorizontalLine());
 

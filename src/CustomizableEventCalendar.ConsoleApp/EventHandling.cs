@@ -84,7 +84,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         public static void GetEventDetailsFromUser(Event eventObj)
         {
             Console.WriteLine("\nFill Details Related to Event : ");
-                
+
             eventObj.Title = ValidatedInputProvider.GetValidatedString("Enter title : ");
 
             PrintHandler.PrintNewLine();
@@ -232,8 +232,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         private static void AskForItemsToUpdate(Event eventObj)
         {
-            string inputMessage = "\nWhat items you want to update ? \n1. Event Details (Event Title , Event Description , Event Location)" +
-                                  "\n2. Event repetition details (Event dates, Event Duration, Event frequency etc ...)";
+            string inputMessage = "\nWhat items you want to update ? \n1. Event Details (Event Title , Event Description , Event Location) \n2. Event repetition details (Event dates, Event Duration, Event frequency etc ...)";
 
             Console.WriteLine(inputMessage);
 

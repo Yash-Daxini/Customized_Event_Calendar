@@ -9,11 +9,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
     {
         public static void GetInputForProposedEvent(Event? eventObj)
         {
-            if (GetInsensitiveUserInformationList().Count == 0)
-            {
-                PrintHandler.PrintWarningMessage("No invitees are available !");
-                return;
-            }
+            if (IsMessagePrintedOnUnavailabilityOfInvitee()) return;
 
             eventObj ??= new();
 
@@ -22,28 +18,40 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             TimeHandler.GetStartingAndEndingHourOfEvent(eventObj);
 
             eventObj.EventStartDate = ValidatedInputProvider.GetValidatedDateOnly("Enter date for the proposed event (Enter date in dd-MM-yyyy) :- ");
-
             eventObj.EventEndDate = eventObj.EventStartDate;
-
-            eventObj.UserId = GlobalData.GetUser().Id;
 
             string invitees = GetInviteesFromUser();
 
+            eventObj.UserId = GlobalData.GetUser().Id;
+
             eventObj.IsProposed = true;
 
-            if (eventObj.Id > 0)
-                EventHandling.UpdateEvent(eventObj.Id, eventObj);
-            else
-                EventHandling.AddEvent(eventObj);
+            UpsertProposedEvent(eventObj);
 
             MultipleInviteesEventService.AddInviteesInProposedEvent(eventObj, invitees);
         }
 
+        private static void UpsertProposedEvent(Event eventObj)
+        {
+            if (eventObj.Id > 0)
+                EventHandling.UpdateEvent(eventObj.Id, eventObj);
+            else
+                EventHandling.AddEvent(eventObj);
+        }
+
+        private static bool IsMessagePrintedOnUnavailabilityOfInvitee()
+        {
+            if (GetInsensitiveUserInformationList().Count == 0)
+            {
+                PrintHandler.PrintWarningMessage("No invitees are available !");
+                return true;
+            }
+            return false;
+        }
+
         private static string GetInviteesFromUser()
         {
-            bool isUsersAvailable = ShowAllUser();
-
-            if (!isUsersAvailable) return "";
+            ShowAllUser();
 
             string inviteesSerialNumber = ValidatedInputProvider.GetValidatedCommaSeparatedInputInRange("Enter users you want to Invite. (Enter users Sr No. comma separated Ex:- 1,2,3) : ", 1, GetInsensitiveUserInformationList().Count);
 
@@ -64,31 +72,22 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return invitees.ToString()[..(invitees.Length - 1)];
         }
 
-        private static bool ShowAllUser()
+        private static void ShowAllUser()
         {
             List<User> users = GetInsensitiveUserInformationList();
 
             StringBuilder userInformation = new();
 
-            if (users.Count != 0)
-            {
-                List<List<string>> userTableContent = users.InsertInto2DList(["Sr. No", "Name", "Email"],
-                                                      [
-                                                          user => users.IndexOf(user)+1,
-                                                          user => user.Name,
-                                                          user => user.Email,
-                                                      ]);
+            List<List<string>> userTableContent = users.InsertInto2DList(["Sr. No", "Name", "Email"],
+                                                  [
+                                                      user => users.IndexOf(user)+1,
+                                                      user => user.Name,
+                                                      user => user.Email,
+                                                  ]);
 
-                userInformation.AppendLine(PrintService.GenerateTable(userTableContent));
+            userInformation.AppendLine(PrintService.GenerateTable(userTableContent));
 
-                Console.WriteLine(userInformation);
-            }
-            else
-            {
-                Console.WriteLine("No Users are available!");
-            }
-            return users.Count > 0;
-
+            Console.WriteLine(userInformation);
         }
 
         private static List<User> GetInsensitiveUserInformationList()
