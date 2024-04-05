@@ -8,7 +8,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         private static readonly SharedEventCollaborationService _sharedEventCollaborationService = new();
 
-        public static void GetInputToEventCollaboration(List<EventCollaborator> sharedEvents)
+        public static void GetInputToCollaborateInEvent(List<EventCollaborator> sharedEvents)
         {
             try
             {
@@ -16,7 +16,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
                 EventCollaborator selectedEvent = sharedEvents[serialNumberOfSharedEvent - 1];
 
-                CollaborateOnSharedEvent(selectedEvent);
+                CollaborateInEvent(selectedEvent);
             }
             catch (Exception)
             {
@@ -24,7 +24,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             }
         }
 
-        private static void CollaborateOnSharedEvent(EventCollaborator selectedEvent)
+        private static void CollaborateInEvent(EventCollaborator selectedEvent)
         {
             if (selectedEvent is null) return;
 

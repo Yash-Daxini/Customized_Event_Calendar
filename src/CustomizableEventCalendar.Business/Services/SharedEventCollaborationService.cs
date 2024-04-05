@@ -36,11 +36,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         private static bool IsHourOvelapps(EventCollaborator eventCollaborator, EventCollaborator newEventCollaborator)
         {
-            return (eventCollaborator.ProposedStartHour >= newEventCollaborator.ProposedStartHour && eventCollaborator.ProposedStartHour <      newEventCollaborator.ProposedEndHour)
-                || (eventCollaborator.ProposedEndHour > newEventCollaborator.ProposedStartHour && eventCollaborator.ProposedEndHour <= newEventCollaborator.ProposedEndHour)
-                || (newEventCollaborator.ProposedStartHour >= eventCollaborator.ProposedStartHour && newEventCollaborator.ProposedStartHour < eventCollaborator.ProposedEndHour)
-                || (newEventCollaborator.ProposedEndHour > eventCollaborator.ProposedStartHour && newEventCollaborator.ProposedEndHour <= eventCollaborator.ProposedEndHour);
-
+            return (eventCollaborator.ProposedStartHour >= newEventCollaborator.ProposedStartHour 
+                    && eventCollaborator.ProposedStartHour < newEventCollaborator.ProposedEndHour)
+                || (eventCollaborator.ProposedEndHour > newEventCollaborator.ProposedStartHour 
+                    && eventCollaborator.ProposedEndHour <= newEventCollaborator.ProposedEndHour)
+                || (newEventCollaborator.ProposedStartHour >= eventCollaborator.ProposedStartHour 
+                    && newEventCollaborator.ProposedStartHour < eventCollaborator.ProposedEndHour)
+                || (newEventCollaborator.ProposedEndHour > eventCollaborator.ProposedStartHour 
+                    && newEventCollaborator.ProposedEndHour <= eventCollaborator.ProposedEndHour);
         }
     }
 }

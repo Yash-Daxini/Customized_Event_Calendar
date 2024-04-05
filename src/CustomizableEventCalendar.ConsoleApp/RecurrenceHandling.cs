@@ -1,5 +1,4 @@
 ﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp.InputMessageStore;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums;
 
@@ -13,15 +12,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             int choice = ValidatedInputProvider.GetValidatedIntegerBetweenRange("Are you want repeat this event ? \n 1. Yes 2. No :- ", 1, 2);
 
-            RecurrencePatternChoice isRepeative = (RecurrencePatternChoice)choice;
-
-            switch (isRepeative)
+            switch (choice)
             {
-                case RecurrencePatternChoice.Yes:
+                case 1:
                     GetRecurrencePattern(eventObj);
                     PrintHandler.PrintInfoMessage("You decided to repeat event " + RecurrencePatternMessageGenerator.GenerateRecurrenceMessage(eventObj));
                     break;
-                case RecurrencePatternChoice.No:
+                case 2:
                     GetRecurrenceForSingleEvent(eventObj);
                     PrintHandler.PrintInfoMessage("Event will be " + RecurrencePatternMessageGenerator.GenerateRecurrenceMessage(eventObj));
                     break;
@@ -38,11 +35,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             PrintHandler.PrintNewLine();
 
-            eventObj.EventStartDate = DateOnly.FromDateTime(ValidatedInputProvider.GetValidatedDateTime(RecurrencePatternMessages.StartDate));
+            eventObj.EventStartDate = DateOnly.FromDateTime(ValidatedInputProvider.GetValidatedDateTime("Enter Start Date :-  (Please enter date in dd-mm-yyyy) :- "));
 
             PrintHandler.PrintNewLine();
 
-            eventObj.EventEndDate = DateOnly.FromDateTime(ValidatedInputProvider.GetValidatedDateTime(RecurrencePatternMessages.EndDate));
+            eventObj.EventEndDate = DateOnly.FromDateTime(ValidatedInputProvider.GetValidatedDateTime("Enter End Date :-  (Please enter date in dd-mm-yyyy) :- "));
 
             if (!ValidationService.IsValidStartAndEndDate(eventObj.EventStartDate, eventObj.EventEndDate))
             {
@@ -67,7 +64,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             GetDates(eventObj);
 
-            int frequency = ValidatedInputProvider.GetValidatedIntegerBetweenRange(RecurrencePatternMessages.Frequency, 1, 5);
+            int frequency = ValidatedInputProvider.GetValidatedIntegerBetweenRange("How frequent you want to repeat the event: \n1. Daily\t2. Weekly\t3. Monthly\t4. Yearly: ", 1, 5);
 
             RecurrencePatternFrequency choiceForFreq = (RecurrencePatternFrequency)frequency;
 
