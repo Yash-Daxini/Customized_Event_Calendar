@@ -28,10 +28,5 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             multipleInviteesEventService.StartSchedulingProcessOfProposedEvent();
         }
-
-        public void AddUser(User user)
-        {
-            userRepository.Insert(user);
-        }
     }
 }

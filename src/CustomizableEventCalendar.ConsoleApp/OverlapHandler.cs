@@ -12,7 +12,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             Console.WriteLine("\nAre you want to reschedule event ? \n1. Yes \n2. No");
 
-            int choice = ValidatedInputProvider.GetValidatedIntegerBetweenRange("\nEnter choice : ", 1, 2);
+            int choice = ValidatedInputProvider.GetValidIntegerBetweenRange("\nEnter choice : ", 1, 2);
 
             return choice == 1;
         }

@@ -31,7 +31,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
                 string inputMessage = "Enter Sr No. whom you want to share calendar :- ";
 
-                int serialNumberOfTableRow = ValidatedInputProvider.GetValidatedIntegerBetweenRange(inputMessage, 1, GetAvailableUsers().Count);
+                int serialNumberOfTableRow = ValidatedInputProvider.GetValidIntegerBetweenRange(inputMessage, 1, GetAvailableUsers().Count);
 
                 User user = GetUserFromSerialNumber(serialNumberOfTableRow);
 
@@ -69,11 +69,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             PrintHandler.PrintNewLine();
 
-            sharedCalendar.FromDate = ValidatedInputProvider.GetValidatedDateOnly("Enter start date in dd-MM-yyyy format :-  ");
+            sharedCalendar.FromDate = ValidatedInputProvider.GetValidDateOnly("Enter start date in dd-MM-yyyy format :-  ");
 
             PrintHandler.PrintNewLine();
 
-            sharedCalendar.ToDate = ValidatedInputProvider.GetValidatedDateOnly("Enter end date in dd-MM-yyyy format :-  ");
+            sharedCalendar.ToDate = ValidatedInputProvider.GetValidDateOnly("Enter end date in dd-MM-yyyy format :-  ");
 
             if (!ValidationService.IsValidStartAndEndDate(sharedCalendar.FromDate, sharedCalendar.ToDate))
             {
@@ -185,7 +185,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         private static bool IsWantToCollaborate()
         {
             Console.WriteLine("\nAre you want to collaborate on any event ? \n1.Yes \n2.No");
-            int choice = ValidatedInputProvider.GetValidatedIntegerBetweenRange("\nEnter choice : ", 1, 2);
+            int choice = ValidatedInputProvider.GetValidIntegerBetweenRange("\nEnter choice : ", 1, 2);
 
             return choice == 1;
         }
@@ -194,7 +194,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             string inputMessage = "Select Sr No. which calendar you want to see :- ";
 
-            int serialNumberOfSharedCalendar = ValidatedInputProvider.GetValidatedIntegerBetweenRange(inputMessage, 1, sharedCalendarsList.Count);
+            int serialNumberOfSharedCalendar = ValidatedInputProvider.GetValidIntegerBetweenRange(inputMessage, 1, sharedCalendarsList.Count);
 
             return serialNumberOfSharedCalendar;
         }

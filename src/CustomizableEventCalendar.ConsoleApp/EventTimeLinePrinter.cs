@@ -11,7 +11,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         private static DateOnly GetDate(string inputMessage)
         {
-            return ValidatedInputProvider.GetValidatedDateOnly(inputMessage);
+            return ValidatedInputProvider.GetValidDateOnly(inputMessage);
         }
 
         private static void GetDatesToPrintEventWithTimeline(out DateOnly startDate, out DateOnly endDate)

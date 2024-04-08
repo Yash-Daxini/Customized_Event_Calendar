@@ -12,7 +12,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             try
             {
-                int serialNumberOfSharedEvent = ValidatedInputProvider.GetValidatedIntegerBetweenRange("Enter Sr.No of the event which you want to collaborate :- ", 1, sharedEvents.Count);
+                int serialNumberOfSharedEvent = ValidatedInputProvider.GetValidIntegerBetweenRange("Enter Sr.No of the event which you want to collaborate :- ", 1, sharedEvents.Count);
 
                 EventCollaborator selectedEvent = sharedEvents[serialNumberOfSharedEvent - 1];
 

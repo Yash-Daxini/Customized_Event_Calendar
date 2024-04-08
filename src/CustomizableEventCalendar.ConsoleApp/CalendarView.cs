@@ -13,7 +13,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             Console.WriteLine("\nChoose the view you want to see : \n1. Daily View \n2. Weekly View \n3. Monthly View \n0. Back :- ");
 
-            int choice = ValidatedInputProvider.GetValidatedIntegerBetweenRange("Enter choice : ", 0, 3);
+            int choice = ValidatedInputProvider.GetValidIntegerBetweenRange("Enter choice : ", 0, 3);
 
             Dictionary<CalendarViewChoice, Action> operationDictionary = new()
             {{ CalendarViewChoice.Daily, PrintDailyView},

@@ -10,7 +10,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             Console.WriteLine("\nHow would you like to enter the time? : ");
             Console.WriteLine("\n1.Choose 24-hour format (1 to 24 hours) \n2.Choose 12-hour format (1 to 12 hours and AM/PM)");
 
-            int choice = ValidatedInputProvider.GetValidatedInteger("Enter choice : ");
+            int choice = ValidatedInputProvider.GetValidInteger("Enter choice : ");
 
             switch (choice)
             {
@@ -31,7 +31,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         private static string GetChoiceOfAbbreviation()
         {
             Console.WriteLine("Enter choice for AM or PM \n1. AM \n2. PM");
-            int choice = ValidatedInputProvider.GetValidatedIntegerBetweenRange("Enter choice : ", 1, 2);
+            int choice = ValidatedInputProvider.GetValidIntegerBetweenRange("Enter choice : ", 1, 2);
 
             return choice == 1 ? "AM" : "PM";
         }
@@ -80,12 +80,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             PrintHandler.PrintNewLine();
 
-            startHour = ValidatedInputProvider.GetValidated12HourFormatTime("Enter Start Hour for the event (From 1 to 12) : ");
+            startHour = ValidatedInputProvider.GetValid12HourFormatTime("Enter Start Hour for the event (From 1 to 12) : ");
             startHourAbbreviation = GetChoiceOfAbbreviation();
 
             PrintHandler.PrintNewLine();
 
-            endHour = ValidatedInputProvider.GetValidated12HourFormatTime("Enter End Hour for the event (From 1 to 12) : ");
+            endHour = ValidatedInputProvider.GetValid12HourFormatTime("Enter End Hour for the event (From 1 to 12) : ");
             endHourAbbreviation = GetChoiceOfAbbreviation();
         }
 
@@ -106,10 +106,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             PrintHandler.PrintNewLine();
 
-            startHour = ValidatedInputProvider.GetValidated24HourFormatTime("Enter Start Hour for the event : ");
+            startHour = ValidatedInputProvider.GetValid24HourFormatTime("Enter Start Hour for the event : ");
             PrintHandler.PrintNewLine();
 
-            endHour = ValidatedInputProvider.GetValidated24HourFormatTime("Enter End Hour for the event : ");
+            endHour = ValidatedInputProvider.GetValid24HourFormatTime("Enter End Hour for the event : ");
             PrintHandler.PrintNewLine();
         }
     }

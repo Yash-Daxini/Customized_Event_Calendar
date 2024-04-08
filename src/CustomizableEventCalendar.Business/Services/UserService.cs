@@ -23,5 +23,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             User? user = userRepository.GetById(data => new User(data), userId);
             return user;
         }
+
+        public void AddUser(User user)
+        {
+            userRepository.Insert(user);
+        }
     }
 }

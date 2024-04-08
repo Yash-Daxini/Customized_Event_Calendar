@@ -17,7 +17,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             TimeHandler.GetStartingAndEndingHourOfEvent(eventObj);
 
-            eventObj.EventStartDate = ValidatedInputProvider.GetValidatedDateOnly("Enter date for the proposed event (Enter date in dd-MM-yyyy) :- ");
+            eventObj.EventStartDate = ValidatedInputProvider.GetValidDateOnly("Enter date for the proposed event (Enter date in dd-MM-yyyy) :- ");
             eventObj.EventEndDate = eventObj.EventStartDate;
 
             string invitees = GetInviteesFromUser();
@@ -53,7 +53,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             ShowAllUser();
 
-            string inviteesSerialNumber = ValidatedInputProvider.GetValidatedCommaSeparatedInputInRange("Enter users you want to Invite. (Enter users Sr No. comma separated Ex:- 1,2,3) : ", 1, GetInsensitiveUserInformationList().Count);
+            string inviteesSerialNumber = ValidatedInputProvider.GetValidCommaSeparatedInputInRange("Enter users you want to Invite. (Enter users Sr No. comma separated Ex:- 1,2,3) : ", 1, GetInsensitiveUserInformationList().Count);
 
             return GetInviteesUserIdFromSerialNumber(inviteesSerialNumber);
         }

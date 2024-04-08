@@ -35,7 +35,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         public static void AskForChoiceToLoggedInUser()
         {
 
-            int choice = ValidatedInputProvider.GetValidatedIntegerBetweenRange("\nChoose the option: \n1. Logout \n0. Exit \nEnter Choice : ", 0, 1);
+            int choice = ValidatedInputProvider.GetValidIntegerBetweenRange("\nChoose the option: \n1. Logout \n0. Exit \nEnter Choice : ", 0, 1);
 
             LoggedinUserChoice option = (LoggedinUserChoice)choice;
 
@@ -54,7 +54,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         public static void AskForChoiceToLoggedOutUser()
         {
 
-            int choice = ValidatedInputProvider.GetValidatedIntegerBetweenRange("\nChoose the option: \n1. Login\n2. Sign up \n0. Exit \nEnter Choice :  ", 0, 2);
+            int choice = ValidatedInputProvider.GetValidIntegerBetweenRange("\nChoose the option: \n1. Login\n2. Sign up \n0. Exit \nEnter Choice :  ", 0, 2);
 
             LoggedoutUserChoice option = (LoggedoutUserChoice)choice;
 
@@ -82,11 +82,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             foreach (PropertyInfo property in properties)
             {
-                string value = ValidatedInputProvider.GetValidatedString($"Enter value for {property.Name}: ");
+                string value = ValidatedInputProvider.GetValidString($"Enter value for {property.Name}: ");
 
                 if (property.Name.Equals("Email"))
                 {
-                    value = ValidatedInputProvider.GetValidateEmail(value);
+                    value = ValidatedInputProvider.GetValidEmail(value);
                 }
 
                 object typedValue = Convert.ChangeType(value, property.PropertyType);
@@ -101,7 +101,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             {
                 GetSignUpDetails(out User user);
 
-                _userAuthenticationService.AddUser(user);
+                new UserService().AddUser(user);
 
                 PrintHandler.PrintSuccessMessage("Sign up completed successfully");
 
@@ -123,8 +123,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         public static void GetLoginDetails(out string userName, out string password)
         {
             Console.WriteLine("\nEnter Login Details");
-            userName = ValidatedInputProvider.GetValidatedString("Enter Name: ");
-            password = ValidatedInputProvider.GetValidatedString("Enter Password: ");
+            userName = ValidatedInputProvider.GetValidString("Enter Name: ");
+            password = ValidatedInputProvider.GetValidString("Enter Password: ");
         }
 
         public static void Login()

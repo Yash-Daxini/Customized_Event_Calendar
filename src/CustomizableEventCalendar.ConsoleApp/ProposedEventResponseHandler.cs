@@ -100,7 +100,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             Console.WriteLine("\nChoose an event to respond (Please enter Sr no. )");
 
-            int serialNumberOfEvent = ValidatedInputProvider.GetValidatedIntegerBetweenRange("Enter Sr. No : ", 1, endRange);
+            int serialNumberOfEvent = ValidatedInputProvider.GetValidIntegerBetweenRange("Enter Sr. No : ", 1, endRange);
 
             return serialNumberOfEvent;
         }
@@ -110,7 +110,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             Console.WriteLine("\nEnter your response : ");
             Console.WriteLine("1. Accept 2. Reject 3. May be ");
 
-            int choice = ValidatedInputProvider.GetValidatedIntegerBetweenRange("Enter choice : ", 1, 3);
+            int choice = ValidatedInputProvider.GetValidIntegerBetweenRange("Enter choice : ", 1, 3);
 
             switch (choice)
             {
@@ -140,7 +140,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             Console.WriteLine("\nDo you want to propose time ? \n1. Yes \n2. No");
 
-            int choice = ValidatedInputProvider.GetValidatedIntegerBetweenRange("Enter choice : ", 1, 2);
+            int choice = ValidatedInputProvider.GetValidIntegerBetweenRange("Enter choice : ", 1, 2);
 
             switch (choice)
             {

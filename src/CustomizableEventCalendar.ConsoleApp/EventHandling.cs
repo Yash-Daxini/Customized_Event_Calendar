@@ -60,7 +60,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             {
                 ShowAllChoices();
 
-                int choice = ValidatedInputProvider.GetValidatedIntegerBetweenRange("\nEnter choice :- ", 0, 10);
+                int choice = ValidatedInputProvider.GetValidIntegerBetweenRange("\nEnter choice :- ", 0, 10);
 
                 EventOperation option = (EventOperation)choice;
 
@@ -85,15 +85,15 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             Console.WriteLine("\nFill Details Related to Event : ");
 
-            eventObj.Title = ValidatedInputProvider.GetValidatedString("Enter title : ");
+            eventObj.Title = ValidatedInputProvider.GetValidString("Enter title : ");
 
             PrintHandler.PrintNewLine();
 
-            eventObj.Description = ValidatedInputProvider.GetValidatedString("Enter description : ");
+            eventObj.Description = ValidatedInputProvider.GetValidString("Enter description : ");
 
             PrintHandler.PrintNewLine();
 
-            eventObj.Location = ValidatedInputProvider.GetValidatedString("Enter Location : ");
+            eventObj.Location = ValidatedInputProvider.GetValidString("Enter Location : ");
 
             eventObj.IsProposed = false;
         }
@@ -236,7 +236,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             Console.WriteLine(inputMessage);
 
-            int choice = ValidatedInputProvider.GetValidatedIntegerBetweenRange("\nEnter choice : ", 1, 2);
+            int choice = ValidatedInputProvider.GetValidIntegerBetweenRange("\nEnter choice : ", 1, 2);
 
             switch (choice)
             {
@@ -254,7 +254,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             string operation = isDelete ? "delete" : "update";
 
-            int serialNumber = ValidatedInputProvider.GetValidatedIntegerBetweenRange($"From Above events give event no. that you want to {operation} :- ", 1, _eventService.GetTotalEventCount());
+            int serialNumber = ValidatedInputProvider.GetValidIntegerBetweenRange($"From Above events give event no. that you want to {operation} :- ", 1, _eventService.GetTotalEventCount());
 
             return serialNumber;
         }

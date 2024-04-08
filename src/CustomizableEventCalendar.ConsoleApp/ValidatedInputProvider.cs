@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services;
+﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {
     internal static class ValidatedInputProvider
     {
 
-        public static DateTime GetValidatedDateTime(string inputMessage)
+        public static DateTime GetValidaDateTime(string inputMessage)
         {
             Console.Write(inputMessage);
 
@@ -28,7 +23,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return validatedDateTime;
         }
 
-        public static DateOnly GetValidatedDateOnly(string inputMessage)
+        public static DateOnly GetValidDateOnly(string inputMessage)
         {
             Console.Write(inputMessage);
             string dateTime = Console.ReadLine();
@@ -45,7 +40,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return validatedDateTime;
         }
 
-        public static int GetValidatedInteger(string inputMessage)
+        public static int GetValidInteger(string inputMessage)
         {
             Console.Write(inputMessage);
 
@@ -65,7 +60,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return choice;
         }
 
-        public static string GetValidatedCommaSeparatedInput(string inputMessage)
+        public static string GetValidCommaSeparatedInput(string inputMessage)
         {
             Console.Write(inputMessage);
             string input = Console.ReadLine();
@@ -80,7 +75,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return input;
         }
 
-        public static string GetValidatedCommaSeparatedInputInRange(string inputMessage, int startRange, int endRange)
+        public static string GetValidCommaSeparatedInputInRange(string inputMessage, int startRange, int endRange)
         {
             Console.Write(inputMessage);
             string input = Console.ReadLine();
@@ -95,7 +90,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return input;
         }
 
-        public static string GetValidateEmail(string email)
+        public static string GetValidEmail(string email)
         {
 
             while (!ValidationService.IsValidEmail(email))
@@ -108,7 +103,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return email;
         }
 
-        public static string GetValidatedWeekDays(string inputMessage)
+        public static string GetValidWeekDays(string inputMessage)
         {
             bool isValidWeekDays = false;
 
@@ -116,7 +111,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             while (!isValidWeekDays)
             {
-                weekDays = GetValidatedCommaSeparatedInput(inputMessage);
+                weekDays = GetValidCommaSeparatedInput(inputMessage);
                 isValidWeekDays = true;
                 foreach (var weekDay in weekDays.Split(","))
                 {
@@ -133,59 +128,59 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         }
 
-        public static int GetValidatedMonthDay(string inputMessage)
+        public static int GetValidMonthDay(string inputMessage)
         {
-            int monthDay = GetValidatedInteger(inputMessage);
+            int monthDay = GetValidInteger(inputMessage);
 
             while (!ValidationService.IsValidMonthDay(monthDay))
             {
                 PrintHandler.PrintWarningMessage("Invalid Input ! Please enter month day between 1 to 31");
-                monthDay = GetValidatedInteger(inputMessage);
+                monthDay = GetValidInteger(inputMessage);
             }
 
             return monthDay;
         }
 
-        public static int GetValidatedMonth(string inputMessage)
+        public static int GetValidMonth(string inputMessage)
         {
-            int month = GetValidatedInteger(inputMessage);
+            int month = GetValidInteger(inputMessage);
 
             while (!ValidationService.IsValidMonth(month))
             {
                 PrintHandler.PrintWarningMessage("Invalid Input ! Please enter month between 1 to 12");
-                month = GetValidatedInteger(inputMessage);
+                month = GetValidInteger(inputMessage);
             }
 
             return month;
         }
 
-        public static int GetValidated24HourFormatTime(string inputMessage)
+        public static int GetValid24HourFormatTime(string inputMessage)
         {
-            int hour = GetValidatedInteger(inputMessage);
+            int hour = GetValidInteger(inputMessage);
 
             while (!ValidationService.IsValid24HourTime(hour))
             {
                 PrintHandler.PrintWarningMessage("Invalid Input ! Please enter hour between 0 to 23");
-                hour = GetValidatedInteger(inputMessage);
+                hour = GetValidInteger(inputMessage);
             }
 
             return hour;
         }
 
-        public static int GetValidated12HourFormatTime(string inputMessage)
+        public static int GetValid12HourFormatTime(string inputMessage)
         {
-            int hour = GetValidatedInteger(inputMessage);
+            int hour = GetValidInteger(inputMessage);
 
             while (!ValidationService.IsValid12HourTime(hour))
             {
                 PrintHandler.PrintWarningMessage("Invalid Input ! Please enter Hour between 1 to 12");
-                hour = GetValidatedInteger(inputMessage);
+                hour = GetValidInteger(inputMessage);
             }
 
             return hour;
         }
 
-        public static string GetValidatedAbbreviations()
+        public static string GetValidAbbreviations()
         {
             string inputMessage = "Enter AM or PM : ";
 
@@ -203,18 +198,18 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         }
 
-        public static int GetValidatedIntegerBetweenRange(string inputMessage, int startRange, int endRange)
+        public static int GetValidIntegerBetweenRange(string inputMessage, int startRange, int endRange)
         {
-            int number = GetValidatedInteger(inputMessage);
+            int number = GetValidInteger(inputMessage);
             while (!ValidationService.IsNumberInRange(startRange, endRange, number))
             {
                 PrintHandler.PrintWarningMessage($"Invalid Input ! Please enter number between {startRange} to {endRange}");
-                number = GetValidatedInteger(inputMessage);
+                number = GetValidInteger(inputMessage);
             }
             return number;
         }
 
-        public static string GetValidatedString(string inputMessage)
+        public static string GetValidString(string inputMessage)
         {
             Console.WriteLine(inputMessage);
             string? inputString = Console.ReadLine();
