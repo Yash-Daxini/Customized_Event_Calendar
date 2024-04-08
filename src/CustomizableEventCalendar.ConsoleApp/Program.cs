@@ -1,17 +1,15 @@
 ﻿using System.Runtime.InteropServices;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp;
 namespace CustomizableEventCalendar.ConsoleApp;
-public class Program
+public static class Program
 {
     [DllImport("kernel32.dll", SetLastError = true)]
 
     static extern IntPtr GetConsoleWindow();
 
-
     [DllImport("user32.dll")]
 
     static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
-
 
     const int SWP_SHOWWINDOW = 0x0040;
 

@@ -1,6 +1,5 @@
 ﻿using System.Data;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
-using System.Linq;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
 {

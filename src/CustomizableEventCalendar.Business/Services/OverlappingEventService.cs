@@ -1,5 +1,4 @@
-﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
 {

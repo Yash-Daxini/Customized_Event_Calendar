@@ -1,11 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.SqlClient;
 using System.Reflection;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums;
 
-namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
+namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {
     internal static class Authentication
     {
@@ -16,13 +16,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             try
             {
-                if (GlobalData.GetUser() != null)
+                if (GlobalData.GetUser() is null)
                 {
-                    AskForChoiceToLoggedInUser();
+                    AskForChoiceToLoggedOutUser();
                 }
                 else
                 {
-                    AskForChoiceToLoggedOutUser();
+                    AskForChoiceToLoggedInUser();
                 }
             }
             catch (Exception ex)
