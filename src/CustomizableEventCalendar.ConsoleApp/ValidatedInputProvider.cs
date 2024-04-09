@@ -90,14 +90,15 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return input;
         }
 
-        public static string GetValidEmail(string email)
+        public static string GetValidEmail(string inputMessage)
         {
+
+            string email = GetValidString(inputMessage);
 
             while (!ValidationService.IsValidEmail(email))
             {
                 PrintHandler.PrintWarningMessage("Invalid Input ! Please enter valid email");
-                Console.Write($"Enter Email: ");
-                email = Console.ReadLine();
+                email = GetValidString(inputMessage);
             }
 
             return email;

@@ -25,7 +25,7 @@ public static class Program
 
         try
         {
-            Authentication.AuthenticationChoice();
+            UserOperationHandler.AskForUserOperationChoice();
         }
         catch (Exception ex)
         {
