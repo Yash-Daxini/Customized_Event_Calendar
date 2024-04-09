@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="src\CustomizableEventCalendar.Business\Logs\" />
+    <Folder Include="src\CustomizableEventCalendar.Domain\Model\" />
   </ItemGroup>
 
 </Project>

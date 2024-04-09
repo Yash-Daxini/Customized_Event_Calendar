@@ -37,7 +37,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             {
                 throw new Exception("Some error occurred! ");
             }
-            UserOperationHandler.AskForUserOperationChoice();
+            UserOperationHandler.AskForChoiceForUserOperations();
         }
 
         public static void Logout()

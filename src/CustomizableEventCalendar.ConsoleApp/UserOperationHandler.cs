@@ -5,7 +5,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
     internal static class UserOperationHandler
     {
 
-        public static void AskForUserOperationChoice()
+        public static void AskForChoiceForUserOperations()
         {
 
             try
@@ -22,7 +22,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             catch (Exception ex)
             {
                 PrintHandler.PrintErrorMessage(ex.Message);
-                AskForUserOperationChoice();
+                AskForChoiceForUserOperations();
             }
         }
 
