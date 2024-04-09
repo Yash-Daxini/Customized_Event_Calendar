@@ -4,6 +4,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Model
 {
     internal class Participant
     {
+        public int Id { get; set; } 
+
         public ParticipantRole ParticipantRole { get; set; }
 
         public ConfirmationStatus ConfirmationStatus { get; set; }

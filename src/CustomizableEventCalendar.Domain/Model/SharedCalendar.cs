@@ -2,6 +2,8 @@
 {
     internal class SharedCalendar
     {
+        public int Id { get; set; }
+
         public User SenderUser { get; set; }
 
         public User ReceiverUser { get; set; }

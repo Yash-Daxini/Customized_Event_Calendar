@@ -1,7 +1,9 @@
 ﻿namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Model
 {
     internal class Event
-    {
+    { 
+        public int Id { get; set; }
+
         public string Title { get; set; }
 
         public string Description { get; set; }
