@@ -5,6 +5,7 @@
         Accept,
         Reject,
         Maybe,
+        Pending,
         Proposed
     }
 }

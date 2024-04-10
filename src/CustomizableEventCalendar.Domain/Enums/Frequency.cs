@@ -5,6 +5,7 @@
         Daily,
         Weekly,
         Monthly,
-        Yearly
+        Yearly,
+        None
     }
 }

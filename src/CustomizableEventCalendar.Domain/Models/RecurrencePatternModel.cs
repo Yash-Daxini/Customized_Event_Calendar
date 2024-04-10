@@ -2,7 +2,7 @@
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Model
 {
-    internal class RecurrencePattern
+    internal class RecurrencePatternModel   
     {
         public DateOnly StartDate { get; set; }
 
@@ -10,14 +10,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Model
 
         public Frequency Frequency { get; set;}
 
-        public int Interval { get; set;}
+        public int? Interval { get; set;}
 
-        public List<int> ByWeekDay { get; set; }
+        public List<int>? ByWeekDay { get; set; }
         
-        public int WeekOrder { get; set;}
+        public int? WeekOrder { get; set;}
 
-        public int ByMonthDay { get; set;}
+        public int? ByMonthDay { get; set;}
 
-        public int ByMonth { get; set;}
+        public int? ByMonth { get; set;}
     }
 }

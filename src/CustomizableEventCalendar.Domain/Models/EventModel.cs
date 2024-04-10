@@ -1,6 +1,6 @@
 ﻿namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Model
 {
-    internal class Event
+    internal class EventModel
     { 
         public int Id { get; set; }
 
@@ -12,10 +12,10 @@
 
         public DateOnly EventDate { get; set; }
 
-        public Duration Duration { get; set; }
+        public DurationModel Duration { get; set; }
 
-        public RecurrencePattern RecurrencePattern { get; set; }
+        public RecurrencePatternModel RecurrencePattern { get; set; }
 
-        public List<Participant> Participants { get; set; }
+        public List<ParticipantModel> Participants { get; set; }
     }
 }

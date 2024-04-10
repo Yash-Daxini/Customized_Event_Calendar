@@ -1,16 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities
 {
     internal class SharedCalendar
     {
+        public SharedCalendar()
+        {
 
+        }
         public SharedCalendar(int Id, int ReceiverUserId, int SenderUserId, DateOnly FromDate, DateOnly ToDate)
         {
             this.Id = Id;
@@ -38,7 +36,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entitie
         }
 
         [NotMapped]
-        public int Id { get; }
+        public int Id { get; set; }
         public int SenderUserId { get; set; }
         public int ReceiverUserId { get; set; }
         public DateOnly FromDate { get; set; }

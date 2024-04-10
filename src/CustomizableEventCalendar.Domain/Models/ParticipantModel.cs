@@ -2,7 +2,7 @@
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Model
 {
-    internal class Participant
+    internal class ParticipantModel
     {
         public int Id { get; set; } 
 
@@ -10,10 +10,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Model
 
         public ConfirmationStatus ConfirmationStatus { get; set; }
 
-        public Duration Duration { get; set; }
+        public int? ProposedStartHour { get; set; }
+
+        public int? ProposedEndHour { get; set; }
 
         public DateOnly EventDate { get; set; }
 
-        public User User { get; set; }
+        public UserModel User { get; set; }
     }
 }

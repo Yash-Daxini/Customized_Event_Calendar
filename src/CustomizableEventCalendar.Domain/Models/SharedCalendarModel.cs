@@ -1,12 +1,12 @@
 ﻿namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Model
 {
-    internal class SharedCalendar
+    internal class SharedCalendarModel
     {
         public int Id { get; set; }
 
-        public User SenderUser { get; set; }
+        public UserModel SenderUser { get; set; }
 
-        public User ReceiverUser { get; set; }
+        public UserModel ReceiverUser { get; set; }
 
         public DateOnly FromDate { get; set; }
 
