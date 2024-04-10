@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories
 {
@@ -22,19 +17,19 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
             Disconnect();
         }
 
-        public EventCollaborator? ReadByEventId(int eventId)
+        public List<EventCollaborator> GetByEventId(int eventId)
         {
             string query = @$"Select * from [dbo].[EventCollaborator]
-                              where EventId = {eventId} and UserId = {GlobalData.GetUser().Id}";
+                              where EventId = {eventId}";
             Connect();
 
             ExecuteQuery(query);
 
-            EventCollaborator eventCollaborators = null;
+            List<EventCollaborator> eventCollaborators = [];
 
-            if (sqlDataReader.Read())
+            while (sqlDataReader.Read())
             {
-                eventCollaborators = new EventCollaborator(sqlDataReader);
+                eventCollaborators.Add(new EventCollaborator(sqlDataReader));
             }
 
             Disconnect();

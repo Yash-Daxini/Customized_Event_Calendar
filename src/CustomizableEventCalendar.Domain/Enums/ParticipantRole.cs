@@ -3,6 +3,7 @@
     internal enum ParticipantRole
     {
         Organizer,
-        Participant
+        Participant,
+        Collaborator
     }
 }

@@ -36,12 +36,22 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Mapping
 
         private ParticipantRole MapParticipantRoleToEnum(string participantRole)
         {
-            return participantRole.Equals("organizer") ? ParticipantRole.Organizer : ParticipantRole.Participant;
+            return participantRole switch
+            {
+                "organizer" => ParticipantRole.Organizer,
+                "participant" => ParticipantRole.Participant,
+                "collaborator" => ParticipantRole.Collaborator,
+            };
         }
 
         private string MapEnumToParticipantRole(ParticipantRole participantRole)
         {
-            return participantRole == ParticipantRole.Organizer ? "organizer" : "participant";
+            return participantRole switch
+            {
+                ParticipantRole.Organizer => "organizer",
+                ParticipantRole.Participant => "participant",
+                ParticipantRole.Collaborator => "collaborator",
+            };
         }
 
         private ConfirmationStatus MapConfirmationStatusToEnum(string confirmationStatus)
