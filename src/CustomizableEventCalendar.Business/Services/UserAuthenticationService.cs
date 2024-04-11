@@ -1,6 +1,6 @@
 ﻿// Ignore Spelling: username
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
 {
@@ -10,16 +10,16 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public bool Authenticate(string username, string password)
         {
-            User? user = userRepository.AuthenticateUser(username, password);
+            UserModel? userModel = userRepository.AuthenticateUser(username, password);
 
-            GlobalData.SetUser(user);
+            GlobalData.SetUser(userModel);
 
-            if (user != null)
+            if (userModel != null)
             {
                 ScheduleProposedEventsForLoggedInUser();
             }
 
-            return user != null;
+            return userModel != null;
         }
 
         private static void ScheduleProposedEventsForLoggedInUser()

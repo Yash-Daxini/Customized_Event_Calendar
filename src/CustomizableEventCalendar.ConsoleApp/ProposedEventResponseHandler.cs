@@ -1,5 +1,6 @@
 ﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {
@@ -13,7 +14,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             try
             {
-                List<Event> proposedEvents = _proposedEventService.GetProposedEvents();
+                List<EventModel> proposedEvents = _proposedEventService.GetProposedEvents();
 
                 string tableOfProposedEvents = GenerateProposedEventTable();
 
@@ -29,39 +30,31 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             }
         }
 
-        private static void HandleResponse(List<Event> proposedEvents)
+        private static void HandleResponse(List<EventModel> proposedEvents)
         {
             int serialNumber = GetEventSerialNumberToGiveResponse(proposedEvents.Count);
 
-            Event eventObj = GetEventFromSerialNumber(proposedEvents, serialNumber);
+            EventModel eventModel = GetEventFromSerialNumber(proposedEvents, serialNumber);
 
-            GetCollaboratorsInformation(eventObj, out EventCollaborator? eventCollaborator);
-
-            if (eventCollaborator is null) return;
-
-            GetAndSaveResponse(eventObj, eventCollaborator);
+            GetAndSaveResponse(eventModel);
 
             PrintHandler.PrintSuccessMessage("Your response successfully shared with organizer of event.");
         }
 
-        private static void GetAndSaveResponse(Event eventObj, EventCollaborator eventCollaborator)
+        private static void GetAndSaveResponse(EventModel eventModel)
         {
-            GetInputToGiveResponse(eventCollaborator, eventObj);
+            GetInputToGiveResponse(eventModel);
 
-            _eventCollaboratorService.UpdateEventCollaborators(eventCollaborator, eventCollaborator.Id);
+            //Do changes here ........................
+            //_eventCollaboratorService.UpdateEventCollaborators(eventCollaborator, eventCollaborator.Id);
         }
 
-        private static void GetCollaboratorsInformation(Event eventObj, out EventCollaborator? eventCollaborator)
-        {
-            eventCollaborator = _eventCollaboratorService.GetEventCollaboratorFromEventIdAndUserId(eventObj.Id);
-        }
-
-        private static Event GetEventFromSerialNumber(List<Event> proposedEvents, int serialNumber)
+        private static EventModel GetEventFromSerialNumber(List<EventModel> proposedEvents, int serialNumber)
         {
             return proposedEvents[serialNumber - 1];
         }
 
-        private static bool IsMessagePrintedOnUnavailabilityOfProposedEvents(List<Event> proposedEvents)
+        private static bool IsMessagePrintedOnUnavailabilityOfProposedEvents(List<EventModel> proposedEvents)
         {
             if (proposedEvents.Count == 0)
             {
@@ -73,17 +66,17 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         private static string GenerateProposedEventTable()
         {
-            List<Event> proposedEvents = _proposedEventService.GetProposedEvents();
+            List<EventModel> proposedEvents = _proposedEventService.GetProposedEvents();
 
             List<List<string>> outputRows = proposedEvents.InsertInto2DList(["Sr No.", "Title", "Description", "Location", "StartHour", "EndHour", "StartDate"],
                 [
-                    eventObj => proposedEvents.IndexOf(eventObj) + 1,
-                    eventObj => eventObj.Title,
-                    eventObj => eventObj.Description,
-                    eventObj => eventObj.Location,
-                    eventObj => DateTimeManager.ConvertTo12HourFormat(eventObj.EventStartHour),
-                    eventObj => DateTimeManager.ConvertTo12HourFormat(eventObj.EventEndHour),
-                    eventObj => eventObj.EventStartDate.ToString()
+                    eventModel => proposedEvents.IndexOf(eventModel) + 1,
+                    eventModel => eventModel.Title,
+                    eventModel => eventModel.Description,
+                    eventModel => eventModel.Location,
+                    eventModel => DateTimeManager.ConvertTo12HourFormat(eventModel.Duration.StartHour),
+                    eventModel => DateTimeManager.ConvertTo12HourFormat(eventModel.Duration.EndHour),
+                    eventModel => eventModel.EventDate.ToString()
                 ]);
 
             string eventTable = PrintService.GenerateTable(outputRows);
@@ -105,7 +98,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return serialNumberOfEvent;
         }
 
-        private static void GetInputToGiveResponse(EventCollaborator eventCollaborator, Event eventObj)
+        private static void GetInputToGiveResponse(EventModel eventModel)
         {
             Console.WriteLine("\nEnter your response : ");
             Console.WriteLine("1. Accept 2. Reject 3. May be ");
@@ -115,28 +108,28 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             switch (choice)
             {
                 case 1:
-                    eventCollaborator.ConfirmationStatus = "accept";
-                    SetProposedHours(eventCollaborator, eventObj.EventStartHour, eventObj.EventEndHour);
+                    eventModel.Participants[0].ConfirmationStatus = ConfirmationStatus.Accept;
+                    SetProposedHours(eventModel.Participants[0], eventModel.Duration.StartHour, eventModel.Duration.EndHour);
                     break;
                 case 2:
-                    eventCollaborator.ConfirmationStatus = "reject";
-                    SetProposedHours(eventCollaborator, null, null);
+                    eventModel.Participants[0].ConfirmationStatus = ConfirmationStatus.Reject;
+                    SetProposedHours(eventModel.Participants[0], null, null);
                     break;
                 case 3:
-                    eventCollaborator.ConfirmationStatus = "maybe";
-                    SetProposedHours(eventCollaborator, eventObj.EventStartHour, eventObj.EventEndHour);
-                    GetInputToGetProposedTime(eventCollaborator);
+                    eventModel.Participants[0].ConfirmationStatus = ConfirmationStatus.Maybe;
+                    SetProposedHours(eventModel.Participants[0], eventModel.Duration.StartHour, eventModel.Duration.EndHour);
+                    GetInputToGetProposedTime(eventModel);
                     break;
             }
         }
 
-        private static void SetProposedHours(EventCollaborator eventCollaborator, int? startHour, int? endHour)
+        private static void SetProposedHours(ParticipantModel participantModel, int? startHour, int? endHour)
         {
-            eventCollaborator.ProposedStartHour = startHour;
-            eventCollaborator.ProposedEndHour = endHour;
+            participantModel.ProposedStartHour = startHour;
+            participantModel.ProposedEndHour = endHour;
         }
 
-        private static void GetInputToGetProposedTime(EventCollaborator eventCollaborator)
+        private static void GetInputToGetProposedTime(EventModel eventModel)
         {
             Console.WriteLine("\nDo you want to propose time ? \n1. Yes \n2. No");
 
@@ -145,8 +138,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             switch (choice)
             {
                 case 1:
-                    Console.WriteLine($"\nEnter your proposed timings for {eventCollaborator.EventDate}");
-                    TimeHandler.GetStartingAndEndingHourOfEvent(eventCollaborator);
+                    eventModel.Participants[0].ConfirmationStatus = ConfirmationStatus.Proposed;
+                    Console.WriteLine($"\nEnter your proposed timings for {eventModel.EventDate}");
+                    TimeHandler.GetStartingAndEndingHourOfEvent(eventModel);
                     break;
                 case 2:
                     break;

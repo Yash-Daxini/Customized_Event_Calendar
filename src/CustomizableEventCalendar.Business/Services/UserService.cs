@@ -1,5 +1,5 @@
 ﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
 {
@@ -7,10 +7,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
     {
         private readonly UserRepository userRepository = new();
 
-        public List<User> GetInsensitiveInformationOfUser()
+        public List<UserModel> GetInsensitiveInformationOfUser()
         {
 
-            List<User> users = userRepository.ReadInsensitiveInformation(data => new User(data))
+            List<UserModel> users = userRepository.ReadInsensitiveInformation()
                                              .Where(user => user.Id != GlobalData.GetUser().Id)
                                              .ToList();
 
@@ -18,13 +18,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             
         }
 
-        public User? Read(int userId)
+        public UserModel? GetUserById(int userId)
         {
-            User? user = userRepository.GetById(data => new User(data), userId);
+            UserModel? user = userRepository.GetById(userId);
             return user;
         }
 
-        public void AddUser(User user)
+        public void AddUser(UserModel user)
         {
             userRepository.Insert(user);
         }

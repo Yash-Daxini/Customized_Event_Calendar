@@ -1,14 +1,15 @@
-﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Model;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Mapping
 {
     internal class ParticipantMapper
     {
-        public ParticipantModel MapEventCollaboratorToParticipantModel(EventCollaborator eventCollaborator)
+        public Models.ParticipantModel MapEventCollaboratorToParticipantModel(Entities.EventCollaborator eventCollaborator)
         {
-            return new ParticipantModel
+            return new Models.ParticipantModel
             {
                 Id = eventCollaborator.Id,
                 ParticipantRole = MapParticipantRoleToEnum(eventCollaborator.ParticipantRole),
@@ -16,22 +17,28 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Mapping
                 ProposedStartHour = eventCollaborator.ProposedStartHour,
                 ProposedEndHour = eventCollaborator.ProposedEndHour,
                 EventDate = eventCollaborator.EventDate,
+                User = MapUserIdToUserModel(eventCollaborator.UserId)
             };
         }
 
-        public EventCollaborator MapParticipantModelToEventCollaborator(ParticipantModel participantModel, int eventId, int userId)
+        public Entities.EventCollaborator MapParticipantModelToEventCollaborator(Models.ParticipantModel participantModel, int eventId)
         {
-            return new EventCollaborator
+            return new Entities.EventCollaborator
             {
                 Id = participantModel.Id,
                 EventId = eventId,
-                UserId = userId,
+                UserId = participantModel.User.Id,
                 ParticipantRole = MapEnumToParticipantRole(participantModel.ParticipantRole),
                 ConfirmationStatus = MapEnumToConfirmationStatus(participantModel.ConfirmationStatus),
                 ProposedStartHour = participantModel.ProposedStartHour,
                 ProposedEndHour = participantModel.ProposedEndHour,
                 EventDate = participantModel.EventDate,
             };
+        }
+
+        private UserModel MapUserIdToUserModel(int userId)
+        {
+            return new UserMapper().MapUserEntityToModel(new UserRepository().GetById(data => new User(data), userId));
         }
 
         private ParticipantRole MapParticipantRoleToEnum(string participantRole)

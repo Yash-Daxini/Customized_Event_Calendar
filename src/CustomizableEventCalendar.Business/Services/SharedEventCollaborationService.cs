@@ -1,4 +1,5 @@
 ﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
 {
@@ -6,43 +7,47 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
     {
         private readonly EventCollaboratorService _eventCollaboratorService = new();
 
-        public void AddCollaborator(EventCollaborator eventCollaborator)
+        public void AddCollaborator(ParticipantModel participantModel, int eventId)
         {
-            _eventCollaboratorService.InsertEventCollaborators(eventCollaborator);
+            _eventCollaboratorService.InsertParticipant(participantModel, eventId);
         }
 
-        private List<EventCollaborator> GetAllEventCollaborators()
+        private List<ParticipantModel> GetAllEventCollaborators()
         {
-            return _eventCollaboratorService.GetAllEventCollaborators();
+            return _eventCollaboratorService.GetAllParticipants();
         }
 
-        public bool IsEventAlreadyCollaborated(EventCollaborator newEventCollaborator)
+
+        // StatFromHere how to find event id in participant
+
+        public bool IsEventAlreadyCollaborated(ParticipantModel newParticipant)
         {
-            return GetAllEventCollaborators().Exists(eventCollaborator =>
-                                                     eventCollaborator.UserId == newEventCollaborator.UserId
-                                                     && eventCollaborator.EventId == newEventCollaborator.EventId
+            return GetAllEventCollaborators().Exists(participant =>
+                                                     participant.User.Id == newParticipant.User.Id
+                                                     && participant.EventId == newEventCollaborator.EventId
                                                      && eventCollaborator.EventDate == newEventCollaborator.EventDate
                                                      && IsHourOvelapps(eventCollaborator, newEventCollaborator));
         }
 
-        public EventCollaborator? GetCollaborationOverlap(EventCollaborator newEventCollaborator)
+        // Above method is only pending
+
+        public ParticipantModel? GetCollaborationOverlap(ParticipantModel newParticipant)
         {
-            return GetAllEventCollaborators().Find(eventCollaborator =>
-                                                   eventCollaborator.UserId == newEventCollaborator.UserId
-                                                   && eventCollaborator.EventDate == newEventCollaborator.EventDate
-                                                   && eventCollaborator.UserId == newEventCollaborator.UserId
-                                                   && IsHourOvelapps(eventCollaborator, newEventCollaborator));
+            return GetAllEventCollaborators().Find(participant =>
+                                                   participant.User.Id == newParticipant.User.Id
+                                                   && participant.EventDate == newParticipant.EventDate
+                                                   && IsHourOvelapps(participant, newParticipant));
         }
 
-        private static bool IsHourOvelapps(EventCollaborator eventCollaborator, EventCollaborator newEventCollaborator)
+        private static bool IsHourOvelapps(ParticipantModel eventCollaborator, ParticipantModel newEventCollaborator)
         {
-            return (eventCollaborator.ProposedStartHour >= newEventCollaborator.ProposedStartHour 
+            return (eventCollaborator.ProposedStartHour >= newEventCollaborator.ProposedStartHour
                     && eventCollaborator.ProposedStartHour < newEventCollaborator.ProposedEndHour)
-                || (eventCollaborator.ProposedEndHour > newEventCollaborator.ProposedStartHour 
+                || (eventCollaborator.ProposedEndHour > newEventCollaborator.ProposedStartHour
                     && eventCollaborator.ProposedEndHour <= newEventCollaborator.ProposedEndHour)
-                || (newEventCollaborator.ProposedStartHour >= eventCollaborator.ProposedStartHour 
+                || (newEventCollaborator.ProposedStartHour >= eventCollaborator.ProposedStartHour
                     && newEventCollaborator.ProposedStartHour < eventCollaborator.ProposedEndHour)
-                || (newEventCollaborator.ProposedEndHour > eventCollaborator.ProposedStartHour 
+                || (newEventCollaborator.ProposedEndHour > eventCollaborator.ProposedStartHour
                     && newEventCollaborator.ProposedEndHour <= eventCollaborator.ProposedEndHour);
         }
     }

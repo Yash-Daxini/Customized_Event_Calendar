@@ -1,5 +1,6 @@
 ﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {
@@ -8,13 +9,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         private static readonly SharedEventCollaborationService _sharedEventCollaborationService = new();
 
-        public static void GetInputToCollaborateInEvent(List<EventCollaborator> sharedEvents)
+        public static void GetInputToCollaborateInEvent(List<Domain.Entities.EventCollaborator> sharedEvents)
         {
             try
             {
                 int serialNumberOfSharedEvent = ValidatedInputProvider.GetValidIntegerBetweenRange("Enter Sr.No of the event which you want to collaborate :- ", 1, sharedEvents.Count);
 
-                EventCollaborator selectedEvent = sharedEvents[serialNumberOfSharedEvent - 1];
+                Domain.Entities.EventCollaborator selectedEvent = sharedEvents[serialNumberOfSharedEvent - 1];
 
                 CollaborateInEvent(selectedEvent);
             }
@@ -24,7 +25,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             }
         }
 
-        private static void CollaborateInEvent(EventCollaborator selectedEvent)
+        private static void CollaborateInEvent(Domain.Entities.EventCollaborator selectedEvent)
         {
             if (selectedEvent is null) return;
 
@@ -34,7 +35,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             if (eventObj is null) return;
 
-            EventCollaborator newEventCollaborator = new(eventId, GlobalData.GetUser().Id, "participant", null, eventObj.EventStartHour, eventObj.EventEndHour, selectedEvent.EventDate);
+            Domain.Entities.EventCollaborator newEventCollaborator = new(eventId, GlobalData.GetUser().Id, "participant", null, eventObj.EventStartHour, eventObj.EventEndHour, selectedEvent.EventDate);
 
             if (!IsEligibleToCollaborate(newEventCollaborator)) return;
 
@@ -43,13 +44,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             PrintHandler.PrintSuccessMessage($"Successfully collaborated on event");
         }
 
-        public static bool IsEligibleToCollaborate(EventCollaborator eventCollaborator)
+        public static bool IsEligibleToCollaborate(Domain.Entities.EventCollaborator eventCollaborator)
         {
             return !(IsAlreadyCollaborated(eventCollaborator) || IsCollaborationOverlap(eventCollaborator));
 
         }
 
-        private static bool IsAlreadyCollaborated(EventCollaborator eventCollaborator)
+        private static bool IsAlreadyCollaborated(Domain.Entities.EventCollaborator eventCollaborator)
         {
             if (_sharedEventCollaborationService.IsEventAlreadyCollaborated(eventCollaborator))
             {
@@ -60,9 +61,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return false;
         }
 
-        private static bool IsCollaborationOverlap(EventCollaborator eventCollaborator)
+        private static bool IsCollaborationOverlap(Domain.Entities.EventCollaborator eventCollaborator)
         {
-            EventCollaborator? overlappedCollaboration = _sharedEventCollaborationService.GetCollaborationOverlap(eventCollaborator);
+            Domain.Entities.EventCollaborator? overlappedCollaboration = _sharedEventCollaborationService.GetCollaborationOverlap(eventCollaborator);
 
             if (overlappedCollaboration is null) return false;
 

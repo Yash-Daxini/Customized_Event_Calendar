@@ -1,4 +1,4 @@
-﻿namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Model
+﻿namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models
 {
     internal class SharedCalendarModel
     {
@@ -11,5 +11,10 @@
         public DateOnly FromDate { get; set; }
 
         public DateOnly ToDate { get; set; }
+
+        public override string ToString()
+        {
+            return $"Sender : {SenderUser}\tReceiver : {ReceiverUser}\tFrom Date : {FromDate}\tTo Date : {ToDate}";
+        }
     }
 }

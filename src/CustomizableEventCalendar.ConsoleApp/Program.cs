@@ -1,5 +1,4 @@
 ﻿using System.Runtime.InteropServices;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp;
 namespace CustomizableEventCalendar.ConsoleApp;
 public static class Program
 {
@@ -25,7 +24,19 @@ public static class Program
 
         try
         {
-            UserOperationHandler.AskForChoiceForUserOperations();
+            //UserOperationHandler.AskForChoiceForUserOperations();
+
+            //User u = new User(42,"b","b@gmail.com","b");
+
+            //GlobalData.SetUser(u);
+
+            //var x = new EventService().GetAllEventsOfLoggedInUser();
+
+            //foreach (var item in x)
+            //{
+            //    Console.WriteLine(item);
+            //}
+
         }
         catch (Exception ex)
         {

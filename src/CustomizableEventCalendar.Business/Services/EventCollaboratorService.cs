@@ -1,5 +1,5 @@
 ﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
 {
@@ -7,43 +7,34 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
     {
         private readonly EventCollaboratorRepository _eventCollaboratorsRepository = new();
 
-        public List<EventCollaborator> GetAllEventCollaborators()
+        public List<ParticipantModel> GetAllParticipants()
         {
-            List<EventCollaborator> eventCollaborators = [.._eventCollaboratorsRepository.GetAll(data => new EventCollaborator(data))
-                                                         .OrderBy(eventCollaborator => eventCollaborator.EventDate)
-                                                         .ThenBy(eventCollaborator => eventCollaborator.ProposedStartHour)];
-            return eventCollaborators;
+            List<ParticipantModel> participants = [.._eventCollaboratorsRepository.GetAll()
+                                                         .OrderBy(participant => participant.EventDate)
+                                                         .ThenBy(participant => participant.ProposedStartHour)];
+            return participants;
         }
 
-        public EventCollaborator? GetEventCollaboratorById(int eventCollaboratorId)
+        public ParticipantModel? GetParticipantById(int eventCollaboratorId)
         {
-            EventCollaborator? eventCollaborators = _eventCollaboratorsRepository.GetById(data => new EventCollaborator(data), eventCollaboratorId);
-            return eventCollaborators;
+            ParticipantModel? participantModel = _eventCollaboratorsRepository.GetById(eventCollaboratorId);
+            return participantModel;
         }
 
-        public int InsertEventCollaborators(EventCollaborator eventCollaborators)
+        public int InsertParticipant(ParticipantModel participantModel,int eventId)
         {
-            int eventCollaboratorsId = _eventCollaboratorsRepository.Insert(eventCollaborators);
+            int eventCollaboratorsId = _eventCollaboratorsRepository.Insert(participantModel,eventId);
             return eventCollaboratorsId;
         }
 
-        public void UpdateEventCollaborators(EventCollaborator eventCollaborator, int eventCollaboratorId)
+        public void UpdateParticipant(ParticipantModel participantModel, int eventId)
         {
-            _eventCollaboratorsRepository.Update(eventCollaborator, eventCollaboratorId);
+            _eventCollaboratorsRepository.Update(participantModel, eventId);
         }
 
-        public void DeleteEventCollaboratorsByEventId(int eventId)
+        public void DeleteParticipantByEventId(int eventId)
         {
             _eventCollaboratorsRepository.DeleteByEventId(eventId);
-        }
-
-        public EventCollaborator? GetEventCollaboratorFromEventIdAndUserId(int eventId)
-        {
-            EventCollaborator? eventCollaborator = GetAllEventCollaborators()
-                                                   .Find(eventCollaborator =>
-                                                                   eventCollaborator.UserId == GlobalData.GetUser().Id
-                                                                   && eventCollaborator.EventId == eventId);
-            return eventCollaborator;
         }
     }
 }

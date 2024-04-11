@@ -1,10 +1,10 @@
-﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
 {
     internal class OverlappingEventService
     {
-        public OverlappingEventData? GetOverlappedEventInformation(Event eventForVerify, bool isInsert)
+        public OverlappingEventData? GetOverlappedEventInformation(EventModel eventForVerify, bool isInsert)
         {
             RecurrenceEngine recurrenceEngine = new();
 
@@ -12,21 +12,21 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             EventService eventService = new();
 
-            List<Event> events = eventService.GetAllEventsOfLoggedInUser();
+            List<EventModel> events = eventService.GetAllEventsOfLoggedInUser();
 
-            foreach (var eventToCheckOverlap in events)
+            foreach (var existingEvent in events)
             {
-                if (!isInsert && eventToCheckOverlap.Id == eventForVerify.Id) continue;
+                if (!isInsert && existingEvent.Id == eventForVerify.Id) continue;
 
-                List<DateOnly> occurrencesOfEventToCheckOverlap = recurrenceEngine.FindOccurrencesOfEvent(eventToCheckOverlap);
+                List<DateOnly> occurrencesOfEventToCheckOverlap = recurrenceEngine.FindOccurrencesOfEvent(existingEvent);
 
                 DateOnly matchedDate = occurrencesOfEventToCheckOverlap.Intersect(occurrencesOfEventForVerify).FirstOrDefault();
 
                 if (matchedDate == default) continue;
 
-                if (IsHourOverlaps(eventForVerify.EventStartHour, eventForVerify.EventEndHour, eventToCheckOverlap.EventStartHour, eventToCheckOverlap.EventEndHour))
+                if (IsHourOverlaps(eventForVerify.Duration.StartHour, eventForVerify.Duration.EndHour, existingEvent.Duration.StartHour, existingEvent.Duration.EndHour))
                 {
-                    return new OverlappingEventData(eventToCheckOverlap, matchedDate);
+                    return new OverlappingEventData(eventForVerify,existingEvent, matchedDate);
                 }
             }
 

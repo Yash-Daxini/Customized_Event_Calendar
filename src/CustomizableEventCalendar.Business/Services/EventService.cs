@@ -1,8 +1,7 @@
 ﻿using System.Transactions;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Model;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
 {
@@ -14,13 +13,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         private readonly EventCollaboratorService _eventCollaboratorsService = new();
 
-        public int InsertEvent(Event eventObj)
+        public int InsertEvent(EventModel eventModel)
         {
-            int eventId = _eventRepository.Insert(eventObj);
+            int eventId = _eventRepository.Insert(eventModel);
 
-            eventObj.Id = eventId;
+            eventModel.Id = eventId;
 
-            _recurrenceEngine.ScheduleEvents(eventObj);
+            _recurrenceEngine.ScheduleEvents(eventModel);
 
             return eventId;
         }
@@ -36,16 +35,18 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             List<EventModel> events = GetAllEvents();
 
-            return events;
-
-            //return [.. events.Select(eventObj => eventObj.Participants)
-            //                         .Where(participant => participant.User.Id == GlobalData.GetUser().Id
-            //                                                && participant.ParticipantRole == ParticipantRole.Organizer)];
+            return [.. events.Where(eventModel=> eventModel.Participants
+                                                           .Any(participant=>participant.User.Id == GlobalData.GetUser().Id))
+                             .Select(eventModel => {  eventModel.Participants = [..eventModel.Participants
+                                                           .Where(participant=>participant.User.Id == GlobalData.GetUser().Id)];
+                                                      return eventModel;
+                                                    }
+                    )];
         }
 
-        public Event? GetEventById(int eventId)
+        public List<EventModel>? GetEventById(int eventId)
         {
-            Event? listOfEvents = _eventRepository.GetById(data => new Event(data), eventId);
+            List<EventModel>? listOfEvents = _eventRepository.GetById(eventId);
 
             return listOfEvents;
         }
@@ -54,37 +55,41 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             using var scope = new TransactionScope();
 
-            _eventCollaboratorsService.DeleteEventCollaboratorsByEventId(eventId);
+            _eventCollaboratorsService.DeleteParticipantByEventId(eventId);
 
             _eventRepository.Delete(eventId);
 
             scope.Complete();
         }
 
-        public void UpdateEvent(Event eventObj, int eventId)
+        public void UpdateEvent(EventModel eventModel, int eventId)
         {
             using var scope = new TransactionScope();
 
-            _eventRepository.Update(eventObj, eventId);
+            _eventRepository.Update(eventModel);
 
-            _eventCollaboratorsService.DeleteEventCollaboratorsByEventId(eventId);
+            _eventCollaboratorsService.DeleteParticipantByEventId(eventId);
 
-            eventObj.Id = eventId;
+            eventModel.Id = eventId;
 
-            _recurrenceEngine.ScheduleEvents(eventObj);
+            _recurrenceEngine.ScheduleEvents(eventModel);
 
             scope.Complete();
         }
 
-        public void UpdateProposedEvent(Event eventObj, int eventId)
+        public void UpdateProposedEvent(EventModel eventModel)
         {
-            _eventRepository.Update(eventObj, eventId);
+            _eventRepository.Update(eventModel);
         }
 
         public List<EventModel> GetProposedEvents()
         {
-            //return [.. GetAllEvents().Where(eventObj => eventObj.Participants)];
-            return GetAllEvents();
+            return [.. GetAllEvents().Select(eventModel => {  eventModel.Participants = eventModel.Participants
+                                                      .Where(participant=>participant.ParticipantRole != ParticipantRole.Organizer &&
+                                                             participant.ParticipantRole != ParticipantRole.Collaborator)
+                                                      .ToList();
+                                                      return eventModel;
+                                                    })];
         }
 
         public void ConvertProposedEventToScheduleEvent(int eventId)

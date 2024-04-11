@@ -2,6 +2,7 @@
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {
@@ -13,7 +14,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         public List<SharedCalendar> sharedCalendarsList = [];
 
-        public List<EventCollaborator> sharedEventsOfSpecificCalendar = [];
+        public List<Domain.Entities.EventCollaborator> sharedEventsOfSpecificCalendar = [];
 
         public void GetDetailsToShareCalendar()
         {
@@ -212,9 +213,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             Console.WriteLine(sharedEventsTable);
         }
 
-        private static string GenerateTableForSharedEvents(DateOnly startDate, DateOnly endDate, List<EventCollaborator> sharedEvents)
+        private static string GenerateTableForSharedEvents(DateOnly startDate, DateOnly endDate, List<Domain.Entities.EventCollaborator> sharedEvents)
         {
-            List<Event> events = new EventService().GetAllEvents();
+            //List<Event> events = new EventService().GetAllEvents();
+
+            //....................................
+            List<Event> events = [];
 
             List<List<string>> sharedEventTableContent = [["Sr No.", "Event Title", "Event Description", "Event Date", "Event Duration"]];
 
@@ -232,9 +236,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return PrintService.GenerateTable(sharedEventTableContent);
         }
 
-        private static void AddSharedEventsInto2DList(List<EventCollaborator> sharedEvents, List<Event> events, List<List<string>> sharedEventTableContent, ref int index, DateOnly currentDate)
+        private static void AddSharedEventsInto2DList(List<Domain.Entities.EventCollaborator> sharedEvents, List<Event> events, List<List<string>> sharedEventTableContent, ref int index, DateOnly currentDate)
         {
-            List<EventCollaborator> eventCollaboratorList = sharedEvents.FindAll(eventCollaborator => eventCollaborator.EventDate == currentDate);
+            List<Domain.Entities.EventCollaborator> eventCollaboratorList = sharedEvents.FindAll(eventCollaborator => eventCollaborator.EventDate == currentDate);
 
             foreach (var eventCollaborator in eventCollaboratorList)
             {

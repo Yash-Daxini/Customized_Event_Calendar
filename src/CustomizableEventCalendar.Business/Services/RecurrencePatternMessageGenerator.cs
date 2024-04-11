@@ -1,45 +1,46 @@
 ﻿using System.Text;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
 {
     internal static class RecurrencePatternMessageGenerator
     {
-        public static string GenerateRecurrenceMessage(Event eventObj)
+        public static string GenerateRecurrenceMessage(EventModel eventModel)
         {
             StringBuilder recurrenceMessage = new();
 
-            if (eventObj.Frequency == null) return GenerateRecurrenceMessageForNonRecurringEvent(eventObj);
+            if (eventModel.RecurrencePattern.Frequency == null) return GenerateRecurrenceMessageForNonRecurringEvent(eventModel);
 
-            recurrenceMessage.Append(GetCombinationOfIntervalAndFrequency(eventObj));
+            recurrenceMessage.Append(GetCombinationOfIntervalAndFrequency(eventModel));
 
-            if (eventObj.ByWeekDay != null && eventObj.WeekOrder == null) recurrenceMessage.Append($"{GetWeekDays(eventObj.ByWeekDay)} ");
+            if (eventModel.RecurrencePattern.ByWeekDay != null && eventModel.RecurrencePattern.WeekOrder == null) recurrenceMessage.Append($"{GetWeekDays(eventModel.RecurrencePattern.ByWeekDay)} ");
 
-            if (eventObj.ByMonthDay != null) recurrenceMessage.Append($"{GetMonthDay((int)eventObj.ByMonthDay)} day ");
+            if (eventModel.RecurrencePattern.ByMonthDay != null) recurrenceMessage.Append($"{GetMonthDay((int)eventModel.RecurrencePattern.ByMonthDay)} day ");
 
-            recurrenceMessage.Append(GetCombinationOfWeekOrderAndWeekDay(eventObj));
+            recurrenceMessage.Append(GetCombinationOfWeekOrderAndWeekDay(eventModel));
 
-            if (eventObj.ByMonth != null) recurrenceMessage.Append($"in {GetMonth((int)eventObj.ByMonth)} ");
+            if (eventModel.RecurrencePattern.ByMonth != null) recurrenceMessage.Append($"in {GetMonth((int)eventModel.RecurrencePattern.ByMonth)} ");
 
             return recurrenceMessage.ToString();
         }
 
-        private static string GenerateRecurrenceMessageForNonRecurringEvent(Event eventObj)
+        private static string GenerateRecurrenceMessageForNonRecurringEvent(EventModel eventModel)
         {
-            return $"On {eventObj.EventStartDate} at {DateTimeManager.ConvertTo12HourFormat(eventObj.EventStartHour)} " +
-                   $" to {DateTimeManager.ConvertTo12HourFormat(eventObj.EventEndHour)}";
+            return $"On {eventModel.RecurrencePattern.StartDate} at {DateTimeManager.ConvertTo12HourFormat(eventModel.Duration.StartHour)} " +
+                   $" to {DateTimeManager.ConvertTo12HourFormat(eventModel.Duration.EndHour)}";
         }
 
-        private static string GetCombinationOfIntervalAndFrequency(Event eventObj)
+        private static string GetCombinationOfIntervalAndFrequency(EventModel eventModel)
         {
-            if (eventObj.Frequency != null && eventObj.Frequency.Equals("daily") && eventObj.Interval == null) return $"Every ";
-            return $"Every {GetInterval(eventObj.Interval)} {GetFrequency(eventObj.Frequency)} ";
+            if (eventModel.RecurrencePattern.Frequency != null && eventModel.RecurrencePattern.Frequency == Frequency.Daily && eventModel.RecurrencePattern.Interval == null) return $"Every ";
+            return $"Every {GetInterval(eventModel.RecurrencePattern.Interval)} {GetFrequency(eventModel.RecurrencePattern.Frequency)} ";
         }
 
-        private static string GetCombinationOfWeekOrderAndWeekDay(Event eventObj)
+        private static string GetCombinationOfWeekOrderAndWeekDay(EventModel eventModel)
         {
-            if (eventObj.WeekOrder != null && eventObj.ByWeekDay != null)
-                return $"{GetWeekOrder((int)eventObj.WeekOrder)} {GetWeekDays(eventObj.ByWeekDay)} of week ";
+            if (eventModel.RecurrencePattern.WeekOrder != null && eventModel.RecurrencePattern.ByWeekDay != null)
+                return $"{GetWeekOrder((int)eventModel.RecurrencePattern.WeekOrder)} {GetWeekDays(eventModel.RecurrencePattern.ByWeekDay)} of week ";
             return "";
         }
 
@@ -48,13 +49,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return interval == null || interval <= 1 ? "" : interval + "";
         }
 
-        private static string GetFrequency(string frequency)
+        private static string GetFrequency(Frequency frequency)
         {
-            if (frequency.Equals("daily")) return "day";
-            return frequency[..^2] + " on";
+            if (frequency == Frequency.Daily) return "day";
+            return frequency.ToString()[..^2] + " on";
         }
 
-        private static string GetWeekDays(string days)
+        private static string GetWeekDays(List<int> days)
         {
             return DateTimeManager.GetWeekDaysFromWeekDayNumbers(days);
         }

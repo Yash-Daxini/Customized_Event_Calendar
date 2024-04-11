@@ -1,6 +1,6 @@
 ﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Mapping;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Model;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models;
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories
 {
 
@@ -17,7 +17,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
 
             foreach (List<EventModel> eventModelList in GetEventModelsFromEvents(events))
             {
-                _ = eventModels.Concat(eventModelList);
+                eventModels = [.. eventModels.Concat(eventModelList)];
             }
 
             return eventModels;

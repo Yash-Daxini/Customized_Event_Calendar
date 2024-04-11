@@ -1,4 +1,6 @@
-﻿namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities
+﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+
+namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models
 {
     internal class EventByDate(DateOnly date, Event eventObj)
     {

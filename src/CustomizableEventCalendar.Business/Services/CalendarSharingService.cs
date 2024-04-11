@@ -1,5 +1,7 @@
 ﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
 {
@@ -7,64 +9,65 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
     {
         private readonly SharedCalendarRepository _sharedCalendarRepository = new();
 
-        public void AddSharedCalendar(SharedCalendar sharedEvent)
+        public void AddSharedCalendar(SharedCalendarModel sharedEventModel)
         {
-            _sharedCalendarRepository.Insert(sharedEvent);
+            _sharedCalendarRepository.Insert(sharedEventModel);
         }
 
-        public List<SharedCalendar> GetSharedCalendars()
+        public List<SharedCalendarModel> GetSharedCalendars()
         {
-            return [.._sharedCalendarRepository.GetAll(data => new SharedCalendar(data))
-                                                                        .Where(sharedEvent =>
-                                                                         sharedEvent.ReceiverUserId ==
-                                                                         GlobalData.GetUser().Id)
-                                                                        .OrderBy(sharedCalendar => sharedCalendar.ToDate)];
+            return [.._sharedCalendarRepository.GetAll().Where(sharedCalendar => sharedCalendar.ReceiverUser.Id == GlobalData.GetUser().Id)
+                                                        .OrderBy(sharedCalendar => sharedCalendar.ToDate)];
         }
 
-        public SharedCalendar? GetSharedCalendarById(int sharedCalendarId)
+        public SharedCalendarModel? GetSharedCalendarById(int sharedCalendarId)
         {
-            return _sharedCalendarRepository.GetById(data => new SharedCalendar(data), sharedCalendarId);
+            return _sharedCalendarRepository.GetById(sharedCalendarId);
         }
 
         public List<EventCollaborator> GetSharedEventsFromSharedCalendarId(int sharedCalendarId)
         {
-            SharedCalendar? sharedCalendar = GetSharedCalendarById(sharedCalendarId);
+            SharedCalendarModel? sharedCalendarModel = GetSharedCalendarById(sharedCalendarId);
 
-            if (sharedCalendar == null) return [];
+            if (sharedCalendarModel == null) return [];
 
             EventRepository eventRepository = new();
 
-            List<Event> events = eventRepository.GetAll(data => new Event(data));
+            List<EventModel> eventModels = eventRepository.GetAll();
 
-            HashSet<int> sharedEventIds = GetSharedEventIdsFromSharedCalendar(events, sharedCalendar);
+            HashSet<int> sharedEventIds = GetSharedEventIdsFromSharedCalendar(eventModels, sharedCalendarModel);
 
-            List<EventCollaborator> sharedEvents = GetSharedEventsFromSharedCalendar(sharedCalendar, sharedEventIds);
+            List<Domain.Entities.EventCollaborator> sharedEvents = GetSharedEventsFromSharedCalendar(sharedCalendarModel, sharedEventIds);
 
             return sharedEvents;
         }
 
-        private static HashSet<int> GetSharedEventIdsFromSharedCalendar(List<Event> events, SharedCalendar sharedCalendar)
+        private static HashSet<int> GetSharedEventIdsFromSharedCalendar(List<EventModel> eventModels, SharedCalendarModel sharedCalendarModel)
         {
-            HashSet<int> sharedEventIds = [..events.Where(eventObj => eventObj.UserId == sharedCalendar.SenderUserId)
-                                                   .Select(eventObj => eventObj.Id)];
+            HashSet<int> sharedEventIds = [];
+
+            foreach (var eventModel in eventModels)
+            {
+                UserModel eventOrganizer = eventModel.Participants.Where(participant => participant.ParticipantRole == ParticipantRole.Organizer).First().User;
+
+                if (eventOrganizer.Id == sharedCalendarModel.SenderUser.Id) sharedEventIds.Add(eventModel.Id);
+            }
 
             return sharedEventIds;
         }
 
-        private static List<EventCollaborator> GetSharedEventsFromSharedCalendar(SharedCalendar sharedCalendar, HashSet<int> sharedEventIds)
+        private static List<Domain.Entities.EventCollaborator> GetSharedEventsFromSharedCalendar(SharedCalendarModel sharedCalendarModel, HashSet<int> sharedEventIds)
         {
-            List<EventCollaborator> sharedEvents = GetAllSharedEventsBetweenGivenDate(sharedCalendar.FromDate, sharedCalendar.ToDate, sharedEventIds);
+            List<Domain.Entities.EventCollaborator> sharedEvents = GetAllSharedEventsBetweenGivenDate(sharedCalendarModel.FromDate, sharedCalendarModel.ToDate, sharedEventIds);
 
             return sharedEvents;
         }
 
-        private static List<EventCollaborator> GetAllSharedEventsBetweenGivenDate(DateOnly fromDate, DateOnly toDate, HashSet<int> sharedEventIds)
+        private static List<ParticipantModel> GetAllSharedEventsBetweenGivenDate(DateOnly fromDate, DateOnly toDate, HashSet<int> sharedEventIds)
         {
-            return [.. new EventCollaboratorRepository().GetAll(data => new EventCollaborator(data))
-                                                        .Where(sharedEvent => sharedEvent.UserId != GlobalData.GetUser().Id
-                                                               &&IsDateBetweenRange(fromDate,toDate,sharedEvent.EventDate)
-                                                               &&IsSharedEvent(sharedEventIds, sharedEvent.EventId))
-                                                        .OrderBy(sharedEvent => sharedEvent.EventDate)];
+            return [.. new EventCollaboratorService().GetAllParticipants().Where(participant => participant.User.Id != GlobalData.GetUser().Id && IsDateBetweenRange(fromDate,toDate,participant.EventDate)
+                                                               &&IsSharedEvent(sharedEventIds, participant.EventId))
+                                                        .OrderBy(participant => participant.EventDate)];
         }
 
         private static bool IsDateBetweenRange(DateOnly startDate, DateOnly endDate, DateOnly checkingDate)

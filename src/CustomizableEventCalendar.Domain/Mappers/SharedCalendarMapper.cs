@@ -1,6 +1,6 @@
 ﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Model;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Mapping
 {

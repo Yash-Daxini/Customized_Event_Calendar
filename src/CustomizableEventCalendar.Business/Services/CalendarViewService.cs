@@ -1,4 +1,4 @@
-﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models;
 
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
@@ -6,13 +6,12 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
     internal class CalendarViewService
     {
         private readonly EventService _eventService = new();
-        private readonly EventCollaboratorService _eventCollaboratorsService = new();
 
-        public List<EventByDate> GetEventsFroDailyView()
+        public List<EventModel> GetEventsFroDailyView()
         {
-            List<EventCollaborator> todaysEvents = GetEventsOfToday();
+            List<EventModel> todaysEvents = GetEventsOfToday();
 
-            return GetListOfEventByDate(todaysEvents);
+            return GetEventsOrderedByDateAndHour(todaysEvents);
         }
 
         private bool IsProposedEvent(int eventId)
@@ -20,96 +19,69 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return _eventService.GetProposedEvents().Exists(eventObj => eventObj.Id == eventId);
         }
 
-        private List<EventCollaborator> GetEventsOfToday()
+        private List<EventModel> GetEventsOfToday()
         {
-            return [.. _eventCollaboratorsService.GetAllEventCollaborators()
-                   .Where(eventCollaborator => eventCollaborator.EventDate == DateOnly.FromDateTime(DateTime.Today)
-                                               && IsConsiderableEventCollaborators(eventCollaborator)
-                                               && !IsProposedEvent(eventCollaborator.EventId))];
+            return [.. _eventService.GetAllEventsOfLoggedInUser()
+                   .Where(eventModel => eventModel.EventDate == DateOnly.FromDateTime(DateTime.Today)
+                                               && !IsProposedEvent(eventModel.Id))];
         }
 
-        private static bool IsConsiderableEventCollaborators(EventCollaborator eventCollaborator)
-        {
-            return eventCollaborator.UserId == GlobalData.GetUser().Id
-                    && !(eventCollaborator.ConfirmationStatus != null && eventCollaborator.ConfirmationStatus.Equals("reject")
-                        && eventCollaborator.ProposedStartHour == null
-                        && eventCollaborator.ProposedEndHour == null
-                        );
-        }
-
-        public List<EventByDate> GetDateAndEventsForWeeklyView()
+        public List<EventModel> GetDateAndEventsForWeeklyView()
         {
             DateOnly startDateOfWeek = DateTimeManager.GetStartDateOfWeek(DateOnly.FromDateTime(DateTime.Today));
             DateOnly endDateOfWeek = DateTimeManager.GetEndDateOfWeek(DateOnly.FromDateTime(DateTime.Today));
 
-            List<EventByDate> currentWeekEvents = GetGivenWeekEventsWithDate(startDateOfWeek, endDateOfWeek);
+            List<EventModel> currentWeekEvents = GetGivenWeekEventsWithDate(startDateOfWeek, endDateOfWeek);
 
             return currentWeekEvents;
         }
 
-        private List<EventByDate> GetGivenWeekEventsWithDate(DateOnly startDateOfWeek, DateOnly endDateOfWeek)
+        private List<EventModel> GetGivenWeekEventsWithDate(DateOnly startDateOfWeek, DateOnly endDateOfWeek)
         {
-            List<EventCollaborator> eventCollaborators = _eventCollaboratorsService.GetAllEventCollaborators();
+            List<EventModel> eventModel = _eventService.GetAllEventsOfLoggedInUser();
 
-            List<EventByDate> currentWeekEvents = GetListOfEventByDate(GetGivenWeekEvents(eventCollaborators, startDateOfWeek, endDateOfWeek));
+            List<EventModel> currentWeekEvents = GetEventsOrderedByDateAndHour(GetGivenWeekEvents(eventModel, startDateOfWeek, endDateOfWeek));
 
             return currentWeekEvents;
         }
 
-        private List<EventCollaborator> GetGivenWeekEvents(List<EventCollaborator> eventCollaborators, DateOnly startDateOfWeek, DateOnly endDateOfWeek)
+        private List<EventModel> GetGivenWeekEvents(List<EventModel> eventModels, DateOnly startDateOfWeek, DateOnly endDateOfWeek)
         {
-            return [.. eventCollaborators.Where(eventCollaborator => IsEventOccurInGivenWeek(startDateOfWeek, endDateOfWeek, eventCollaborator))];
+            return [.. eventModels.Where(eventModel => IsEventOccurInGivenWeek(startDateOfWeek, endDateOfWeek, eventModel))];
         }
 
-        private bool IsEventOccurInGivenWeek(DateOnly startDateOfWeek, DateOnly endDateOfWeek, EventCollaborator eventCollaborator)
+        private bool IsEventOccurInGivenWeek(DateOnly startDateOfWeek, DateOnly endDateOfWeek, EventModel eventModel)
         {
-            return eventCollaborator.EventDate >= startDateOfWeek
-                   && eventCollaborator.EventDate <= endDateOfWeek
-                   && IsConsiderableEventCollaborators(eventCollaborator)
-                   && !IsProposedEvent(eventCollaborator.EventId);
+            return eventModel.EventDate >= startDateOfWeek
+                   && eventModel.EventDate <= endDateOfWeek
+                   && !IsProposedEvent(eventModel.Id);
         }
 
-        public List<EventByDate> GetGivenMonthEventsWithDate(DateOnly startDateOfMonth, DateOnly endDateOfMonth)
+        public List<EventModel> GetGivenMonthEventsWithDate(DateOnly startDateOfMonth, DateOnly endDateOfMonth)
         {
-            List<EventCollaborator> eventCollaborators = _eventCollaboratorsService.GetAllEventCollaborators();
+            List<EventModel> eventModel = _eventService.GetAllEventsOfLoggedInUser();
 
-            List<EventByDate> currentMonthEvents = GetListOfEventByDate(GetGivenMonthEvents(eventCollaborators, startDateOfMonth, endDateOfMonth));
+            List<EventModel> currentMonthEvents = GetEventsOrderedByDateAndHour(GetGivenMonthEvents(eventModel, startDateOfMonth, endDateOfMonth));
 
             return currentMonthEvents;
         }
 
-        private List<EventByDate> GetListOfEventByDate(List<EventCollaborator> eventCollaborators)
+        private List<EventModel> GetEventsOrderedByDateAndHour(List<EventModel> eventModels)
         {
-
-            List<EventByDate> eventsByDateList = [];
-
-            List<Event> events = _eventService.GetAllEvents();
-
-            foreach (var eventCollaborator in eventCollaborators)
-            {
-                Event? eventObj = events.Find(eventObj => eventObj.Id == eventCollaborator.EventId);
-
-                if (eventObj is null) continue;
-
-                eventsByDateList.Add(new EventByDate(eventCollaborator.EventDate, eventObj));
-            }
-
-            return [.. eventsByDateList.OrderBy(eventByDate => eventByDate.Date).ThenBy(eventByDate => eventByDate.Event.EventStartHour)];
+            return [.. eventModels.OrderBy(eventModel => eventModel.EventDate).ThenBy(eventModel => eventModel.Duration.StartHour)];
         }
 
-        private List<EventCollaborator> GetGivenMonthEvents(List<EventCollaborator> eventCollaborators, DateOnly startDateOfMonth, DateOnly endDateOfMonth)
+        private List<EventModel> GetGivenMonthEvents(List<EventModel> eventModels, DateOnly startDateOfMonth, DateOnly endDateOfMonth)
         {
-            return [..eventCollaborators.Where(eventCollaborator => IsEventOccurInGivenMonth
-                                                                    (startDateOfMonth, endDateOfMonth, eventCollaborator))];
+            return [.. eventModels.Where(eventModel => IsEventOccurInGivenMonth(startDateOfMonth, endDateOfMonth, eventModel))];
         }
 
         private bool IsEventOccurInGivenMonth(DateOnly startDateOfMonth, DateOnly endDateOfMonth,
-                                             EventCollaborator eventCollaborator)
+                                             EventModel eventModel)
         {
-            return eventCollaborator.EventDate >= startDateOfMonth
-                   && eventCollaborator.EventDate <= endDateOfMonth
-                   && IsConsiderableEventCollaborators(eventCollaborator)
-                   && !IsProposedEvent(eventCollaborator.EventId);
+            return eventModel.EventDate >= startDateOfMonth
+                   && eventModel.EventDate <= endDateOfMonth
+                   && !IsProposedEvent(eventModel.Id);
         }
     }
 }

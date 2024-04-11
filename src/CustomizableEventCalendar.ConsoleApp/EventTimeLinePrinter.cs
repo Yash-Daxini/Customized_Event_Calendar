@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {
@@ -27,13 +28,16 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             }
         }
 
-        private static List<EventByDate> GetDateWiseEventCollaborators(DateOnly startDate, DateOnly endDate, List<EventCollaborator> eventCollaborators)
+        private static List<EventByDate> GetDateWiseEventCollaborators(DateOnly startDate, DateOnly endDate, List<Domain.Entities.EventCollaborator> eventCollaborators)
         {
-            List<EventCollaborator> eventCollaboratorsInGivenDateRange = GetEventCollaboratorsInGivenDateRange(startDate, endDate, eventCollaborators);
+            List<Domain.Entities.EventCollaborator> eventCollaboratorsInGivenDateRange = GetEventCollaboratorsInGivenDateRange(startDate, endDate, eventCollaborators);
 
             List<EventByDate> eventsByDate = [];
 
-            List<Event> events = _eventService.GetAllEvents();
+            //List<Event> events = _eventService.GetAllEvents();
+
+            //.............................
+            List<Event> events = [];
 
             foreach (var eventCollaborator in eventCollaboratorsInGivenDateRange)
             {
@@ -47,7 +51,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return eventsByDate;
         }
 
-        private static List<EventCollaborator> GetEventCollaboratorsInGivenDateRange(DateOnly startDate, DateOnly endDate, List<EventCollaborator> eventCollaborators)
+        private static List<Domain.Entities.EventCollaborator> GetEventCollaboratorsInGivenDateRange(DateOnly startDate, DateOnly endDate, List<Domain.Entities.EventCollaborator> eventCollaborators)
         {
             return [..eventCollaborators.FindAll(eventCollaborator => IsDateInRange(startDate, endDate, eventCollaborator.EventDate))
                                         .OrderBy(eventCollaborator=>eventCollaborator.EventDate)
@@ -63,7 +67,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             GetDatesToPrintEventWithTimeline(out DateOnly startDate, out DateOnly endDate);
 
-            List<EventCollaborator> eventCollaborators = GetEventCollaborators();
+            List<Domain.Entities.EventCollaborator> eventCollaborators = GetEventCollaborators();
 
             List<EventByDate> eventsByDate = GetDateWiseEventCollaborators(startDate, endDate, eventCollaborators);
 
@@ -80,11 +84,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         }
 
-        private static List<EventCollaborator> GetEventCollaborators()
+        private static List<Domain.Entities.EventCollaborator> GetEventCollaborators()
         {
             EventCollaboratorService eventCollaboratorService = new();
 
-            List<EventCollaborator> eventCollaborators = [..eventCollaboratorService.GetAllEventCollaborators()
+            List<Domain.Entities.EventCollaborator> eventCollaborators = [.. eventCollaboratorService.GetAllParticipants()
                                                                                  .FindAll(eventCollaborator =>
                                                                                             eventCollaborator.UserId == GlobalData.GetUser().Id
                                                                                             && eventCollaborator.ConfirmationStatus != null

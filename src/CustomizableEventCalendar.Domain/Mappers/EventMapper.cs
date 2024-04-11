@@ -1,33 +1,45 @@
 ﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Model;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Mapping
 {
     internal class EventMapper
     {
-        public List<EventModel> MapEventEntityToModel(Event eventObj, List<EventCollaborator> eventCollaborators)
+        public List<EventModel> MapEventEntityToModel(Event eventObj, List<Entities.EventCollaborator> eventCollaborators)
         {
             List<EventModel> eventModels = [];
 
-            foreach (var eventModel in eventCollaborators.GroupBy(eventCollaborator => eventCollaborator.EventDate))
+            foreach (var eventModel in eventCollaborators.GroupBy(eventCollaborator => eventCollaborator.EventDate).Select(eventCollaborator =>
+            new
             {
-                DateOnly eventDate = eventModel.Key;
+                EventDate = eventCollaborator.Key,
+                Collaborators = eventCollaborator.Select(eventCollaborator => eventCollaborator).ToList()
+            }))
+            {
+                DateOnly eventDate = eventModel.EventDate;
 
                 eventModels.Add(new EventModel
-                {
-                    Id = eventObj.Id,
-                    Title = eventObj.Title,
-                    Description = eventObj.Description,
-                    Location = eventObj.Location,
-                    EventDate = eventDate,
-                    Duration = new DurationMapper().MapDurationModel(eventObj.EventStartHour, eventObj.EventEndHour),
-                    RecurrencePattern = new RecurrencePatternMapper().MapEventEntityToRecurrencePatternModel(eventObj),
-                    Participants = [.. eventModel.Select(eventCollaborator => new ParticipantMapper().MapEventCollaboratorToParticipantModel(eventCollaborator))]
-                }
+                (
+                    eventObj.Id,
+                    eventObj.Title,
+                    eventObj.Description,
+                    eventObj.Location,
+                    eventDate,
+                    new DurationMapper().MapDurationModel(eventObj.EventStartHour, eventObj.EventEndHour),
+                    new RecurrencePatternMapper().MapEventEntityToRecurrencePatternModel(eventObj),
+                    GetListOfParticipant(eventModel.Collaborators)
+                )
                 );
             }
 
             return eventModels;
+        }
+
+        private List<Models.ParticipantModel> GetListOfParticipant(List<Entities.EventCollaborator> eventCollaborators)
+        {
+            List<Models.ParticipantModel> participantModels = [.. eventCollaborators.Select(eventCollaborator => new ParticipantMapper().MapEventCollaboratorToParticipantModel(eventCollaborator))];
+
+            return participantModels;
         }
 
         public Event MapEventModelToEntity(EventModel eventModel)

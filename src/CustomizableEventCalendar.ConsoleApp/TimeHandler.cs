@@ -1,5 +1,6 @@
 ﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {
@@ -62,10 +63,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                 obj.EventEndHour = endHour;
 
             }
-            else if (obj is EventCollaborator)
+            else if (obj is EventModel)
             {
-                obj.ProposedStartHour = startHour;
-                obj.ProposedEndHour = endHour;
+                obj.Participants[0].ProposedStartHour = startHour;
+                obj.Participants[0].ProposedEndHour = endHour;
             }
         }
 

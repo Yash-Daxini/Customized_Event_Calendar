@@ -1,41 +1,29 @@
-﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
 {
     internal class ProposedEventService
     {
         private readonly EventService _eventService = new();
-        private readonly EventCollaboratorService _eventCollaboratorService = new();
 
-        public List<Event> GetProposedEvents()
+        public List<EventModel> GetProposedEvents()
         {
 
-            List<Event> events = _eventService.GetProposedEvents();
+            List<EventModel> eventModels = _eventService.GetProposedEvents();
 
-            HashSet<int> proposedEventIds = [.. events.Select(eventObj => eventObj.Id)];
-
-            HashSet<int> proposedEventIdsForLoggedInUser = [..GetEventCollaboratorWhichHasPendingResponse(proposedEventIds)
-                                                           .Select(eventCollaborator => eventCollaborator.EventId)];
-
-            return [.. events.Where(eventObj => proposedEventIdsForLoggedInUser.Contains(eventObj.Id))];
+            return GetEventCollaboratorWhichHasPendingResponse(eventModels);
 
         }
 
-        private List<EventCollaborator> GetEventCollaboratorWhichHasPendingResponse(HashSet<int> proposedEventIds)
+        private List<EventModel> GetEventCollaboratorWhichHasPendingResponse(List<EventModel> eventModels)
         {
-            return [.._eventCollaboratorService.GetAllEventCollaborators()
-                                               .Where(eventCollaborator => IsLoggedInUserHasPendingResponseForProposedEvent
-                                                                           (proposedEventIds,eventCollaborator))];
+            return [.. eventModels.Where(eventModel => eventModel.Participants.Exists(participantModel => IsLoggedInUserHasPendingResponseForProposedEvent(participantModel)))];
         }
 
-        private static bool IsLoggedInUserHasPendingResponseForProposedEvent(HashSet<int> proposedEventIds, EventCollaborator eventCollaborator)
+        private static bool IsLoggedInUserHasPendingResponseForProposedEvent(ParticipantModel participantModel)
         {
-            return proposedEventIds.Contains(eventCollaborator.EventId)
-                   && eventCollaborator.UserId == GlobalData.GetUser().Id
-                   && eventCollaborator.ParticipantRole != null
-                   && eventCollaborator.ParticipantRole.Equals("participant")
-                   && eventCollaborator.ConfirmationStatus != null
-                   && eventCollaborator.ConfirmationStatus.Equals("pending");
+            return participantModel.ConfirmationStatus == ConfirmationStatus.Pending;
         }
     }
 }

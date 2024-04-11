@@ -2,6 +2,7 @@
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {
@@ -119,7 +120,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             {
                 if (OverlapHandler.IsOverlappingEvent(eventObj, true)) return;
 
-                eventObj.Id = _eventService.InsertEvent(eventObj);
+                //....................
+
+                //eventObj.Id = _eventService.InsertEvent(eventObj);
 
                 PrintHandler.PrintSuccessMessage("Event Added Successfully");
 
@@ -144,7 +147,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         private static string GetEventTable()
         {
-            List<Event> events = _eventService.GetAllEventsOfLoggedInUser();
+            //List<Event> events = _eventService.GetAllEventsOfLoggedInUser();
+
+            //.........................
+
+            List<Event> events = [];
 
             List<List<string>> outputRows = events.InsertInto2DList(["Event NO.", "Title", "Description", "Location", "Event Repetition", "Start Date", "End Date", "Duration"],
                 [

@@ -1,4 +1,4 @@
-﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Model;
+﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Mapping
 {

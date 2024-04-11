@@ -38,7 +38,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             EventService eventService = new();
 
-            return [.. eventService.GetAllEventsOfLoggedInUser().Where(eventObj => eventObj.IsProposed)];
+            //return [.. eventService.GetAllEventsOfLoggedInUser().Where(eventObj => eventObj.IsProposed)];
+            return [];
         }
 
         private static int CalculateDayDifferenceBetweenTwoDates(DateTime firstDate, DateTime secondDate)
@@ -216,7 +217,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             EventCollaboratorService eventCollaboratorService = new();
 
-            List<EventCollaborator> eventCollaborators = [..eventCollaboratorService.GetAllEventCollaborators()
+            List<EventCollaborator> eventCollaborators = [..eventCollaboratorService.GetAllParticipants()
                                                             .Where(eventCollaborator => eventCollaborator.EventId == eventId)];
             return eventCollaborators;
         }

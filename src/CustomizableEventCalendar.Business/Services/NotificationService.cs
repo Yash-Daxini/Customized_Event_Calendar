@@ -1,4 +1,5 @@
 ﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
 {
@@ -12,16 +13,16 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public NotificationService()
         {
-            events = _eventService.GetAllEvents();
+            //events = _eventService.GetAllEvents();
         }
 
-        private static bool IsEventOrganizer(EventCollaborator eventCollaborator)
+        private static bool IsEventOrganizer(Domain.Entities.EventCollaborator eventCollaborator)
         {
             return eventCollaborator.ParticipantRole is not null && eventCollaborator.ParticipantRole.Equals("organizer");
         }
-        private List<EventCollaborator> GetConsiderableEventCollaborators()
+        private List<Domain.Entities.EventCollaborator> GetConsiderableEventCollaborators()
         {
-            return [.. _eventCollaboratorsService.GetAllEventCollaborators()
+            return [.. _eventCollaboratorsService.GetAllParticipants()
                                                  .Where(eventCollaborator => eventCollaborator.UserId == GlobalData.GetUser().Id &&
                                                  (IsEventOrganizer(eventCollaborator)
                                                  || (!IsEventOrganizer(eventCollaborator)
@@ -37,7 +38,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public List<EventByDate> GetUpcomingEvents()
         {
-            List<EventCollaborator> scheduleEvents = [.. GetConsiderableEventCollaborators()
+            List<Domain.Entities.EventCollaborator> scheduleEvents = [.. GetConsiderableEventCollaborators()
                                                          .Where(eventCollaborator => eventCollaborator.EventDate == DateOnly.FromDateTime(DateTime.Now))
                                                          .OrderBy(eventCollaborator => eventCollaborator.EventDate)
                                                          .ThenBy(eventCollaborator =>eventCollaborator.ProposedStartHour)];
@@ -60,7 +61,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             HashSet<int> proposedEventIds = GetProposedEventIds();
 
-            List<EventCollaborator> proposedEventCollaborators = GetProposedEventCollaborators(proposedEventIds);
+            List<Domain.Entities.EventCollaborator> proposedEventCollaborators = GetProposedEventCollaborators(proposedEventIds);
 
             List<EventByDate> proposedEventsWithDate = [];
 
@@ -76,9 +77,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return proposedEventsWithDate;
         }
 
-        private List<EventCollaborator> GetProposedEventCollaborators(HashSet<int> proposedEventIds)
+        private List<Domain.Entities.EventCollaborator> GetProposedEventCollaborators(HashSet<int> proposedEventIds)
         {
-            List<EventCollaborator> proposedEventCollaborators = [.. _eventCollaboratorsService.GetAllEventCollaborators()
+            List<Domain.Entities.EventCollaborator> proposedEventCollaborators = [.. _eventCollaboratorsService.GetAllParticipants()
                                                                  .Where(eventCollaborator => proposedEventIds.Contains(eventCollaborator.EventId)
                                                                         && eventCollaborator.UserId == GlobalData.GetUser().Id)
                                                                  .OrderBy(eventCollaborator => eventCollaborator.EventDate)

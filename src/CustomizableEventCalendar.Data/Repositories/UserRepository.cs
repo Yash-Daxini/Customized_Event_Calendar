@@ -1,12 +1,44 @@
-﻿using System.Data.SqlClient;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Mapping;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories
 {
     internal class UserRepository : GenericRepository<User>
     {
 
-        public User? AuthenticateUser(string userName, string password)
+        private readonly UserMapper _userMapper = new();
+
+        public List<UserModel> GetAll()
+        {
+            List<User> users = GetAll(data => new User(data));
+
+            return [.. users.Select(_userMapper.MapUserEntityToModel)];
+        }
+
+        public UserModel? GetById(int userId)
+        {
+            User? user = GetById(data => new User(data), userId);
+
+            if (user == null) return null;
+            return _userMapper.MapUserEntityToModel(user);
+        }
+
+        public int Insert(UserModel userModel)
+        {
+            User user = _userMapper.MapUserModelToEntity(userModel);
+
+            return Insert(user);
+        }
+
+        public void Update(UserModel userModel)
+        {
+            User user = _userMapper.MapUserModelToEntity(userModel);
+
+            Update(user, user.Id);
+        }
+
+        public UserModel? AuthenticateUser(string userName, string password)
         {
             string query = @$"SELECT [dbo].[User].Id
                                     ,[dbo].[User].Name
@@ -26,7 +58,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
             {
                 user = new User(sqlDataReader);
                 Disconnect();
-                return user;
+                return _userMapper.MapUserEntityToModel(user);
             }
 
             Disconnect();
@@ -34,9 +66,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
             return null;
         }
 
-        public List<User> ReadInsensitiveInformation(Func<SqlDataReader, User> createObject)
+        public List<UserModel> ReadInsensitiveInformation()
         {
-            List<User> users = new List<User>();
+            List<UserModel> users = [];
 
             string query = @$"SELECT [dbo].[User].Id
                                     ,[dbo].[User].Name
@@ -50,7 +82,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositor
             while (sqlDataReader.Read())
             {
                 User user = new User(Convert.ToInt32(sqlDataReader["Id"]), sqlDataReader["Name"].ToString(), sqlDataReader["Email"].ToString());
-                users.Add(user);
+                users.Add(_userMapper.MapUserEntityToModel(user));
             }
 
             Disconnect();

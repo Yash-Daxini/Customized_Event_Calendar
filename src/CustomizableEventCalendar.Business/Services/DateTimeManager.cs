@@ -95,16 +95,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return DateOnly.FromDateTime(dateTime);
         }
 
-        public static string GetWeekDaysFromWeekDayNumbers(string days)
+        public static string GetWeekDaysFromWeekDayNumbers(List<int> days)
         {
-            List<string> listOfDays = [.. days.Split(",").Select(day => day.Trim())];
-
             StringBuilder daysOfWeek = new();
 
-            foreach (string day in listOfDays)
+            foreach (int day in days)
             {
-                if (day.Length == 0) continue;
-                daysOfWeek.Append(GetWeekDayFromWeekNumber(Convert.ToInt32(day)) + ",");
+                daysOfWeek.Append(GetWeekDayFromWeekNumber(day) + ",");
             }
 
             if (daysOfWeek.Length == 0) return "-";
