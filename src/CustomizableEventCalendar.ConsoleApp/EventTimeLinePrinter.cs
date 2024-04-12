@@ -1,14 +1,12 @@
 ﻿using System.Data;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {
     internal static class EventTimeLinePrinter
     {
-
-        private readonly static EventService _eventService = new();
 
         private static DateOnly GetDate(string inputMessage)
         {
@@ -28,34 +26,16 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             }
         }
 
-        private static List<EventByDate> GetDateWiseEventCollaborators(DateOnly startDate, DateOnly endDate, List<Domain.Entities.EventCollaborator> eventCollaborators)
+        private static List<EventModel> GetDateWiseEventCollaborators(DateOnly startDate, DateOnly endDate, List<EventModel> eventModels)
         {
-            List<Domain.Entities.EventCollaborator> eventCollaboratorsInGivenDateRange = GetEventCollaboratorsInGivenDateRange(startDate, endDate, eventCollaborators);
-
-            List<EventByDate> eventsByDate = [];
-
-            //List<Event> events = _eventService.GetAllEvents();
-
-            //.............................
-            List<Event> events = [];
-
-            foreach (var eventCollaborator in eventCollaboratorsInGivenDateRange)
-            {
-                Event? eventObj = events.Find(eventObj => eventObj.Id == eventCollaborator.EventId);
-
-                if (eventObj is null) continue;
-
-                eventsByDate.Add(new EventByDate(eventCollaborator.EventDate, eventObj));
-            }
-
-            return eventsByDate;
+            return GetEventCollaboratorsInGivenDateRange(startDate, endDate, eventModels);
         }
 
-        private static List<Domain.Entities.EventCollaborator> GetEventCollaboratorsInGivenDateRange(DateOnly startDate, DateOnly endDate, List<Domain.Entities.EventCollaborator> eventCollaborators)
+        private static List<EventModel> GetEventCollaboratorsInGivenDateRange(DateOnly startDate, DateOnly endDate, List<EventModel> eventModels)
         {
-            return [..eventCollaborators.FindAll(eventCollaborator => IsDateInRange(startDate, endDate, eventCollaborator.EventDate))
-                                        .OrderBy(eventCollaborator=>eventCollaborator.EventDate)
-                                        .ThenBy(eventCollaborator => eventCollaborator.ProposedStartHour)];
+            return [..eventModels.Where(eventModel => IsDateInRange(startDate, endDate, eventModel.EventDate))
+                                        .OrderBy(eventModel=>eventModel.EventDate)
+                                        .ThenBy(eventModel=> eventModel.Duration.StartHour)];
         }
 
         private static bool IsDateInRange(DateOnly startDate, DateOnly endDate, DateOnly dateToCheck)
@@ -67,34 +47,31 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             GetDatesToPrintEventWithTimeline(out DateOnly startDate, out DateOnly endDate);
 
-            List<Domain.Entities.EventCollaborator> eventCollaborators = GetEventCollaborators();
+            List<EventModel> eventModels = GetUserParticipationEvents();
 
-            List<EventByDate> eventsByDate = GetDateWiseEventCollaborators(startDate, endDate, eventCollaborators);
+            List<EventModel> eventsByDate = GetDateWiseEventCollaborators(startDate, endDate, eventModels);
 
-            List<List<string>> tableContentOfEventTimeLine = eventsByDate.InsertInto2DList(["Date", "Day", "Event Name", "Start Time", "End Time"], 
+            List<List<string>> tableContentOfEventTimeLine = eventsByDate.InsertInto2DList(["Date", "Day", "Event Name", "Start Time", "End Time"],
                 [
-                    eventByDate => eventByDate.Date,
-                    eventByDate => DateTimeManager.GetDayFromDateOnly(eventByDate.Date),
-                    eventByDate => eventByDate.Event.Title,
-                    eventByDate => DateTimeManager.ConvertTo12HourFormat(eventByDate.Event.EventStartHour),
-                    eventByDate => DateTimeManager.ConvertTo12HourFormat(eventByDate.Event.EventEndHour),
+                    eventModel => eventModel.EventDate,
+                    eventModel => DateTimeManager.GetDayFromDateOnly(eventModel.EventDate),
+                    eventModel => eventModel.Title,
+                    eventModel => DateTimeManager.ConvertTo12HourFormat(eventModel.Duration.StartHour),
+                    eventModel => DateTimeManager.ConvertTo12HourFormat(eventModel.Duration.EndHour),
                 ]);
 
             Console.WriteLine("\n" + PrintService.GenerateTable(tableContentOfEventTimeLine));
 
         }
 
-        private static List<Domain.Entities.EventCollaborator> GetEventCollaborators()
+        private static List<EventModel> GetUserParticipationEvents()
         {
-            EventCollaboratorService eventCollaboratorService = new();
-
-            List<Domain.Entities.EventCollaborator> eventCollaborators = [.. eventCollaboratorService.GetAllParticipants()
-                                                                                 .FindAll(eventCollaborator =>
-                                                                                            eventCollaborator.UserId == GlobalData.GetUser().Id
-                                                                                            && eventCollaborator.ConfirmationStatus != null
-                                                                                            && !eventCollaborator.ConfirmationStatus.Equals("reject")
-                                                                                         )];
-            return eventCollaborators;
+            return [..new EventService().GetAllEventsOfLoggedInUser()
+                                        .Select(eventModel => 
+                                        {
+                                            eventModel.Participants = eventModel.Participants.Where(participant => participant.ConfirmationStatus == ConfirmationStatus.Reject).ToList();
+                                            return eventModel;
+                                        })];
         }
     }
 }

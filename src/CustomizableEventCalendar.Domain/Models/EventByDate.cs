@@ -2,10 +2,10 @@
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models
 {
-    internal class EventByDate(DateOnly date, Event eventObj)
+    internal class EventByDate(DateOnly date, Entities.Event eventObj)
     {
         public DateOnly Date { get; set; } = date;
 
-        public Event Event { get; set; } = eventObj;
+        public Entities.Event Event { get; set; } = eventObj;
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Data;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
 {
@@ -7,39 +8,36 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
     {
         public void StartSchedulingProcessOfProposedEvent()
         {
-            List<Event> events = GetProposedEvents();
+            List<EventModel> events = GetProposedEvents();
 
-            foreach (var eventObj in events)
+            foreach (var eventModel in events)
             {
-                int remainingDays = CalculateDayDifferenceBetweenTwoDates(DateTime.Now, DateTime.Parse(eventObj.EventStartDate.ToString()));
+                int remainingDays = CalculateDayDifferenceBetweenTwoDates(DateTime.Now, DateTime.Parse(eventModel.RecurrencePattern.StartDate.ToString()));
 
                 if (remainingDays <= 1)
                 {
-                    CalculateMutualTime(eventObj);
-                    StartProcessOfConvertingProposedEventToScheduleEvent(eventObj);
-                    ScheduleProposedEvent(eventObj);
+                    CalculateMutualTime(eventModel);
+                    StartProcessOfConvertingProposedEventToScheduleEvent(eventModel);
+                    ScheduleProposedEvent(eventModel);
                 }
-                else if (!IsAnyInviteeWithPendingConfirmationStatus(eventObj))
+                else if (!IsAnyInviteeWithPendingConfirmationStatus(eventModel))
                 {
-                    CalculateMutualTime(eventObj);
-                    UpdateEventCollaboratorsStatus(eventObj);
+                    CalculateMutualTime(eventModel);
+                    UpdateEventCollaboratorsStatus(eventModel);
                 }
             }
         }
 
-        private static bool IsAnyInviteeWithPendingConfirmationStatus(Event eventObj)
+        private static bool IsAnyInviteeWithPendingConfirmationStatus(EventModel eventModel)
         {
-            return GetInviteesOfEvent(eventObj.Id)
-                   .Exists(eventCollaborator => eventCollaborator.ConfirmationStatus != null
-                                               && eventCollaborator.ConfirmationStatus.Equals("pending"));
+            return eventModel.Participants.Exists(participant => participant.ConfirmationStatus == ConfirmationStatus.Pending);
         }
 
-        private static List<Event> GetProposedEvents()
+        private static List<EventModel> GetProposedEvents()
         {
             EventService eventService = new();
 
-            //return [.. eventService.GetAllEventsOfLoggedInUser().Where(eventObj => eventObj.IsProposed)];
-            return [];
+            return eventService.GetProposedEvents();
         }
 
         private static int CalculateDayDifferenceBetweenTwoDates(DateTime firstDate, DateTime secondDate)
@@ -47,53 +45,42 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return Math.Abs((firstDate - secondDate).Days);
         }
 
-        public static void AddInviteesInProposedEvent(Event eventObj, string invitees)
+        public static void AddInviteesInProposedEvent(EventModel eventModel)
         {
-            HashSet<int> invitedUsers = invitees.Split(",")
-                                                .Select(invitedUser => Convert.ToInt32(invitedUser.Trim()))
-                                                .ToHashSet();
+            ParticipantService eventCollaboratorService = new();
 
-            EventCollaboratorService eventCollaboratorService = new();
-
-            foreach (int userId in invitedUsers)
+            foreach (ParticipantModel participant in eventModel.Participants)
             {
-                eventCollaboratorService.InsertEventCollaborators(new EventCollaborator(eventObj.Id, userId, "participant",
-                                                  "pending", null, null, eventObj.EventStartDate));
+                eventCollaboratorService.InsertParticipant(new ParticipantModel(ParticipantRole.Participant, ConfirmationStatus.Pending, null, null, eventModel.RecurrencePattern.StartDate, participant.User), eventModel.Id);
             }
 
         }
 
-        private static void CalculateMutualTime(Event eventObj)
+        private static void CalculateMutualTime(EventModel eventModel)
         {
-            List<EventCollaborator> eventCollaborators = GetInviteesOfEvent(eventObj.Id);
-
             int[] proposedHours = new int[23];
 
-            foreach (var eventCollaborator in eventCollaborators.Where(IsNeedToConsiderProposedTime))
+            foreach (var participant in eventModel.Participants.Where(IsNeedToConsiderProposedTime))
             {
-                if (eventCollaborator.ProposedStartHour != null && eventCollaborator.ProposedEndHour != null)
-                    CountProposeHours((int)eventCollaborator.ProposedStartHour, (int)eventCollaborator.ProposedEndHour, ref proposedHours);
+                if (participant.ProposedStartHour != null && participant.ProposedEndHour != null)
+                    CountProposeHours((int)participant.ProposedStartHour, (int)participant.ProposedEndHour, ref proposedHours);
             }
 
-            FindMaximumMutualTimeBlock(proposedHours, eventObj);
+            FindMaximumMutualTimeBlock(proposedHours, eventModel);
 
         }
 
-        private static void StartProcessOfConvertingProposedEventToScheduleEvent(Event eventObj)
+        private static void StartProcessOfConvertingProposedEventToScheduleEvent(EventModel eventModel)
         {
-            eventObj.IsProposed = false;
-
             EventService eventService = new();
 
-            eventService.ConvertProposedEventToScheduleEvent(eventObj.Id);
+            eventService.ConvertProposedEventToScheduleEvent(eventModel.Id);
         }
 
-        private static bool IsNeedToConsiderProposedTime(EventCollaborator eventCollaborator)
+        private static bool IsNeedToConsiderProposedTime(ParticipantModel participant)
         {
-            return eventCollaborator.ParticipantRole != null
-                   && eventCollaborator.ParticipantRole.Equals("participant")
-                   && eventCollaborator.ConfirmationStatus != null
-                   && eventCollaborator.ConfirmationStatus.Equals("maybe");
+            return participant.ParticipantRole == ParticipantRole.Participant
+                   && participant.ConfirmationStatus == ConfirmationStatus.Proposed;
         }
 
         private static void CountProposeHours(int startHour, int endHour, ref int[] proposedHours)
@@ -105,13 +92,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             }
         }
 
-        private static void FindMaximumMutualTimeBlock(int[] proposedHours, Event eventObj)
+        private static void FindMaximumMutualTimeBlock(int[] proposedHours, EventModel eventModel)
         {
             int max = proposedHours.Max();
             max = max > 1 ? max : -1;
             int startHour = -1;
             int endHour = -1;
-            int timeBlock = eventObj.EventEndHour - eventObj.EventStartHour;
+            int timeBlock = eventModel.Duration.EndHour - eventModel.Duration.StartHour;
 
             foreach (var item in proposedHours)
             {
@@ -140,86 +127,59 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             if (startHour == -1 && endHour == -1)
             {
-                startHour = eventObj.EventStartHour;
-                endHour = eventObj.EventEndHour;
+                startHour = eventModel.Duration.StartHour;
+                endHour = eventModel.Duration.EndHour;
             }
 
-            UpdateEventTimeBlockToMutualTimeBlock(eventObj, startHour, endHour);
+            UpdateEventTimeBlockToMutualTimeBlock(eventModel, startHour, endHour);
 
         }
 
-        private static void ScheduleProposedEvent(Event eventObj)
+        private static void ScheduleProposedEvent(EventModel eventModel)
         {
-            List<EventCollaborator> eventCollaborators = [.. GetInviteesOfEvent(eventObj.Id).Where(ConsiderableInvitees)];
+            DateOnly eventDate = eventModel.RecurrencePattern.StartDate;
 
-            DateOnly date = new(eventObj.EventStartDate.Year, eventObj.EventStartDate.Month, eventObj.EventStartDate.Day);
+            ParticipantService eventCollaboratorService = new();
 
-            EventCollaboratorService eventCollaboratorService = new();
-
-            foreach (var eventCollaborator in eventCollaborators.Where(IsInviteePresentInEvent))
+            foreach (var eventCollaborator in eventModel.Participants.Where(IsInviteePresentInEvent))
             {
-                eventCollaborator.EventDate = date;
-                eventCollaboratorService.UpdateEventCollaborators(eventCollaborator, eventCollaborator.Id);
+                eventCollaborator.EventDate = eventDate;
+                eventCollaboratorService.UpdateParticipant(eventCollaborator, eventModel.Id);
             }
         }
 
-        private static bool IsInviteePresentInEvent(EventCollaborator eventCollaborator)
+        private static bool IsInviteePresentInEvent(ParticipantModel participantModel)
         {
-            return eventCollaborator.ConfirmationStatus != null
-                   && (eventCollaborator.ConfirmationStatus.Equals("accept")
-                       || eventCollaborator.ConfirmationStatus.Equals("maybe"));
+            return participantModel.ConfirmationStatus == ConfirmationStatus.Accept
+                   || participantModel.ConfirmationStatus == ConfirmationStatus.Maybe;
         }
 
-        private static void UpdateEventCollaboratorsStatus(Event eventObj)
+        private static void UpdateEventCollaboratorsStatus(EventModel eventModel)
         {
-            List<EventCollaborator> eventCollaborators = [.. GetInviteesOfEvent(eventObj.Id).Where(ConsiderableInvitees)];
-
-            EventCollaboratorService eventCollaboratorService = new();
-
-            foreach (var eventCollaborator in eventCollaborators)
+            foreach (var participants in eventModel.Participants)
             {
-                if (eventCollaborator.ParticipantRole != null && eventCollaborator.ParticipantRole.Equals("organizer"))
+                if (participants.ParticipantRole == ParticipantRole.Organizer)
                 {
-                    eventCollaborator.ProposedStartHour = eventObj.EventStartHour;
-                    eventCollaborator.ProposedEndHour = eventObj.EventEndHour;
+                    participants.ProposedStartHour = eventModel.Duration.StartHour;
+                    participants.ProposedEndHour = eventModel.Duration.EndHour;
                 }
                 else
                 {
-                    eventCollaborator.ProposedStartHour = null;
-                    eventCollaborator.ProposedEndHour = null;
-                    eventCollaborator.ConfirmationStatus = "pending";
+                    participants.ProposedStartHour = null;
+                    participants.ProposedEndHour = null;
+                    participants.ConfirmationStatus = ConfirmationStatus.Pending;
                 }
-                eventCollaboratorService.UpdateEventCollaborators(eventCollaborator, eventCollaborator.Id);
+                new ParticipantService().UpdateParticipant(participants, eventModel.Id);
             }
         }
 
-        private static void UpdateEventTimeBlockToMutualTimeBlock(Event eventObj, int newStartHour, int newEndHour)
+        private static void UpdateEventTimeBlockToMutualTimeBlock(EventModel eventModel, int newStartHour, int newEndHour)
         {
-            eventObj.EventStartHour = newStartHour;
-            eventObj.EventEndHour = newEndHour;
+            eventModel.Duration.StartHour = newStartHour;
+            eventModel.Duration.EndHour = newEndHour;
 
             EventService eventService = new();
-            eventService.UpdateProposedEvent(eventObj, eventObj.Id);
-        }
-
-        private static bool ConsiderableInvitees(EventCollaborator eventCollaborator)
-        {
-            return (eventCollaborator.ParticipantRole != null && eventCollaborator.ParticipantRole.Equals("organizer"))
-                   || (eventCollaborator.ConfirmationStatus != null && eventCollaborator.ConfirmationStatus.Equals("accept"))
-                   || (
-                        eventCollaborator.ConfirmationStatus != null
-                        && !eventCollaborator.ConfirmationStatus.Equals("reject")
-                      )
-                   || (eventCollaborator.ConfirmationStatus != null && eventCollaborator.ConfirmationStatus.Equals("maybe"));
-        }
-
-        public static List<EventCollaborator> GetInviteesOfEvent(int eventId)
-        {
-            EventCollaboratorService eventCollaboratorService = new();
-
-            List<EventCollaborator> eventCollaborators = [..eventCollaboratorService.GetAllParticipants()
-                                                            .Where(eventCollaborator => eventCollaborator.EventId == eventId)];
-            return eventCollaborators;
+            eventService.UpdateProposedEvent(eventModel);
         }
     }
 }

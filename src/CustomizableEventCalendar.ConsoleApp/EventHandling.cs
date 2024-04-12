@@ -1,6 +1,5 @@
 ﻿using System.Data;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models;
 
@@ -82,47 +81,43 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             }
         }
 
-        public static void GetEventDetailsFromUser(Event eventObj)
+        public static void GetEventDetailsFromUser(EventModel eventModel)
         {
             Console.WriteLine("\nFill Details Related to Event : ");
 
-            eventObj.Title = ValidatedInputProvider.GetValidString("Enter title : ");
+            eventModel.Title = ValidatedInputProvider.GetValidString("Enter title : ");
 
             PrintHandler.PrintNewLine();
 
-            eventObj.Description = ValidatedInputProvider.GetValidString("Enter description : ");
+            eventModel.Description = ValidatedInputProvider.GetValidString("Enter description : ");
 
             PrintHandler.PrintNewLine();
 
-            eventObj.Location = ValidatedInputProvider.GetValidString("Enter Location : ");
-
-            eventObj.IsProposed = false;
+            eventModel.Location = ValidatedInputProvider.GetValidString("Enter Location : ");
         }
 
         private static void GetInputToAddEvent()
         {
-            Event eventObj = new();
+            EventModel eventModel = new();
 
-            GetEventDetailsFromUser(eventObj);
+            GetEventDetailsFromUser(eventModel);
 
-            TimeHandler.GetStartingAndEndingHourOfEvent(eventObj);
+            TimeHandler.GetStartingAndEndingHourOfEvent(eventModel);
 
-            eventObj.UserId = GlobalData.GetUser().Id;
+            eventModel.Participants.Add(new ParticipantModel(ParticipantRole.Organizer, ConfirmationStatus.Accept, null, null, new DateOnly(), GlobalData.GetUser()));
 
-            RecurrenceHandling.AskForRecurrenceChoice(eventObj);
+            RecurrenceHandling.AskForRecurrenceChoice(eventModel);
 
-            AddEvent(eventObj);
+            AddEvent(eventModel, false);
         }
 
-        public static void AddEvent(Event eventObj)
+        public static void AddEvent(EventModel eventModel, bool isProposed)
         {
             try
             {
-                if (OverlapHandler.IsOverlappingEvent(eventObj, true)) return;
+                if (OverlapHandler.IsOverlappingEvent(eventModel, true, isProposed)) return;
 
-                //....................
-
-                //eventObj.Id = _eventService.InsertEvent(eventObj);
+                _eventService.InsertEvent(eventModel);
 
                 PrintHandler.PrintSuccessMessage("Event Added Successfully");
 
@@ -147,23 +142,19 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         private static string GetEventTable()
         {
-            //List<Event> events = _eventService.GetAllEventsOfLoggedInUser();
-
-            //.........................
-
-            List<Event> events = [];
+            List<EventModel> events = _eventService.GetAllEventsOfLoggedInUser();
 
             List<List<string>> outputRows = events.InsertInto2DList(["Event NO.", "Title", "Description", "Location", "Event Repetition", "Start Date", "End Date", "Duration"],
                 [
-                    eventObj => events.IndexOf(eventObj) + 1,
-                    eventObj => eventObj.Title,
-                    eventObj => eventObj.Description,
-                    eventObj => eventObj.Location,
-                    eventObj => RecurrencePatternMessageGenerator.GenerateRecurrenceMessage(eventObj),
-                    eventObj => eventObj.EventStartDate.ToString(),
-                    eventObj => eventObj.EventEndDate.ToString(),
-                    eventObj => DateTimeManager.ConvertTo12HourFormat(eventObj.EventStartHour)+" - "+
-                                DateTimeManager.ConvertTo12HourFormat(eventObj.EventEndHour)
+                    eventModel => events.IndexOf(eventModel) + 1,
+                    eventModel => eventModel.Title,
+                    eventModel => eventModel.Description,
+                    eventModel => eventModel.Location,
+                    eventModel => RecurrencePatternMessageGenerator.GenerateRecurrenceMessage(eventModel),
+                    eventModel => eventModel.RecurrencePattern.StartDate.ToString(),
+                    eventModel => eventModel.RecurrencePattern.EndDate.ToString(),
+                    eventModel => DateTimeManager.ConvertTo12HourFormat(eventModel.Duration.StartHour)+" - "+
+                                DateTimeManager.ConvertTo12HourFormat(eventModel.Duration.EndHour)
                 ]);
 
             string eventTable = PrintService.GenerateTable(outputRows);
@@ -204,30 +195,30 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             int serialNumber = GetSerialNumberForUpdateOrDelete(false);
 
-            Event eventObj = _eventService.GetEventById(_eventService.GetEventIdFromSerialNumber(serialNumber));
+            List<EventModel> eventModels = _eventService.GetEventById(_eventService.GetEventIdFromSerialNumber(serialNumber));
 
-            if (eventObj == null) return;
+            EventModel eventModel = eventModels.FirstOrDefault();
 
-            if (eventObj.IsProposed)
+            if (eventModel == null) return;
+
+            if (_eventService.GetProposedEvents().Exists(proposedEvent => proposedEvent.Id == eventModel.Id))
             {
-                ProposedEventHandler.GetInputForProposedEvent(eventObj);
+                ProposedEventHandler.GetInputForProposedEvent(eventModel);
                 return;
             }
 
-            AskForItemsToUpdate(eventObj);
+            AskForItemsToUpdate(eventModel);
 
-            eventObj.UserId = GlobalData.GetUser().Id;
-
-            UpdateEvent(eventObj.Id, eventObj);
+            UpdateEvent(eventModel.Id, eventModel, false);
         }
 
-        public static void UpdateEvent(int id, Event eventObj)
+        public static void UpdateEvent(int id, EventModel eventModel, bool isProposed)
         {
             try
             {
-                if (OverlapHandler.IsOverlappingEvent(eventObj, false)) return;
+                if (OverlapHandler.IsOverlappingEvent(eventModel, false, isProposed)) return;
 
-                _eventService.UpdateEvent(eventObj, id);
+                _eventService.UpdateEvent(eventModel, id);
 
                 PrintHandler.PrintSuccessMessage("Event Updated Successfully");
             }
@@ -237,7 +228,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             }
         }
 
-        private static void AskForItemsToUpdate(Event eventObj)
+        private static void AskForItemsToUpdate(EventModel eventModel)
         {
             string inputMessage = "\nWhat items you want to update ? \n1. Event Details (Event Title , Event Description , Event Location) \n2. Event repetition details (Event dates, Event Duration, Event frequency etc ...)";
 
@@ -248,11 +239,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             switch (choice)
             {
                 case 1:
-                    GetEventDetailsFromUser(eventObj);
+                    GetEventDetailsFromUser(eventModel);
                     break;
                 case 2:
-                    TimeHandler.GetStartingAndEndingHourOfEvent(eventObj);
-                    RecurrenceHandling.AskForRecurrenceChoice(eventObj);
+                    TimeHandler.GetStartingAndEndingHourOfEvent(eventModel);
+                    RecurrenceHandling.AskForRecurrenceChoice(eventModel);
                     break;
             }
         }

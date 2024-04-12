@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
@@ -29,7 +30,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         private string NotificationForUpcommingEvents()
         {
-            List<EventByDate> upcommingEvents = _notificationService.GetUpcomingEvents();
+            List<EventModel> upcommingEvents = _notificationService.GetUpcomingEvents();
 
             StringBuilder upcommingEventsNotificationTable = new();
 
@@ -42,22 +43,22 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return upcommingEventsNotificationTable.ToString();
         }
 
-        private static List<List<string>> GetUpCommingEventInformation(List<EventByDate> upcommingEvents)
+        private static List<List<string>> GetUpCommingEventInformation(List<EventModel> upcommingEvents)
         {
             return upcommingEvents.InsertInto2DList(["Event", "Description", "Date", "Start Time", "End Time"],
                                                     [
-                                                          eventByDate => eventByDate.Event.Title,
-                                                          eventByDate => eventByDate.Event.Description,
-                                                          eventByDate => eventByDate.Date,
-                                                          eventByDate => DateTimeManager.ConvertTo12HourFormat(eventByDate.Event.EventStartHour),
-                                                          eventByDate => DateTimeManager.ConvertTo12HourFormat(eventByDate.Event.EventEndHour)
+                                                          eventModel => eventModel.Title,
+                                                          eventModel => eventModel.Description,
+                                                          eventModel => eventModel.EventDate,
+                                                          eventModel => DateTimeManager.ConvertTo12HourFormat(eventModel.Duration.StartHour),
+                                                          eventModel => DateTimeManager.ConvertTo12HourFormat(eventModel.Duration.EndHour)
                                                     ]);
         }
 
         private string NotificationsForProposedEvents()
         {
 
-            List<EventByDate> proposedEventCollaborators = _notificationService.GetProposedEvents();
+            List<EventModel> proposedEventCollaborators = _notificationService.GetProposedEvents();
 
             if (proposedEventCollaborators.Count == 0) return "";
 
@@ -70,24 +71,22 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return proposedEventsNotificationTable.ToString();
         }
 
-        private static List<List<string>> GetProposedEventInformation(List<EventByDate> proposedEventCollaborators)
+        private static List<List<string>> GetProposedEventInformation(List<EventModel> proposedEventCollaborators)
         {
             return proposedEventCollaborators.InsertInto2DList(["Event Proposed by", "Date", "Start Time", "End Time", "Event", "Description"],
                                                                [
-                                                                 eventByDate => GetUserName(eventByDate.Event.UserId),
-                                                                 eventByDate => eventByDate.Date,
-                                                                 eventByDate => DateTimeManager.ConvertTo12HourFormat(eventByDate.Event.EventStartHour),
-                                                                 eventByDate => DateTimeManager.ConvertTo12HourFormat(eventByDate.Event.EventEndHour),
-                                                                 eventByDate => eventByDate.Event.Title,
-                                                                 eventByDate => eventByDate.Event.Description,
+                                                                 eventModel => GetEventProposer(eventModel.Participants),
+                                                                 eventModel => eventModel.EventDate,
+                                                                 eventModel => DateTimeManager.ConvertTo12HourFormat(eventModel.Duration.StartHour),
+                                                                 eventModel => DateTimeManager.ConvertTo12HourFormat(eventModel.Duration.EndHour),
+                                                                 eventModel => eventModel.Title,
+                                                                 eventModel => eventModel.Description,
                                                                 ]);
         }
 
-        private static string GetUserName(int userId)
+        private static string GetEventProposer(List<ParticipantModel> participantModels)
         {
-            UserService userService = new();
-
-            return userService.GetUserById(userId)?.Name ?? "-";
+            return participantModels.First(participant => participant.ParticipantRole == ParticipantRole.Organizer).User.Name;
         }
     }
 }

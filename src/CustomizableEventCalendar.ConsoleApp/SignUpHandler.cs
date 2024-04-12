@@ -1,13 +1,13 @@
 ﻿using System.Data.SqlClient;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {
     internal static class SignUpHandler
     {
 
-        private static void GetSignUpDetails(out User user)
+        private static void GetSignUpDetails(out UserModel user)
         {
             user = new()
             {
@@ -21,7 +21,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             try
             {
-                GetSignUpDetails(out User user);
+                GetSignUpDetails(out UserModel user);
 
                 new UserService().AddUser(user);
 

@@ -3,7 +3,7 @@ using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services
 {
-    internal class EventCollaboratorService
+    internal class ParticipantService
     {
         private readonly EventCollaboratorRepository _eventCollaboratorsRepository = new();
 

@@ -1,43 +1,64 @@
-﻿using System.Data;
-using System.Text;
+﻿using System.Text;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
+using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {
     internal static class ProposedEventHandler
     {
-        public static void GetInputForProposedEvent(Event? eventObj)
+        public static void GetInputForProposedEvent(EventModel? eventModel)
         {
             if (IsMessagePrintedOnUnavailabilityOfInvitee()) return;
 
-            eventObj ??= new();
+            eventModel ??= new();
 
-            EventHandling.GetEventDetailsFromUser(eventObj);
+            EventHandling.GetEventDetailsFromUser(eventModel);
 
-            TimeHandler.GetStartingAndEndingHourOfEvent(eventObj);
+            TimeHandler.GetStartingAndEndingHourOfEvent(eventModel);
 
-            eventObj.EventStartDate = ValidatedInputProvider.GetValidDateOnly("Enter date for the proposed event (Enter date in dd-MM-yyyy) :- ");
-            eventObj.EventEndDate = eventObj.EventStartDate;
+            eventModel.RecurrencePattern.StartDate = ValidatedInputProvider.GetValidDateOnly("Enter date for the proposed event (Enter date in dd-MM-yyyy) :- ");
+            eventModel.RecurrencePattern.EndDate = eventModel.RecurrencePattern.StartDate;
 
-            string invitees = GetInviteesFromUser();
+            List<int> invitees = GetInviteesFromUser();
 
-            eventObj.UserId = GlobalData.GetUser().Id;
+            eventModel.Participants = GetParticipantsOfEvent(invitees);
 
-            eventObj.IsProposed = true;
+            AddOrganizerInParticipantList(eventModel);
 
-            UpsertProposedEvent(eventObj);
+            UpsertProposedEvent(eventModel);
 
-            MultipleInviteesEventService.AddInviteesInProposedEvent(eventObj, invitees);
+            MultipleInviteesEventService.AddInviteesInProposedEvent(eventModel);
         }
 
-        private static void UpsertProposedEvent(Event eventObj)
+        private static void AddOrganizerInParticipantList(EventModel eventModel)
         {
-            if (eventObj.Id > 0)
-                EventHandling.UpdateEvent(eventObj.Id, eventObj);
+            eventModel.Participants.Add(new ParticipantModel(ParticipantRole.Organizer, ConfirmationStatus.Accept, null, null, new DateOnly(), GlobalData.GetUser()));
+        }
+
+        private static List<ParticipantModel> GetParticipantsOfEvent(List<int> invitees)
+        {
+            UserService userService = new ();
+
+            List<ParticipantModel> participantModels = [];
+
+            foreach (var invitee in invitees)
+            {
+                UserModel userModel = userService.GetUserById(invitee);
+
+                participantModels.Add(new(ParticipantRole.Participant,ConfirmationStatus.Accept,null,null,new DateOnly(),userModel));
+            }
+
+            return participantModels;
+        }
+
+        private static void UpsertProposedEvent(EventModel eventModel)
+        {
+            if (eventModel.Id > 0)
+                EventHandling.UpdateEvent(eventModel.Id, eventModel,true);
             else
-                EventHandling.AddEvent(eventObj);
+                EventHandling.AddEvent(eventModel,true);
         }
 
         private static bool IsMessagePrintedOnUnavailabilityOfInvitee()
@@ -50,32 +71,34 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return false;
         }
 
-        private static string GetInviteesFromUser()
+        private static List<int> GetInviteesFromUser()
         {
             ShowAllUser();
 
-            string inviteesSerialNumber = ValidatedInputProvider.GetValidCommaSeparatedInputInRange("Enter users you want to Invite. (Enter users Sr No. comma separated Ex:- 1,2,3) : ", 1, GetInsensitiveUserInformationList().Count);
+            List<int> invitees = [];
 
-            return GetInviteesUserIdFromSerialNumber(inviteesSerialNumber);
-        }
-
-        private static string GetInviteesUserIdFromSerialNumber(string inviteesSerialNumber)
-        {
-            List<User> users = GetInsensitiveUserInformationList();
-
-            StringBuilder invitees = new();
-
-            foreach (int inviteeSerialNumber in inviteesSerialNumber.Split(",").Select(number => Convert.ToInt32(number.Trim())))
+            while (true)
             {
-                invitees.Append(users[inviteeSerialNumber - 1].Id + ",");
+                int inviteeIdSerialNumber = ValidatedInputProvider.GetValidIntegerBetweenRange("Enter users you want to Invite. Press 0 to exit : ", 0, GetInsensitiveUserInformationList().Count);
+
+                if (inviteeIdSerialNumber == 0) break;
+
+                invitees.Add(GetInviteesUserIdFromSerialNumber(inviteeIdSerialNumber));
             }
 
-            return invitees.ToString()[..(invitees.Length - 1)];
+            return invitees;
+        }
+
+        private static int GetInviteesUserIdFromSerialNumber(int inviteeSerialNumber)
+        {
+            List<UserModel> users = GetInsensitiveUserInformationList();
+
+            return users[inviteeSerialNumber - 1].Id;
         }
 
         private static void ShowAllUser()
         {
-            List<User> users = GetInsensitiveUserInformationList();
+            List<UserModel> users = GetInsensitiveUserInformationList();
 
             StringBuilder userInformation = new();
 
@@ -91,12 +114,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             Console.WriteLine(userInformation);
         }
 
-        private static List<User> GetInsensitiveUserInformationList()
+        private static List<UserModel> GetInsensitiveUserInformationList()
         {
-            UserService userService = new();
-            List<User> users = userService.GetInsensitiveInformationOfUser();
-
-            return users;
+            return new UserService().GetInsensitiveInformationOfUser();
         }
     }
 }

@@ -11,15 +11,19 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         private readonly RecurrenceEngine _recurrenceEngine = new();
 
-        private readonly EventCollaboratorService _eventCollaboratorsService = new();
+        private readonly ParticipantService _eventCollaboratorsService = new();
 
         public int InsertEvent(EventModel eventModel)
         {
+            using var scope = new TransactionScope();
+
             int eventId = _eventRepository.Insert(eventModel);
 
             eventModel.Id = eventId;
 
             _recurrenceEngine.ScheduleEvents(eventModel);
+
+            scope.Complete();
 
             return eventId;
         }
@@ -35,13 +39,17 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             List<EventModel> events = GetAllEvents();
 
-            return [.. events.Where(eventModel=> eventModel.Participants
-                                                           .Any(participant=>participant.User.Id == GlobalData.GetUser().Id))
-                             .Select(eventModel => {  eventModel.Participants = [..eventModel.Participants
-                                                           .Where(participant=>participant.User.Id == GlobalData.GetUser().Id)];
-                                                      return eventModel;
-                                                    }
-                    )];
+            return [.. events.Where(eventModel=> eventModel.Participants.Exists(participant=>participant.User.Id == GlobalData.GetUser().Id))
+                             .Select(SelectUpdatedParticipant())];
+        }
+
+        private static Func<EventModel, EventModel> SelectUpdatedParticipant()
+        {
+            return eventModel =>
+            {
+                eventModel.Participants = [.. eventModel.Participants.Where(participant => participant.User.Id == GlobalData.GetUser().Id)];
+                return eventModel;
+            };
         }
 
         public List<EventModel>? GetEventById(int eventId)

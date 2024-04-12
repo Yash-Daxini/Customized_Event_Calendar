@@ -12,9 +12,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         private readonly static UserService _userService = new();
 
-        public List<SharedCalendar> sharedCalendarsList = [];
+        public List<SharedCalendarModel> sharedCalendarsList = [];
 
-        public List<Domain.Entities.EventCollaborator> sharedEventsOfSpecificCalendar = [];
+        public List<EventModel> sharedEventsOfSpecificCalendar = [];
 
         public void GetDetailsToShareCalendar()
         {
@@ -34,13 +34,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
                 int serialNumberOfTableRow = ValidatedInputProvider.GetValidIntegerBetweenRange(inputMessage, 1, GetAvailableUsers().Count);
 
-                User user = GetUserFromSerialNumber(serialNumberOfTableRow);
+                UserModel user = GetUserFromSerialNumber(serialNumberOfTableRow);
 
-                SharedCalendar sharedCalendar = new(user.Id, GlobalData.GetUser().Id, new DateOnly(), new DateOnly());
+                SharedCalendarModel sharedCalendarModel = new(GlobalData.GetUser(),user, new DateOnly(), new DateOnly());
 
-                GetDatesFromUser(sharedCalendar);
+                GetDatesFromUser(sharedCalendarModel);
 
-                AddSharedCalendar(user, sharedCalendar);
+                AddSharedCalendar(user, sharedCalendarModel);
 
             }
             catch
@@ -50,7 +50,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         }
 
-        private void AddSharedCalendar(User user, SharedCalendar sharedCalendar)
+        private void AddSharedCalendar(UserModel user, SharedCalendarModel sharedCalendar)
         {
             try
             {
@@ -64,34 +64,34 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             }
         }
 
-        private static void GetDatesFromUser(SharedCalendar sharedCalendar)
+        private static void GetDatesFromUser(SharedCalendarModel sharedCalendarModel)
         {
             Console.WriteLine("Enter Time Range for which you want to share events");
 
             PrintHandler.PrintNewLine();
 
-            sharedCalendar.FromDate = ValidatedInputProvider.GetValidDateOnly("Enter start date in dd-MM-yyyy format :-  ");
+            sharedCalendarModel.FromDate = ValidatedInputProvider.GetValidDateOnly("Enter start date in dd-MM-yyyy format :-  ");
 
             PrintHandler.PrintNewLine();
 
-            sharedCalendar.ToDate = ValidatedInputProvider.GetValidDateOnly("Enter end date in dd-MM-yyyy format :-  ");
+            sharedCalendarModel.ToDate = ValidatedInputProvider.GetValidDateOnly("Enter end date in dd-MM-yyyy format :-  ");
 
-            if (!ValidationService.IsValidStartAndEndDate(sharedCalendar.FromDate, sharedCalendar.ToDate))
+            if (!ValidationService.IsValidStartAndEndDate(sharedCalendarModel.FromDate, sharedCalendarModel.ToDate))
             {
                 PrintHandler.PrintWarningMessage("Invalid input ! Start date must less than or equal to the end date ");
-                GetDatesFromUser(sharedCalendar);
+                GetDatesFromUser(sharedCalendarModel);
             }
         }
 
-        private static User GetUserFromSerialNumber(int serialNumber)
+        private static UserModel GetUserFromSerialNumber(int serialNumber)
         {
-            List<User> users = _userService.GetInsensitiveInformationOfUser();
+            List<UserModel> users = _userService.GetInsensitiveInformationOfUser();
             return users[serialNumber - 1];
         }
 
         private static string GetUserTableAsString()
         {
-            List<User> users = GetAvailableUsers();
+            List<UserModel> users = GetAvailableUsers();
 
             if (users.Count == 0) return "";
 
@@ -107,7 +107,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return userInformation.ToString();
         }
 
-        private static List<User> GetAvailableUsers()
+        private static List<UserModel> GetAvailableUsers()
         {
             return _userService.GetInsensitiveInformationOfUser();
         }
@@ -142,7 +142,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         public string GetSharedCalendarTableAsString()
         {
-            List<SharedCalendar> sharedCalendars = _calendarSharingService.GetSharedCalendars();
+            List<SharedCalendarModel> sharedCalendars = _calendarSharingService.GetSharedCalendars();
 
             StringBuilder sharedCalendarsTable = new();
 
@@ -151,7 +151,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             List<List<string>> sharedCalendarsTableContent = sharedCalendars.InsertInto2DList(["Sr. NO", "Shared by", "From", "To"],
             [
                 sharedCalendar => sharedCalendars.IndexOf(sharedCalendar) + 1,
-                sharedCalendar => GetUserName(sharedCalendar.SenderUserId),
+                sharedCalendar => sharedCalendar.SenderUser.Name,
                 sharedCalendar => sharedCalendar.FromDate,
                 sharedCalendar => sharedCalendar.ToDate
             ]);
@@ -204,7 +204,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             sharedEventsOfSpecificCalendar = _calendarSharingService.GetSharedEventsFromSharedCalendarId(sharedCalendarId);
 
-            SharedCalendar? sharedCalendar = new CalendarSharingService().GetSharedCalendarById(sharedCalendarId);
+            SharedCalendarModel? sharedCalendar = new CalendarSharingService().GetSharedCalendarById(sharedCalendarId);
 
             if (sharedCalendar == null) return;
 
@@ -213,12 +213,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             Console.WriteLine(sharedEventsTable);
         }
 
-        private static string GenerateTableForSharedEvents(DateOnly startDate, DateOnly endDate, List<Domain.Entities.EventCollaborator> sharedEvents)
+        private static string GenerateTableForSharedEvents(DateOnly startDate, DateOnly endDate, List<EventModel> sharedEvents)
         {
-            //List<Event> events = new EventService().GetAllEvents();
-
-            //....................................
-            List<Event> events = [];
+            List<EventModel> events = new EventService().GetAllEvents();
 
             List<List<string>> sharedEventTableContent = [["Sr No.", "Event Title", "Event Description", "Event Date", "Event Duration"]];
 
@@ -236,7 +233,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return PrintService.GenerateTable(sharedEventTableContent);
         }
 
-        private static void AddSharedEventsInto2DList(List<Domain.Entities.EventCollaborator> sharedEvents, List<Event> events, List<List<string>> sharedEventTableContent, ref int index, DateOnly currentDate)
+        private static void AddSharedEventsInto2DList(List<EventModel> sharedEvents, List<Event> events, List<List<string>> sharedEventTableContent, ref int index, DateOnly currentDate)
         {
             List<Domain.Entities.EventCollaborator> eventCollaboratorList = sharedEvents.FindAll(eventCollaborator => eventCollaborator.EventDate == currentDate);
 
@@ -244,7 +241,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             {
                 if (eventCollaborator != null)
                 {
-                    Event? eventObj = events.Find(eventObj => eventObj.Id == eventCollaborator.EventId);
+                    Domain.Entities.Event? eventObj = events.Find(eventObj => eventObj.Id == eventCollaborator.EventId);
 
                     sharedEventTableContent.Add([(index + 1).ToString(),
                                                      eventObj.Title, eventObj.Description,

@@ -8,8 +8,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
     {
         private readonly static ProposedEventService _proposedEventService = new();
 
-        private readonly static EventCollaboratorService _eventCollaboratorService = new();
-
         public static void ShowProposedEvents()
         {
             try
@@ -45,8 +43,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             GetInputToGiveResponse(eventModel);
 
-            //Do changes here ........................
-            //_eventCollaboratorService.UpdateEventCollaborators(eventCollaborator, eventCollaborator.Id);
+            new ParticipantService().UpdateParticipant(eventModel.Participants[0], eventModel.Id);
         }
 
         private static EventModel GetEventFromSerialNumber(List<EventModel> proposedEvents, int serialNumber)

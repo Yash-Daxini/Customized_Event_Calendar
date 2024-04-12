@@ -52,11 +52,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Mapping
             return [.. weekDay.Split(",").Select(weekDay => int.Parse(weekDay))];
         }
 
-        public Event MapRecurrencePatternModelToEventEntity(RecurrencePatternModel recurrencePatternModel,Event eventObj)
+        public Event MapRecurrencePatternModelToEventEntity(RecurrencePatternModel recurrencePatternModel, Event eventObj)
         {
             eventObj.EventStartDate = recurrencePatternModel.StartDate;
             eventObj.EventEndDate = recurrencePatternModel.EndDate;
-            eventObj.ByWeekDay = recurrencePatternModel.ByWeekDay.ToString();
+            eventObj.ByWeekDay = string.Format(",", recurrencePatternModel.ByWeekDay);
             eventObj.WeekOrder = recurrencePatternModel.WeekOrder;
             eventObj.Interval = recurrencePatternModel.Interval;
             eventObj.Frequency = MapEnumToFrequency(recurrencePatternModel.Frequency);

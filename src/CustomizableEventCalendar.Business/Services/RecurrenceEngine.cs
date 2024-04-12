@@ -5,7 +5,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 {
     internal class RecurrenceEngine
     {
-        private readonly EventCollaboratorService eventCollaboratorsService = new();
+        private readonly ParticipantService eventCollaboratorsService = new();
 
         private readonly List<DateOnly> occurrences;
 
@@ -52,7 +52,16 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         {
             foreach (var occurrence in occurrences)
             {
-                eventCollaboratorsService.InsertParticipant(ConstructScheduleEventObject(eventModel, occurrence), eventModel.Id);
+                ScheduleEventsForEachParticipant(eventModel, occurrence);
+            }
+        }
+
+        private void ScheduleEventsForEachParticipant(EventModel eventModel, DateOnly occurrence)
+        {
+            foreach (ParticipantModel participant in eventModel.Participants)
+            {
+                participant.EventDate = occurrence;
+                eventCollaboratorsService.InsertParticipant(participant, eventModel.Id);
             }
         }
 
@@ -77,11 +86,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
                 }
                 currentDate = currentDate.AddDays(eventModel.RecurrencePattern.Interval == null ? 1 : Convert.ToInt32(eventModel.RecurrencePattern.Interval));
             }
-        }
-
-        private static ParticipantModel ConstructScheduleEventObject(EventModel eventModel, DateOnly eventDate)
-        {
-            return new(ParticipantRole.Organizer, ConfirmationStatus.Accept, eventModel.Duration.StartHour, eventModel.Duration.EndHour, eventDate, GlobalData.GetUser());
         }
 
         private static bool IsDailyEventValidForScheduling(int? eventInterval, HashSet<int> days, int day)

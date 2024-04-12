@@ -1,5 +1,4 @@
 ﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Data.Repositories;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Enums;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models;
 
@@ -25,7 +24,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return _sharedCalendarRepository.GetById(sharedCalendarId);
         }
 
-        public List<EventCollaborator> GetSharedEventsFromSharedCalendarId(int sharedCalendarId)
+        public List<EventModel> GetSharedEventsFromSharedCalendarId(int sharedCalendarId)
         {
             SharedCalendarModel? sharedCalendarModel = GetSharedCalendarById(sharedCalendarId);
 
@@ -37,7 +36,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
             HashSet<int> sharedEventIds = GetSharedEventIdsFromSharedCalendar(eventModels, sharedCalendarModel);
 
-            List<Domain.Entities.EventCollaborator> sharedEvents = GetSharedEventsFromSharedCalendar(sharedCalendarModel, sharedEventIds);
+            List<EventModel> sharedEvents = GetSharedEventsFromSharedCalendar(sharedCalendarModel, sharedEventIds);
 
             return sharedEvents;
         }
@@ -56,18 +55,30 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             return sharedEventIds;
         }
 
-        private static List<Domain.Entities.EventCollaborator> GetSharedEventsFromSharedCalendar(SharedCalendarModel sharedCalendarModel, HashSet<int> sharedEventIds)
+        private static List<EventModel> GetSharedEventsFromSharedCalendar(SharedCalendarModel sharedCalendarModel, HashSet<int> sharedEventIds)
         {
-            List<Domain.Entities.EventCollaborator> sharedEvents = GetAllSharedEventsBetweenGivenDate(sharedCalendarModel.FromDate, sharedCalendarModel.ToDate, sharedEventIds);
+            List<EventModel> sharedEvents = GetAllSharedEventsBetweenGivenDate(sharedCalendarModel.FromDate, sharedCalendarModel.ToDate, sharedEventIds);
 
             return sharedEvents;
         }
 
-        private static List<ParticipantModel> GetAllSharedEventsBetweenGivenDate(DateOnly fromDate, DateOnly toDate, HashSet<int> sharedEventIds)
+        private static List<EventModel> GetAllSharedEventsBetweenGivenDate(DateOnly fromDate, DateOnly toDate, HashSet<int> sharedEventIds)
         {
-            return [.. new EventCollaboratorService().GetAllParticipants().Where(participant => participant.User.Id != GlobalData.GetUser().Id && IsDateBetweenRange(fromDate,toDate,participant.EventDate)
-                                                               &&IsSharedEvent(sharedEventIds, participant.EventId))
+            return [.. new EventService().GetAllEvents().Where(IsSharedEventBetweenGivenDates(fromDate, toDate, sharedEventIds))
+                                                        .Select(eventModel => {
+                                                                eventModel.Participants = [..eventModel.Participants
+                                                                          .Where(participant=>participant.User.Id == GlobalData.GetUser().Id)];
+                                                                        return eventModel;
+                                                        })
                                                         .OrderBy(participant => participant.EventDate)];
+
+        }
+
+        private static Func<EventModel, bool> IsSharedEventBetweenGivenDates(DateOnly fromDate, DateOnly toDate, HashSet<int> sharedEventIds)
+        {
+            return eventModel => eventModel.Participants.Exists(participant => participant.User.Id == GlobalData.GetUser().Id)
+                                 && IsDateBetweenRange(fromDate, toDate, eventModel.EventDate)
+                                 && IsSharedEvent(sharedEventIds, eventModel.Id);
         }
 
         private static bool IsDateBetweenRange(DateOnly startDate, DateOnly endDate, DateOnly checkingDate)

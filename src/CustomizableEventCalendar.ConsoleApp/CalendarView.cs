@@ -32,7 +32,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         public static void PrintDailyView()
         {
-            List<EventByDate> currentDayEvents = _calendarViewService.GetEventsFroDailyView();
+            List<EventModel> currentDayEvents = _calendarViewService.GetEventsFroDailyView();
 
             if (IsMessagePrintedOnEventUnavailability(currentDayEvents)) return;
 
@@ -44,8 +44,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             List<List<string>> dailyViewTableContent = currentDayEvents.InsertInto2DList(["Time Block", "Event Title"],
                 [
-                    eventByDate => DateTimeManager.ConvertTo12HourFormat(eventByDate.Event.EventStartHour) + " - " +                                 DateTimeManager.ConvertTo12HourFormat(eventByDate.Event.EventEndHour),
-                    eventByDate => eventByDate.Event.Title,
+                    eventModel => DateTimeManager.ConvertTo12HourFormat(eventModel.Duration.StartHour) + " - " +                                 DateTimeManager.ConvertTo12HourFormat(eventModel.Duration.EndHour),
+                    eventModel => eventModel.Title,
                 ]);
 
             dailyView.AppendLine(PrintService.GenerateTable(dailyViewTableContent));
@@ -53,7 +53,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             Console.WriteLine(dailyView);
         }
 
-        private static bool IsMessagePrintedOnEventUnavailability(List<EventByDate> currentDayEvents)
+        private static bool IsMessagePrintedOnEventUnavailability(List<EventModel> currentDayEvents)
         {
             if (currentDayEvents.Count == 0)
             {
@@ -69,7 +69,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             DateOnly startDateOfWeek = DateTimeManager.GetStartDateOfWeek(DateOnly.FromDateTime(DateTime.Today));
             DateOnly endDateOfWeek = DateTimeManager.GetEndDateOfWeek(DateOnly.FromDateTime(DateTime.Today));
 
-            List<EventByDate> currentWeekEvents = _calendarViewService.GetDateAndEventsForWeeklyView();
+            List<EventModel> currentWeekEvents = _calendarViewService.GetDateAndEventsForWeeklyView();
 
             if (IsMessagePrintedOnEventUnavailability(currentWeekEvents)) return;
 
@@ -92,7 +92,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             DateOnly startDateOfMonth = DateTimeManager.GetStartDateOfMonth(DateTime.Now);
             DateOnly endDateOfMonth = DateTimeManager.GetEndDateOfMonth(DateTime.Now);
 
-            List<EventByDate> currentMonthEvents = _calendarViewService.GetGivenMonthEventsWithDate(startDateOfMonth, endDateOfMonth);
+            List<EventModel> currentMonthEvents = _calendarViewService.GetGivenMonthEventsWithDate(startDateOfMonth, endDateOfMonth);
 
             if (IsMessagePrintedOnEventUnavailability(currentMonthEvents)) return;
 
@@ -105,15 +105,15 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             Console.WriteLine(monthlyView);
         }
 
-        private static List<List<string>> Get2DListForWeeklyAndMonthlyView(List<EventByDate> currentWeekEvents)
+        private static List<List<string>> Get2DListForWeeklyAndMonthlyView(List<EventModel> currentWeekEvents)
         {
             return currentWeekEvents.InsertInto2DList(["Date", "Day", "Event Title", "Start Time", "End Time"],
                 [
-                    eventByDate => eventByDate.Date,
-                    eventByDate => DateTimeManager.GetDayFromDateTime(eventByDate.Date),
-                    eventByDate => eventByDate.Event.Title,
-                    eventByDate => DateTimeManager.ConvertTo12HourFormat(eventByDate.Event.EventStartHour),
-                    eventByDate => DateTimeManager.ConvertTo12HourFormat(eventByDate.Event.EventEndHour)
+                    eventModel => eventModel.EventDate,
+                    eventModel => DateTimeManager.GetDayFromDateTime(eventModel.EventDate),
+                    eventModel => eventModel.Title,
+                    eventModel => DateTimeManager.ConvertTo12HourFormat(eventModel.Duration.StartHour),
+                    eventModel => DateTimeManager.ConvertTo12HourFormat(eventModel.Duration.EndHour)
                 ]);
         }
 

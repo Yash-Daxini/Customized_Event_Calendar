@@ -5,9 +5,19 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models
     internal class ParticipantModel
     {
 
-        public ParticipantModel(ParticipantRole ParticipantRole, ConfirmationStatus ConfirmationStatus, int? ProposedStartHour, int? ProposedEndHour, DateOnly EventDate, UserModel User)
+        public ParticipantModel(int Id,ParticipantRole ParticipantRole, ConfirmationStatus ConfirmationStatus, int? ProposedStartHour, int? ProposedEndHour, DateOnly EventDate, UserModel User)
         {
             this.Id = Id;
+            this.ParticipantRole = ParticipantRole;
+            this.ConfirmationStatus = ConfirmationStatus;
+            this.EventDate = EventDate;
+            this.ProposedStartHour = ProposedStartHour;
+            this.ProposedEndHour = ProposedEndHour;
+            this.User = User;
+        }
+        
+        public ParticipantModel(ParticipantRole ParticipantRole, ConfirmationStatus ConfirmationStatus, int? ProposedStartHour, int? ProposedEndHour, DateOnly EventDate, UserModel User)
+        {
             this.ParticipantRole = ParticipantRole;
             this.ConfirmationStatus = ConfirmationStatus;
             this.EventDate = EventDate;

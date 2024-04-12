@@ -1,5 +1,4 @@
 ﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
 using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
@@ -18,18 +17,18 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return choice == 1;
         }
 
-        private static string GetOverlapMessageFromEvents(Event eventForVerify, Event eventToCheckOverlap, DateOnly matchedDate)
+        private static string GetOverlapMessageFromEvents(EventModel eventForVerify, EventModel eventToCheckOverlap, DateOnly matchedDate)
         {
             return $"\"{eventForVerify.Title}\" overlaps with \"{eventToCheckOverlap.Title}\" at {matchedDate} on following duration\n" +
-                   $"1. {DateTimeManager.ConvertTo12HourFormat(eventForVerify.EventStartHour)} " +
-                   $"- {DateTimeManager.ConvertTo12HourFormat(eventForVerify.EventEndHour)} \n" +
+                   $"1. {DateTimeManager.ConvertTo12HourFormat(eventForVerify.Duration.StartHour)} " +
+                   $"- {DateTimeManager.ConvertTo12HourFormat(eventForVerify.Duration.EndHour)} \n" +
                    $"overlaps with " +
-                   $"\n2. {DateTimeManager.ConvertTo12HourFormat(eventToCheckOverlap.EventStartHour)} " +
-                   $"- {DateTimeManager.ConvertTo12HourFormat(eventToCheckOverlap.EventEndHour)} \n" +
+                   $"\n2. {DateTimeManager.ConvertTo12HourFormat(eventToCheckOverlap.Duration.StartHour)} " +
+                   $"- {DateTimeManager.ConvertTo12HourFormat(eventToCheckOverlap.Duration.EndHour)} \n" +
                    $"\nPlease choose another date time !";
         }
 
-        private static void HandleOverlappedEvent(Event eventForVerify, OverlappingEventData overlappedEventInformation, bool isInsert)
+        private static void HandleOverlappedEvent(EventModel eventForVerify, OverlappingEventData overlappedEventInformation, bool isInsert ,bool isProposed)
         {
             string overlapEventMessage = GetOverlapMessageFromEvents(eventForVerify, overlappedEventInformation.EventInformation, overlappedEventInformation.MatchedDate);
 
@@ -37,7 +36,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             if (!AskForRescheduleOverlappedEvent()) return;
 
-            GetInputToRescheduleOverlappedEvent(eventForVerify);
+            GetInputToRescheduleOverlappedEvent(eventForVerify,isProposed);
 
             if (isInsert)
                 EventHandling.AddEvent(eventForVerify);
@@ -45,26 +44,26 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                 EventHandling.UpdateEvent(eventForVerify.Id, eventForVerify);
         }
 
-        public static bool IsOverlappingEvent(Event eventObj, bool isInsert)
+        public static bool IsOverlappingEvent(EventModel eventModel, bool isInsert,bool isProposed)
         {
-            OverlappingEventData? overlappedEventInformation = _overlappingEventService.GetOverlappedEventInformation(eventObj, isInsert);
+            OverlappingEventData? overlappedEventInformation = _overlappingEventService.GetOverlappedEventInformation(eventModel, isInsert);
 
             if (overlappedEventInformation != null)
             {
-                HandleOverlappedEvent(eventObj, overlappedEventInformation, isInsert);
+                HandleOverlappedEvent(eventModel, overlappedEventInformation, isInsert,isProposed);
                 return true;
             }
             return false;
         }
 
-        private static void GetInputToRescheduleOverlappedEvent(Event eventObj)
+        private static void GetInputToRescheduleOverlappedEvent(EventModel eventModel,bool isProposed)
         {
-            TimeHandler.GetStartingAndEndingHourOfEvent(eventObj);
+            TimeHandler.GetStartingAndEndingHourOfEvent(eventModel);
 
-            if (eventObj.IsProposed)
-                RecurrenceHandling.GetRecurrenceForSingleEvent(eventObj);
+            if (isProposed)
+                RecurrenceHandling.GetRecurrenceForSingleEvent(eventModel);
             else
-                RecurrenceHandling.AskForRecurrenceChoice(eventObj);
+                RecurrenceHandling.AskForRecurrenceChoice(eventModel);
         }
     }
 }

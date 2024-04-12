@@ -2,6 +2,9 @@
 {
     internal class EventModel
     {
+        public EventModel()
+        {
+        }
 
         public EventModel(int Id, string Title, string Description, string Location, DateOnly EventDate, DurationModel Duration, RecurrencePatternModel RecurrencePattern, List<ParticipantModel> Participants)
         {

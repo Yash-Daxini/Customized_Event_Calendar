@@ -5,7 +5,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Mapping
 {
     internal class EventMapper
     {
-        public List<EventModel> MapEventEntityToModel(Event eventObj, List<Entities.EventCollaborator> eventCollaborators)
+        public List<EventModel> MapEventEntityToModel(Event eventObj, List<EventCollaborator> eventCollaborators)
         {
             List<EventModel> eventModels = [];
 
@@ -35,9 +35,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Mapping
             return eventModels;
         }
 
-        private List<Models.ParticipantModel> GetListOfParticipant(List<Entities.EventCollaborator> eventCollaborators)
+        private List<ParticipantModel> GetListOfParticipant(List<EventCollaborator> eventCollaborators)
         {
-            List<Models.ParticipantModel> participantModels = [.. eventCollaborators.Select(eventCollaborator => new ParticipantMapper().MapEventCollaboratorToParticipantModel(eventCollaborator))];
+            List<ParticipantModel> participantModels = [.. eventCollaborators.Select(eventCollaborator => new ParticipantMapper().MapEventCollaboratorToParticipantModel(eventCollaborator))];
 
             return participantModels;
         }

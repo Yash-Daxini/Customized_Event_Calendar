@@ -7,23 +7,23 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Mapping
 {
     internal class ParticipantMapper
     {
-        public Models.ParticipantModel MapEventCollaboratorToParticipantModel(Entities.EventCollaborator eventCollaborator)
+        public ParticipantModel MapEventCollaboratorToParticipantModel(EventCollaborator eventCollaborator)
         {
-            return new Models.ParticipantModel
-            {
-                Id = eventCollaborator.Id,
-                ParticipantRole = MapParticipantRoleToEnum(eventCollaborator.ParticipantRole),
-                ConfirmationStatus = MapConfirmationStatusToEnum(eventCollaborator.ConfirmationStatus),
-                ProposedStartHour = eventCollaborator.ProposedStartHour,
-                ProposedEndHour = eventCollaborator.ProposedEndHour,
-                EventDate = eventCollaborator.EventDate,
-                User = MapUserIdToUserModel(eventCollaborator.UserId)
-            };
+            return new ParticipantModel
+            (
+                eventCollaborator.Id,
+                MapParticipantRoleToEnum(eventCollaborator.ParticipantRole),
+                MapConfirmationStatusToEnum(eventCollaborator.ConfirmationStatus),
+                eventCollaborator.ProposedStartHour,
+                eventCollaborator.ProposedEndHour,
+                eventCollaborator.EventDate,
+                MapUserIdToUserModel(eventCollaborator.UserId)
+            );
         }
 
-        public Entities.EventCollaborator MapParticipantModelToEventCollaborator(Models.ParticipantModel participantModel, int eventId)
+        public EventCollaborator MapParticipantModelToEventCollaborator(ParticipantModel participantModel, int eventId)
         {
-            return new Entities.EventCollaborator
+            return new EventCollaborator
             {
                 Id = participantModel.Id,
                 EventId = eventId,

@@ -1,6 +1,4 @@
 ﻿using CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Services;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Entities;
-using CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models;
 
 namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 {
@@ -57,13 +55,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         private static void AssignStartHourAndEndHourToSpecificObject(dynamic obj, int startHour, int endHour)
         {
-            if (obj is Event)
+            if (obj is Domain.Entities.Event)
             {
                 obj.EventStartHour = startHour;
                 obj.EventEndHour = endHour;
 
             }
-            else if (obj is EventModel)
+            else if (obj is Domain.Models.EventModel)
             {
                 obj.Participants[0].ProposedStartHour = startHour;
                 obj.Participants[0].ProposedEndHour = endHour;
