@@ -36,7 +36,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
                 UserModel user = GetUserFromSerialNumber(serialNumberOfTableRow);
 
-                SharedCalendarModel sharedCalendarModel = new(GlobalData.GetUser(),user, new DateOnly(), new DateOnly());
+                SharedCalendarModel sharedCalendarModel = new(GlobalData.GetUser(), user, new DateOnly(), new DateOnly());
 
                 GetDatesFromUser(sharedCalendarModel);
 
@@ -215,8 +215,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         private static string GenerateTableForSharedEvents(DateOnly startDate, DateOnly endDate, List<EventModel> sharedEvents)
         {
-            List<EventModel> events = new EventService().GetAllEvents();
-
             List<List<string>> sharedEventTableContent = [["Sr No.", "Event Title", "Event Description", "Event Date", "Event Duration"]];
 
             int index = 0;
@@ -225,7 +223,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             while (currentDate <= endDate)
             {
-                AddSharedEventsInto2DList(sharedEvents, events, sharedEventTableContent, ref index, currentDate);
+                AddSharedEventsInto2DList(sharedEvents, sharedEventTableContent, ref index, currentDate);
 
                 currentDate = currentDate.AddDays(1);
             }
@@ -233,24 +231,20 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             return PrintService.GenerateTable(sharedEventTableContent);
         }
 
-        private static void AddSharedEventsInto2DList(List<EventModel> sharedEvents, List<Event> events, List<List<string>> sharedEventTableContent, ref int index, DateOnly currentDate)
+        private static void AddSharedEventsInto2DList(List<EventModel> sharedEvents, List<List<string>> sharedEventTableContent, ref int index, DateOnly currentDate)
         {
-            List<Domain.Entities.EventCollaborator> eventCollaboratorList = sharedEvents.FindAll(eventCollaborator => eventCollaborator.EventDate == currentDate);
+            sharedEvents = sharedEvents.Where(sharedEvent => sharedEvent.EventDate == currentDate).ToList();
 
-            foreach (var eventCollaborator in eventCollaboratorList)
+            foreach (var sharedEvent in sharedEvents)
             {
-                if (eventCollaborator != null)
-                {
-                    Domain.Entities.Event? eventObj = events.Find(eventObj => eventObj.Id == eventCollaborator.EventId);
 
-                    sharedEventTableContent.Add([(index + 1).ToString(),
-                                                     eventObj.Title, eventObj.Description,
-                                                     eventCollaborator.EventDate.ToString(),
-                                                     DateTimeManager.ConvertTo12HourFormat(eventObj.EventStartHour)+" - "+
-                                                     DateTimeManager.ConvertTo12HourFormat(eventObj.EventEndHour)
-                                                ]);
-                    index++;
-                }
+                sharedEventTableContent.Add([(index + 1).ToString(),
+                                                     sharedEvent.Title, sharedEvent.Description,
+                                                     sharedEvent.EventDate.ToString(),
+                                                     DateTimeManager.ConvertTo12HourFormat(sharedEvent.Duration.StartHour)+" - "+
+                                                     DateTimeManager.ConvertTo12HourFormat(sharedEvent.Duration. EndHour)
+                                            ]);
+                index++;
             }
         }
     }
