@@ -63,8 +63,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             }
             else if (obj is Domain.Models.EventModel)
             {
-                obj.Participants[0].ProposedStartHour = startHour;
-                obj.Participants[0].ProposedEndHour = endHour;
+                obj.Duration.StartHour = startHour;
+                obj.Duration.EndHour = endHour;
             }
         }
 

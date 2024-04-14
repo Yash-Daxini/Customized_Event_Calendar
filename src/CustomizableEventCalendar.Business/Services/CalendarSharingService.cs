@@ -15,7 +15,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public List<SharedCalendarModel> GetSharedCalendars()
         {
-            return [.._sharedCalendarRepository.GetAll().Where(sharedCalendar => sharedCalendar.ReceiverUser.Id == GlobalData.GetUser().Id)
+            return [.. _sharedCalendarRepository.GetAll().Where(sharedCalendar => sharedCalendar.ReceiverUser.Id == GlobalData.GetUser().Id)
                                                         .OrderBy(sharedCalendar => sharedCalendar.ToDate)];
         }
 
@@ -65,19 +65,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
         private static List<EventModel> GetAllSharedEventsBetweenGivenDate(DateOnly fromDate, DateOnly toDate, HashSet<int> sharedEventIds)
         {
             return [.. new EventService().GetAllEvents().Where(IsSharedEventBetweenGivenDates(fromDate, toDate, sharedEventIds))
-                                                        .Select(eventModel => {
-                                                                eventModel.Participants = [..eventModel.Participants
-                                                                          .Where(participant=>participant.User.Id == GlobalData.GetUser().Id)];
-                                                                        return eventModel;
-                                                        })
                                                         .OrderBy(participant => participant.EventDate)];
 
         }
 
         private static Func<EventModel, bool> IsSharedEventBetweenGivenDates(DateOnly fromDate, DateOnly toDate, HashSet<int> sharedEventIds)
         {
-            return eventModel => eventModel.Participants.Exists(participant => participant.User.Id == GlobalData.GetUser().Id)
-                                 && IsDateBetweenRange(fromDate, toDate, eventModel.EventDate)
+            return eventModel => IsDateBetweenRange(fromDate, toDate, eventModel.EventDate)
                                  && IsSharedEvent(sharedEventIds, eventModel.Id);
         }
 

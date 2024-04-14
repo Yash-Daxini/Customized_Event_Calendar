@@ -30,16 +30,23 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public List<EventModel> GetAllEvents()
         {
-            List<EventModel> listOfEvents = [.. _eventRepository.GetAll()];
+            return [.. _eventRepository.GetAll()
+                                       .OrderBy(eventModel => eventModel.RecurrencePattern.StartDate)
+                                       .ThenBy(eventModel => eventModel.Duration.StartHour)];
+        }
 
-            return listOfEvents;
+        public List<EventModel> GetSingleInstanceOfAllEvents()
+        {
+            return [.. GetAllEventsOfLoggedInUser().GroupBy(eventModel => eventModel.Id)
+                                                   .Select(groupedEvent => groupedEvent.First())
+                                                   .Where(eventModel => eventModel.Participants.Exists(participant => participant.ParticipantRole == ParticipantRole.Organizer))];
         }
 
         public List<EventModel> GetAllEventsOfLoggedInUser()
         {
             List<EventModel> events = GetAllEvents();
 
-            return [.. events.Where(eventModel=> eventModel.Participants.Exists(participant=>participant.User.Id == GlobalData.GetUser().Id))
+            return [.. events.Where(eventModel => eventModel.Participants.Exists(participant => participant.User.Id == GlobalData.GetUser().Id))
                              .Select(SelectUpdatedParticipant())];
         }
 
@@ -92,12 +99,15 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public List<EventModel> GetProposedEvents()
         {
-            return [.. GetAllEvents().Select(eventModel => {  eventModel.Participants = eventModel.Participants
-                                                      .Where(participant=>participant.ParticipantRole != ParticipantRole.Organizer &&
+            return [.. GetAllEvents().Where(eventModel => eventModel.Participants.Exists(participant => participant.ParticipantRole == ParticipantRole.Participant))
+                                     .Select(eventModel =>
+                                     {
+                                         eventModel.Participants = eventModel.Participants
+                                                      .Where(participant => participant.ParticipantRole != ParticipantRole.Organizer &&
                                                              participant.ParticipantRole != ParticipantRole.Collaborator)
                                                       .ToList();
-                                                      return eventModel;
-                                                    })];
+                                         return eventModel;
+                                     })];
         }
 
         public void ConvertProposedEventToScheduleEvent(int eventId)
@@ -112,7 +122,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
 
         public int GetEventIdFromSerialNumber(int srNo)
         {
-            return GetAllEventsOfLoggedInUser()[srNo - 1].Id;
+            return GetSingleInstanceOfAllEvents()[srNo - 1].Id;
         }
     }
 }

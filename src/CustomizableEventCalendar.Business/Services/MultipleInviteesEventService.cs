@@ -100,11 +100,6 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             int endHour = -1;
             int timeBlock = eventModel.Duration.EndHour - eventModel.Duration.StartHour;
 
-            foreach (var item in proposedHours)
-            {
-                Console.WriteLine(item);
-            }
-
             for (int i = 0; i < proposedHours.Length; i++)
             {
                 if (proposedHours[i] == max && startHour == -1)

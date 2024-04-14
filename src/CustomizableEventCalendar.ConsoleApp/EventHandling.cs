@@ -98,13 +98,16 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         private static void GetInputToAddEvent()
         {
-            EventModel eventModel = new();
+            EventModel eventModel = new()
+            {
+                Duration = new DurationModel(),
+                RecurrencePattern = new RecurrencePatternModel(),
+                Participants = [(new ParticipantModel(ParticipantRole.Organizer, ConfirmationStatus.Accept, null, null, new DateOnly(), GlobalData.GetUser()))],
+            };
 
             GetEventDetailsFromUser(eventModel);
 
             TimeHandler.GetStartingAndEndingHourOfEvent(eventModel);
-
-            eventModel.Participants.Add(new ParticipantModel(ParticipantRole.Organizer, ConfirmationStatus.Accept, null, null, new DateOnly(), GlobalData.GetUser()));
 
             RecurrenceHandling.AskForRecurrenceChoice(eventModel);
 
@@ -142,7 +145,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         private static string GetEventTable()
         {
-            List<EventModel> events = _eventService.GetAllEventsOfLoggedInUser();
+            List<EventModel> events = _eventService.GetSingleInstanceOfAllEvents();
 
             List<List<string>> outputRows = events.InsertInto2DList(["Event NO.", "Title", "Description", "Location", "Event Repetition", "Start Date", "End Date", "Duration"],
                 [
@@ -153,7 +156,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                     eventModel => RecurrencePatternMessageGenerator.GenerateRecurrenceMessage(eventModel),
                     eventModel => eventModel.RecurrencePattern.StartDate.ToString(),
                     eventModel => eventModel.RecurrencePattern.EndDate.ToString(),
-                    eventModel => DateTimeManager.ConvertTo12HourFormat(eventModel.Duration.StartHour)+" - "+
+                    eventModel => DateTimeManager.ConvertTo12HourFormat(eventModel.Duration.StartHour) + " - " +
                                 DateTimeManager.ConvertTo12HourFormat(eventModel.Duration.EndHour)
                 ]);
 
@@ -177,6 +180,8 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
                 int serialNumber = GetSerialNumberForUpdateOrDelete(true);
 
+                if (serialNumber == 0) return;
+
                 _eventService.DeleteEvent(_eventService.GetEventIdFromSerialNumber(serialNumber));
 
                 PrintHandler.PrintSuccessMessage("Event deleted Successfully");
@@ -195,9 +200,11 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
             int serialNumber = GetSerialNumberForUpdateOrDelete(false);
 
-            List<EventModel> eventModels = _eventService.GetEventById(_eventService.GetEventIdFromSerialNumber(serialNumber));
+            if (serialNumber == 0) return;
 
-            EventModel eventModel = eventModels.FirstOrDefault();
+            List<EventModel>? eventModels = _eventService.GetEventById(_eventService.GetEventIdFromSerialNumber(serialNumber));
+
+            EventModel? eventModel = eventModels == null ? null : eventModels.FirstOrDefault();
 
             if (eventModel == null) return;
 
@@ -252,7 +259,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
         {
             string operation = isDelete ? "delete" : "update";
 
-            int serialNumber = ValidatedInputProvider.GetValidIntegerBetweenRange($"From Above events give event no. that you want to {operation} :- ", 1, _eventService.GetTotalEventCount());
+            int serialNumber = ValidatedInputProvider.GetValidIntegerBetweenRange($"From Above events give event no. that you want to {operation}. (Press 0 to go back)  :- ", 0, _eventService.GetTotalEventCount());
 
             return serialNumber;
         }

@@ -9,13 +9,13 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Mapping
         public SharedCalendarModel MapSharedCalendarEntityToModel(SharedCalendar sharedCalendar)
         {
             return new SharedCalendarModel
-            {
-                Id = sharedCalendar.Id,
-                SenderUser = MapUserIdToUserModel(sharedCalendar.SenderUserId),
-                ReceiverUser = MapUserIdToUserModel(sharedCalendar.ReceiverUserId),
-                FromDate = sharedCalendar.FromDate,
-                ToDate = sharedCalendar.ToDate,
-            };
+            (
+                sharedCalendar.Id,
+                MapUserIdToUserModel(sharedCalendar.SenderUserId),
+                MapUserIdToUserModel(sharedCalendar.ReceiverUserId),
+                sharedCalendar.FromDate,
+                sharedCalendar.ToDate
+            );
         }
 
         private UserModel MapUserIdToUserModel(int userId)

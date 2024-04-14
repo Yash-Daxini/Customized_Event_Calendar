@@ -33,9 +33,9 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
 
         private static List<EventModel> GetEventCollaboratorsInGivenDateRange(DateOnly startDate, DateOnly endDate, List<EventModel> eventModels)
         {
-            return [..eventModels.Where(eventModel => IsDateInRange(startDate, endDate, eventModel.EventDate))
-                                        .OrderBy(eventModel=>eventModel.EventDate)
-                                        .ThenBy(eventModel=> eventModel.Duration.StartHour)];
+            return [.. eventModels.Where(eventModel => IsDateInRange(startDate, endDate, eventModel.EventDate))
+                                        .OrderBy(eventModel => eventModel.EventDate)
+                                        .ThenBy(eventModel => eventModel.Duration.StartHour)];
         }
 
         private static bool IsDateInRange(DateOnly startDate, DateOnly endDate, DateOnly dateToCheck)
@@ -60,14 +60,17 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                     eventModel => DateTimeManager.ConvertTo12HourFormat(eventModel.Duration.EndHour),
                 ]);
 
-            Console.WriteLine("\n" + PrintService.GenerateTable(tableContentOfEventTimeLine));
+            if (tableContentOfEventTimeLine.Count == 1)
+                PrintHandler.PrintWarningMessage("No Events availbale !");
+            else
+                Console.WriteLine("\n" + PrintService.GenerateTable(tableContentOfEventTimeLine));
 
         }
 
         private static List<EventModel> GetUserParticipationEvents()
         {
-            return [..new EventService().GetAllEventsOfLoggedInUser()
-                                        .Select(eventModel => 
+            return [.. new EventService().GetAllEventsOfLoggedInUser()
+                                        .Select(eventModel =>
                                         {
                                             eventModel.Participants = eventModel.Participants.Where(participant => participant.ConfirmationStatus == ConfirmationStatus.Reject).ToList();
                                             return eventModel;

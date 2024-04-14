@@ -32,7 +32,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Mapping
                 _ => Frequency.None,
             };
         }
-        
+
         private string? MapEnumToFrequency(Frequency frequency)
         {
             return frequency switch
@@ -56,7 +56,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Mapping
         {
             eventObj.EventStartDate = recurrencePatternModel.StartDate;
             eventObj.EventEndDate = recurrencePatternModel.EndDate;
-            eventObj.ByWeekDay = string.Format(",", recurrencePatternModel.ByWeekDay);
+            eventObj.ByWeekDay = recurrencePatternModel.ByWeekDay == null ? null : string.Join(",", recurrencePatternModel.ByWeekDay);
             eventObj.WeekOrder = recurrencePatternModel.WeekOrder;
             eventObj.Interval = recurrencePatternModel.Interval;
             eventObj.Frequency = MapEnumToFrequency(recurrencePatternModel.Frequency);

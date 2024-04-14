@@ -4,7 +4,10 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Domain.Models
 {
     internal class ParticipantModel
     {
-
+        public ParticipantModel()
+        {
+            
+        }
         public ParticipantModel(int Id,ParticipantRole ParticipantRole, ConfirmationStatus ConfirmationStatus, int? ProposedStartHour, int? ProposedEndHour, DateOnly EventDate, UserModel User)
         {
             this.Id = Id;

@@ -28,35 +28,35 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
                    $"\nPlease choose another date time !";
         }
 
-        private static void HandleOverlappedEvent(EventModel eventForVerify, OverlappingEventData overlappedEventInformation, bool isInsert ,bool isProposed)
+        private static void HandleOverlappedEvent(EventModel eventForVerify, OverlappingEventData overlappedEventInformation, bool isInsert, bool isProposed)
         {
-            string overlapEventMessage = GetOverlapMessageFromEvents(eventForVerify, overlappedEventInformation.EventInformation, overlappedEventInformation.MatchedDate);
+            string overlapEventMessage = GetOverlapMessageFromEvents(overlappedEventInformation.EventInformation, overlappedEventInformation.OverlappedEvent, overlappedEventInformation.MatchedDate);
 
             PrintHandler.PrintWarningMessage(overlapEventMessage);
 
             if (!AskForRescheduleOverlappedEvent()) return;
 
-            GetInputToRescheduleOverlappedEvent(eventForVerify,isProposed);
+            GetInputToRescheduleOverlappedEvent(eventForVerify, isProposed);
 
             if (isInsert)
-                EventHandling.AddEvent(eventForVerify);
+                EventHandling.AddEvent(eventForVerify, isProposed);
             else
-                EventHandling.UpdateEvent(eventForVerify.Id, eventForVerify);
+                EventHandling.UpdateEvent(eventForVerify.Id, eventForVerify, isProposed);
         }
 
-        public static bool IsOverlappingEvent(EventModel eventModel, bool isInsert,bool isProposed)
+        public static bool IsOverlappingEvent(EventModel eventModel, bool isInsert, bool isProposed)
         {
             OverlappingEventData? overlappedEventInformation = _overlappingEventService.GetOverlappedEventInformation(eventModel, isInsert);
 
             if (overlappedEventInformation != null)
             {
-                HandleOverlappedEvent(eventModel, overlappedEventInformation, isInsert,isProposed);
+                HandleOverlappedEvent(eventModel, overlappedEventInformation, isInsert, isProposed);
                 return true;
             }
             return false;
         }
 
-        private static void GetInputToRescheduleOverlappedEvent(EventModel eventModel,bool isProposed)
+        private static void GetInputToRescheduleOverlappedEvent(EventModel eventModel, bool isProposed)
         {
             TimeHandler.GetStartingAndEndingHourOfEvent(eventModel);
 

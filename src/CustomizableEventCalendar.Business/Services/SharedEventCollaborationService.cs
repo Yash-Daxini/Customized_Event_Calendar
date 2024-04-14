@@ -11,9 +11,14 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.Business.Servi
             _eventCollaboratorService.InsertParticipant(participantModel, eventId);
         }
 
-        public bool IsEventAlreadyCollaborated(EventModel eventModel)
+        public bool IsEventAlreadyCollaborated(EventModel eventModelToCheckOverlap)
         {
-            return eventModel.Participants.Exists(participant => participant.User.Id == GlobalData.GetUser().Id);
+            return new EventService().GetEventById(eventModelToCheckOverlap.Id)
+                                         .Where(eventModel => eventModel.EventDate == eventModelToCheckOverlap.EventDate
+                                                && eventModel.Duration.StartHour == eventModelToCheckOverlap.Duration.StartHour
+                                                && eventModel.Duration.EndHour == eventModelToCheckOverlap.Duration.EndHour
+                                                && eventModel.Participants.Exists(participant => participant.User.Id == GlobalData.GetUser().Id)
+                                                ).Count() > 0;
         }
 
         public EventModel? GetCollaborationOverlap(EventModel eventToCollaborate)

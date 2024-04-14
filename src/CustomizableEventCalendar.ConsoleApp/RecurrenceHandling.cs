@@ -108,7 +108,7 @@ namespace CustomizableEventCalendar.src.CustomizableEventCalendar.ConsoleApp
             PrintHandler.PrintNewLine();
 
             Console.WriteLine("How often does this event occur? \n1.Every day \n2.Every Weekday \n3.Every n days (You need to specify the value of n)");
-            int choice = ValidatedInputProvider.GetValidIntegerBetweenRange("\nEnter choice : ", 1, 2);
+            int choice = ValidatedInputProvider.GetValidIntegerBetweenRange("\nEnter choice : ", 1, 3);
 
             string days;
 

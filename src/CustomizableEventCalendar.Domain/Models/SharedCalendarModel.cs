@@ -3,6 +3,15 @@
     internal class SharedCalendarModel
     {
 
+        public SharedCalendarModel(int Id,UserModel SenderUser, UserModel ReceiverUser, DateOnly FromDate, DateOnly ToDate)
+        {
+            this.Id = Id;
+            this.SenderUser = SenderUser;
+            this.ReceiverUser = ReceiverUser;
+            this.FromDate = FromDate;
+            this.ToDate = ToDate;
+        }
+
         public SharedCalendarModel(UserModel SenderUser,UserModel ReceiverUser,DateOnly FromDate,DateOnly ToDate)
         {
             this.SenderUser = SenderUser;
